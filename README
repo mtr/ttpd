@@ -14,8 +14,8 @@ is written in Python (and was tested with Python 2.3.4 [on Linux] and
 Python 2.3.3 [on SunOS]) and requires the Python installation to
 support threads.
   
-See the file INSTALLATION for information on how to build and install
-the programs and the Python modules they use.
+See the file INSTALL for information on how to build and install the
+programs and the Python modules they use.
 
 
 
