@@ -230,7 +230,7 @@ def main():
     else:
 
         # Request a single (non-alert) answer (as from a Web page).
-    
+        
         m.MxHead.MsgId = -1
         m._setMessage('%s%s' % (pre_msg, args[0]))
         

@@ -19,6 +19,7 @@ import os
 import Queue
 import signal
 import sys
+import threading
 import xml.sax
 
 import EncapsulateTUC                   # For request-type constants.
@@ -27,7 +28,6 @@ import Message
 import TUCThread
 import tad
 
-# FIXME:  Actually send things to remote server (don't use netcat).
 
 class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
 
@@ -46,20 +46,36 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
     
     log_channel = 'base'
     server_name = 'Base TPP server'
-    
+
     def __init__(self, server_address, RequestHandlerClass,
-                 log_filename, log_level = logging.DEBUG,
-                 request_queue_size = 5):
+                 log_filename, log_level=logging.DEBUG,
+                 high_load_limit=5, request_queue_size=5):
+        
+        # This is the limit on the number of threads (number of
+        # transactions) concurrently handled.  This is related to the
+        # number of open files per process.
+        
+        self.high_load_limit = high_load_limit
         
         # Set the request_queue_size.  If it takes a long time to
         # process a single request, any requests that arrive while the
         # server is busy are placed into a queue, up to
         # request_queue_size requests.
-        
+
         self.request_queue_size = request_queue_size
         
         self.log_filename = log_filename
         self.log_level = log_level
+        
+        # Prepare the high load warning/excuse message.
+        
+        hlw = Message.MessageResult()
+        hlw.MxHead.Stat = 51 # Destination application send error.
+        hlw._setMessage('Beklager, men det er for øyeblikket ' \
+                        'svært stor pågang på denne tjenesten. ' \
+                        'Vennligst prøv igjen senere.')
+        
+        self.high_load_warning = hlw._generate()
         
         # Initialize the base class.
         
@@ -69,6 +85,31 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         # Initialize the logging facilities.
         
         self.log_init()
+
+    def process_request(self, request, client_address):
+        
+        """ Start a new thread to process the request.  But, if the
+        current load (measured in live threads) is to high, alert the
+        sender that the load is currently too high. This method is
+        called very early in the request-handling pipeline."""
+        
+        thread_count = threading.activeCount()
+        if thread_count >= self.high_load_limit:
+            # Send a warning about the high load to the client.
+            
+            request.send(self.high_load_warning)
+            
+            self.log.warn('High load limit reached, active threads = %d',
+                          thread_count)
+            
+            self.close_request(request)
+            return
+        
+        t = threading.Thread(target = self.process_request_thread,
+                             args = (request, client_address))
+        if self.daemon_threads:
+            t.setDaemon (1)
+        t.start()
 
     def handle_error(self, request, client_address):
 
@@ -90,9 +131,10 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         self.log.info('%s, version %s, initialized.' % (self.server_name,
                                                         __version__))
-        self.log.info('PID = %d, log_level = %s' %
+        self.log.info('PID = %d, log_level = %s, high-load limit = %d' %
                       (os.getpid(),
-                       logging.getLevelName(self.log.getEffectiveLevel())))
+                       logging.getLevelName(self.log.getEffectiveLevel()),
+                       self.high_load_limit))
         
         interface, port = self.server_address
         if interface == '0':
@@ -149,17 +191,19 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
     server_name = 'TTPD'
     
     def __init__(self, server_address, RequestHandlerClass,
-                 log_filename, log_level, request_queue_size,
+                 log_filename, log_level, high_load_limit,
+                 request_queue_size,
                  tuc_pool_size, tuc_command, run_tad,
                  remote_server_address):
         
         # Initialize base class.
         
         BaseThreadingTCPServer.__init__(self, server_address,
-                                           RequestHandlerClass,
-                                           log_filename, log_level,
-                                           request_queue_size)
-
+                                        RequestHandlerClass,
+                                        log_filename, log_level,
+                                        high_load_limit,
+                                        request_queue_size)
+        
         # Store the remote server address.
         
         self.remote_server_address = remote_server_address
