@@ -94,8 +94,10 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         sender that the load is currently too high. This method is
         called very early in the request-handling pipeline."""
 
-        time.sleep(3)
-        
+        # Very useful for debugging the protocol.  :-)
+
+        #time.sleep(3)
+                
         thread_count = threading.activeCount()
         if thread_count >= self.high_load_limit:
             # Send a warning about the high load to the client.
