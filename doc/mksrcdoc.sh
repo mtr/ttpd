@@ -11,7 +11,7 @@ includefile="include_src.tex"
 
 epydoc --latex --output $docdir $modules
 
-cat $docdir/api.tex |grep '\include' - |sed "s/\\include{/\\input{$docdir\//g" - > $includefile
+cat $docdir/api.tex |grep '\include' - |grep -v "Options-module" |sed "s/\\include{/\\input{$docdir\//g" - > $includefile
 
 
 #cat /dev/null > include_src.tex; 

@@ -1,8 +1,9 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-
-""" 
-$Id$
+# $Id$
+"""
+Module to ease the maintainance of option parsing for the two
+programs ttpd and ttpc.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
@@ -177,7 +178,11 @@ def update_help(option):
         value = option['default']
         option['help'] = option['help'] % {'default': value}
 
-        
+
+class PlaceHolder:
+
+    """ Only kept here to create the domentation for this module. """
+    
 def main():
     
     """ Module mainline (for standalone execution). """
