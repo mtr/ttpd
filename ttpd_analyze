@@ -43,9 +43,10 @@ resolutions = {
      (lambda t1, t2: abs(t1 - t2).days > 1),
      datetime.timedelta(days=1)),
     'weeks':
-    ('%d Week %02d',
-     (lambda t: (t.year, t.isocalendar()[1])),
+    ((lambda t: '%d Week %02d' % (t[0], t[1])),
+     (lambda t: (t.isocalendar()[0], t.isocalendar()[1])),
      'Week',
+     (lambda t1, t2: abs(t1 - t2).days > 7),
      datetime.timedelta(weeks=1)),
     'months':
     ('%d Month %02d',
@@ -229,7 +230,6 @@ def make_avg_chart(data, x_axis_title, filename):
     
     can.close()
 
-
 def make_chart(data, x_axis_title, filename, transform):
     
     data = [(transform(d[1]), d[3]) for d in data]
@@ -239,6 +239,13 @@ def make_chart(data, x_axis_title, filename, transform):
     can = canvas.init(fname=filename)
 
     chart_setup = {
+        'default': {                           # Hours per day.
+        'tic_interval': 3,
+        'minor_tic_interval': 1,
+        'chart_size_x': 500,
+        'chart_size_y': 200,
+        'max_width' : 500,
+        'width': 5},
         7: {                            # Days per week.
         'tic_interval': 1,
         'minor_tic_interval': None,
@@ -246,9 +253,15 @@ def make_chart(data, x_axis_title, filename, transform):
         'chart_size_y': 200,
         'max_width' : 500,
         'width': 5},
-        
         24: {                           # Hours per day.
         'tic_interval': 3,
+        'minor_tic_interval': 1,
+        'chart_size_x': 500,
+        'chart_size_y': 200,
+        'max_width' : 500,
+        'width': 5},
+        52: {                          # Last 52 weeks.
+        'tic_interval': 4,
         'minor_tic_interval': 1,
         'chart_size_x': 500,
         'chart_size_y': 200,
@@ -263,8 +276,12 @@ def make_chart(data, x_axis_title, filename, transform):
         'width': 1}
         }
         
-    cs = chart_setup[len(data)]
-    
+    if len(data) in chart_setup:
+        cs = chart_setup[len(data)]
+    else:
+        print len(data)
+        cs = chart_setup['default']
+        
     ChartSize = (cs['chart_size_x'], cs['chart_size_y'])
     MaxWidth = cs['max_width']
     chart_object.set_defaults(area.T, size = ChartSize)
@@ -289,10 +306,9 @@ def make_chart(data, x_axis_title, filename, transform):
     
     can.close()
 
-def main():
-    
-    """ Module mainline (for standalone execution). """
-    
+
+def parse_options():
+        
     parser = optparse.OptionParser(usage = '%prog [options] [file] [file] ...',
                                    version = '%%prog version %s' %
                                    (__version__))
@@ -324,16 +340,22 @@ def main():
         if options.week == 'this':
             year = int(datetime.date.today().year)
             week = datetime.date.today().isocalendar()[1]
-            #print year, week
         else:
             year, week = [int(m) for m in options.week.split(',')]
-            
+
+        #print 'year=%s, week=%s' % (year, week)
+
         D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week - 1))
         options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
-        options.end = options.start + datetime.timedelta(days=6)
+
+        if not options.end:
+            options.end = options.start + datetime.timedelta(days=6)
+
         #print options.start, options.end
-    
-    # Add the contents of each file to the list of transactions.
+            
+    return options, args
+
+def transactions_from_files(options, args):
     
     transactions = []
     
@@ -359,13 +381,15 @@ def main():
     # Insert temporal resolution place-holders.
 
     t = datetime.datetime.combine(options.start, datetime.time())
-    
-    #if (options.resolution == 'hours'):
-    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 0))
-    #else:
-    #    end = options.end
 
+    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 59))
+
+    #print "Before"
+    #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
+    #                 for x in transactions])
+                    
     while t < end:
+        #print t.isocalendar()[0:2]
         obj = {'date': t}
         
         for key in ['interface', 'host', 'trans_type']:
@@ -378,6 +402,22 @@ def main():
         t += resolutions[options.resolution][4]
         
     transactions.sort()
+
+    #print "After sort()"
+    #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
+    #                 for x in transactions])
+    
+    return transactions
+
+def main():
+    
+    """ Module mainline (for standalone execution). """
+
+    options, args = parse_options()
+    
+    # Add the contents of each file to the list of transactions.
+
+    transactions = transactions_from_files(options, args)
     
     # Create the temporal groups, dependent of options.resolution.
     
@@ -385,6 +425,9 @@ def main():
                       resolutions[options.resolution][1](x['date']),
                       transactions)
 
+    #print "After 1st group_by()"
+    #print '\n'.join(['%s' % str(x) for x in groups])
+    
     #print groups
     
     units = groups.keys()

@@ -333,10 +333,15 @@ class Handler(BaseHandler):
             # Non-SMS request for SMS-only services.
             
             if cost in ['VARSEL', 'AVBEST']:
-                answer = 'Beklager, %s av varsel er ' \
-                         'kun mulig via SMS.' % \
-                         ({'VARSEL': 'bestilling',
-                           'AVBEST': 'avbestilling'}[cost])
+                tmp = 'Beklager, %s av varsel er ' \
+                             'kun mulig via SMS.' % \
+                             ({'VARSEL': 'bestilling',
+                               'AVBEST': 'avbestilling'}[cost])
+                answer = '%s: Du ville blitt varslet %s med meldingen: ' \
+                         '%s' % \
+                         (tmp,
+                          time.strftime('%H:%M:%S, %d.%m.%y', extra), answer)
+                
                 cost = 'FREE'
                 
             ext_id = ''
