@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python -OO
 # -*- coding: latin-1 -*-
 # $Id$
 """
@@ -14,19 +14,19 @@ __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
 import commands
+import cStringIO
 import logging
 import optparse
 import os
-import signal
 import sys
 import time
 import xml.sax
 
-import TTP.Handler
 import TTP.Message
-import TTP.Server
 
+import locale
 
+    
 def parse_command_line():
     
     """ Parse the command line options. """
@@ -36,7 +36,7 @@ def parse_command_line():
     parser = optparse.OptionParser(usage = '%prog [options] [request]',
                                    version = '%%prog %s' % (__version__))
 
-    parser.add_option('-I', '--transaction_id', dest = 'trans_id',
+    parser.add_option('-I', '--transaction-id', dest = 'trans_id',
                       help = 'the TRANS_ID to use when communicating with ' \
                       'a remote server. Default is LINGSMSOUT.',
                       metavar = 'TRANS_ID', default = 'LINGSMSOUT')
@@ -72,7 +72,7 @@ def parse_command_line():
 
     parser.add_option('-T', '--phone-number', dest = 'phone_number',
                       default = None, help = 'the number that the message ' \
-                      'supposedly was sent from',
+                      'supposedly was sent from; deault is None',
                       metavar = 'PHONE')
     
     parser.add_option('-i', '--input-file', dest = 'input_file',
@@ -90,11 +90,23 @@ def parse_command_line():
                       'values are ' \
                       'DEBUG < INFO < WARNING < ERROR < CRITICAL; the ' \
                       'default is INFO' , metavar = 'LEVEL')
+    
+    parser.add_option('-w', '--web', dest = 'web',
+                      help = 'generate output suitable for the Web; ' \
+                      'this implicates --transaction-id=WEB',
+                      action = 'store_true', default = False)
 
+    parser.add_option('-W', '--show-technical', dest = 'show_technical',
+                      help = 'show technical information (semantics)',
+                      action = 'store_true', default = False)
+    
     # Parse the command line.
     
     options, args = parser.parse_args()
-    
+
+    if options.web:
+        options.trans_id = 'WEB'
+        
     # Expand the any paths and make them absolute.
     
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
@@ -110,7 +122,77 @@ def parse_command_line():
     
     return options, args
 
+
+def run_listening_server(options):
     
+    import signal
+    
+    import TTP.Handler
+    import TTP.Server
+    
+    # Create a server which will use a TUC Transfer Protocol Handler.
+    
+    server = TTP.Server.BaseThreadingTCPServer((options.ip_address,
+                                                options.port),
+                                               TTP.Handler.BaseHandler,
+                                               options.log_file,
+                                               options.log_level,
+                                               options.socket_queue_size)
+
+    # In Python, when the `signal' module is available, interrupts
+    # always go to the main thread.
+    #
+    # Register a signal handler for the hang-up signal.
+    
+    signal.signal(signal.SIGHUP, server.hangup)
+    
+    # Register signal handlers for terminating signals.
+
+    signal.signal(signal.SIGINT, server.shutdown)
+    signal.signal(signal.SIGTERM, server.shutdown)
+
+    server.serve_forever()
+    
+
+def run_single_test(m, options, parser):
+    
+    try:
+        meta, body = TTP.Message.communicate(m, (options.ip_address,
+                                                 options.port), parser)
+    except:
+        meta, body = None, 'An error occured. Service currently not available.'
+        return meta, body
+    
+    if options.web:
+
+        b = TTP.Message.build(body, parser)
+        
+        if options.show_technical:
+            body = '<tt>%s</tt><hr>%s<hr>' % (b.TUCAns.Technical,
+                                                b.TUCAns.NaturalLanguage)
+        else:
+            body = b.TUCAns.NaturalLanguage
+            
+    return meta, body.encode('latin-1')
+
+
+def run_test_mode(m, options, parser, pre_msg):
+    
+    f = open(options.input_file, 'r')
+
+    for i, line in enumerate(f):
+
+        m.MxHead.MsgId = i
+        m._setMessage('%s%s' % (pre_msg, line))
+
+        meta, body = run_single_test(m, options, parser)
+        print '%d: %s\n%s' % (i, meta, body)
+        
+        time.sleep(3)
+
+    f.close()
+
+        
 def main():
     
     """ Module mainline (for standalone execution) """
@@ -118,82 +200,41 @@ def main():
     options, args = parse_command_line()
     
     if options.listen_mode:
-
-        # Create a server which will use a TUC Transfer Protocol Handler.
         
-        server = TTP.Server.BaseThreadingTCPServer((options.ip_address,
-                                                    options.port),
-                                                   TTP.Handler.BaseHandler,
-                                                   options.log_file,
-                                                   options.log_level,
-                                                   options.socket_queue_size)
+        run_listening_server(options)
         
-        # In Python, when the `signal' module is available, interrupts
-        # always go to the main thread.
-        #
-        # Register a signal handler for the hang-up signal.
-        
-        signal.signal(signal.SIGHUP, server.hangup)
-        
-        # Register signal handlers for terminating signals.
-        
-        signal.signal(signal.SIGINT, server.shutdown)
-        signal.signal(signal.SIGTERM, server.shutdown)
-        
-        server.serve_forever()
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(TTP.Message.XML2Message())
     
     m = TTP.Message.MessageRequest()
     m.MxHead.TransID = options.trans_id
     if options.phone_number:
         m.MxHead.ORName = options.phone_number
         
-    parser = xml.sax.make_parser()
-    parser.setContentHandler(TTP.Message.XML2Message())
-    parser.setErrorHandler(xml.sax.ErrorHandler())
-
     if options.trans_id == 'LINGSMSOUT':
         pre_msg = 'TEAM '
     else:
         pre_msg = ''
     
     if options.test_mode:
-        
+
         if not os.access(options.input_file, os.R_OK):
             print "You have to supply a path to a readable " \
                   "test-input file.\n" \
                   "The current value, '%s', is not a readable file." \
                   % (options.input_file)
             sys.exit(1)
-
-        
-        f = open(options.input_file, 'r')
-        
-        for i, line in enumerate(f):
             
-            m.MxHead.MsgId = i
-            m._setMessage('%s%s' % (pre_msg, line))
-
-            try:
-                meta, body = TTP.Message.communicate(m, (options.ip_address,
-                                                         options.port), parser)
-            except:
-                print 'An error occured. Service not available'
-                
-            print '%d: %s\n%s' % (i, meta, body)
-
-            time.sleep(3)
-            
-        f.close()
+        run_test_mode(m, options, parser, pre_msg)
         
     else:
 
         # Request a single (non-alert) answer (as from a Web page).
-        
+    
         m.MxHead.MsgId = -1
         m._setMessage('%s%s' % (pre_msg, args[0]))
         
-        meta, body = TTP.Message.communicate(m, (options.ip_address,
-                                                 options.port), parser)
+        meta, body = run_single_test(m, options, parser)
         
         if options.log_level == logging.DEBUG:
             print '%s\n%s' % (meta, body)

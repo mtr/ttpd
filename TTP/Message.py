@@ -72,6 +72,7 @@ class Hierarchy(object):
         atl = self._d.keys()
         for at in atl:
             ob = getattr(self, at)
+            #print 'ob =', ob
             trv = ob._get_leaves(prefix + at)
             rv.update(trv)
         for at, ob in self._attributes():
@@ -194,6 +195,7 @@ class MessageRequest(MessageAck):
         MessageAck.__init__(self)
 
         del self.MxHead.Stat
+
         
 class MessageResult(MessageAck):
 
@@ -215,15 +217,17 @@ class XML2Message(xml.sax.ContentHandler):
     def startDocument(self):
 
         self.stack = []
-        self.data = Message() #Hierarchy()
+        self.data = Message()
         
     def set_current(self, value):
-        
+
         obj = self.data
         for node in self.stack[:-1]:
             obj = getattr(obj, node)
-        setattr(obj, self.stack[-1], value)
-        
+            
+        if not self.stack[-1] in obj._d:
+            setattr(obj, self.stack[-1], value)
+
     def characters(self, content):
         
         if not self.all_whitespace_re.match(content):
@@ -255,6 +259,24 @@ def _recv(connection, buf_size, timeout = None):
         
     return buf
 
+def build(data, parser = None):
+    
+    """ Build a Message object based on an input XML string. """
+
+    sinput = cStringIO.StringIO(data)
+    inpsrc = xml.sax.InputSource()
+    inpsrc.setByteStream(sinput)
+    
+    if not parser:
+        parser = xml.sax.make_parser()
+        parser.setContentHandler(XML2Message())
+        parser.setErrorHandler(xml.sax.ErrorHandler())
+        
+    parser.parse(inpsrc)
+    
+    sinput.close()
+
+    return parser.getContentHandler().data
 
 def receive(connection, parser = None, timeout = False):
     
@@ -269,20 +291,7 @@ def receive(connection, parser = None, timeout = False):
     if m:
         head, body = m.groups()
         
-    sinput = cStringIO.StringIO(head)
-    inpsrc = xml.sax.InputSource()
-    inpsrc.setByteStream(sinput)
-    
-    if not parser:
-        parser = xml.sax.make_parser()
-        parser.setContentHandler(XML2Message())
-        parser.setErrorHandler(xml.sax.ErrorHandler())
-        
-    parser.parse(inpsrc)
-    
-    sinput.close()
-    
-    meta = parser.getContentHandler().data
+    meta = build(head, parser)
     
     return meta, body
 

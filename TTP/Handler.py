@@ -17,6 +17,8 @@ import cStringIO
 import re
 import time
 import xml.sax
+#import xml.sax.saxutils
+import htmlentitydefs
 
 import Message
 import EncapsulateTUC
@@ -162,7 +164,10 @@ class Handler(BaseHandler):
         
         # Apply method to args.
         
-        cost, answer, extra = method(args)
+        cost, pre_answer, answer, extra = method(args)
+
+        # Some special considerations to make when we answer an SMS
+        # request.
         
         if is_sms_request:
             
@@ -178,7 +183,7 @@ class Handler(BaseHandler):
                 answer = 'Du vil bli varslet %s. %s %s' % \
                          (time.strftime('%X, %x', alert_date),
                           self.cancel_command_info % ext_id.upper(), answer)
-
+                
             elif cost == 'AVBEST':
                 ext_id = extra
             else:
@@ -205,21 +210,23 @@ class Handler(BaseHandler):
             
         # Send the answer to the client.
         
-        ans = Message.MessageAck()
+        ans = Message.MessageResult()
         ans.MxHead.TransID = meta.MxHead.TransID
-        ans._setMessage(answer)
+        
+        # Again, if it is an SMS request we're handling, take special
+        # care.
         
         if is_sms_request:
             
+            ans._setMessage(answer)
+            
             ans.MxHead.ORName = meta.MxHead.ORName
-            ans.MxHead.Aux.InitIf = 'IP'
-            ans.MxHead.Aux.InitProto = 'REMOTE' # FIXME: Is this correct?
             ans.MxHead.Aux.Billing = self.billings[cost]
             
             try:
                 Message.communicate(ans,
-                                        self.server.remote_server_address,
-                                        self.xml_parser)
+                                    self.server.remote_server_address,
+                                    self.xml_parser)
             except:
                 
                 self.server.log.error("Couldn't connect to " \
@@ -229,6 +236,14 @@ class Handler(BaseHandler):
                          'Det opprinnelige svaret var %s' % (answer)
                 cost = 'FREE'
         else:
+            
+            tuc_ans = Message.Message()
+            
+            tuc_ans.TUCAns.Technical = pre_answer,
+            tuc_ans.TUCAns.NaturalLanguage = answer
+            
+            ans._setMessage('<?xml version="1.0" encoding="iso-8859-1"?>' \
+                            '%s' % (tuc_ans._xmlify()))
             
             Message.send(self.connection, ans)
             
@@ -297,10 +312,10 @@ class Handler(BaseHandler):
         """ Cancel the alert signified by ext_id. """
         
         if self.server.tad.cancel_alert(num_hash.alpha2num(ext_id)):
-            return ('AVBEST', 'Varsling med referanse ' \
+            return ('AVBEST', None, 'Varsling med referanse ' \
                     '%s ble avbestilt.' % (ext_id), ext_id)
         else:
-            return ('FREE',
+            return ('FREE', None,
                     'Kunne ikke avbestille.  Fant ikke bestilling %s.'
                     % (ext_id), ext_id)
         
@@ -337,9 +352,11 @@ class Handler(BaseHandler):
             self.server.log.exception('There was a problem handling ' \
                                       'the result:\n%s\nInput: "%s"'
                                       % (result, data))
-            
-        return cost, answer, alert_date
-    
+            pre, cost, alert_date, answer = None, 'FREE', \
+                                            None, 'Beklager, ' \
+                                            'det oppstod en feil.'
+        return cost, pre, answer, alert_date
+        
     def preprocess(self, request, is_sms_request = False):
         
         """ Perform pre-processing of the request. """
