@@ -149,7 +149,7 @@ ttpc_options = [
      {'dest': 'listen_mode',
       'default': False,
       'action': 'store_true', 
-      'help': 'Listen for inbound connections'}),
+      'help': 'listen for inbound connections'}),
     
     (['-t', '--test'],
      {'dest': 'test_mode',
@@ -174,7 +174,7 @@ ttpc_options = [
      {'dest': 'input_file',
       'default': None,
       'metavar': 'FILE',
-      'help': 'Read input from FILE'}),
+      'help': 'read input from FILE'}),
     
     (['-w', '--web'],
      {'dest': 'web',

@@ -345,7 +345,7 @@ def parse_options():
 
         #print 'year=%s, week=%s' % (year, week)
 
-        D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week - 1))
+        D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week))
         options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
 
         if (not options.end) or (options.end == datetime.date.max):

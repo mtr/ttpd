@@ -62,7 +62,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         # process a single request, any requests that arrive while the
         # server is busy are placed into a queue, up to
         # request_queue_size requests.
-
+        
         self.request_queue_size = request_queue_size
         
         self.log_filename = log_filename
@@ -73,18 +73,18 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         w = Message.MessageAck()
         w.MxHead.Stat = 51       # Destination application send error.
         w._setMessage('Beklager, men det er for øyeblikket ' \
-                        'svært stor pågang på denne tjenesten. ' \
-                        'Vennligst prøv igjen senere.')
-
+                      'svært stor pågang på denne tjenesten. ' \
+                      'Vennligst prøv igjen senere.')
+        
         self.high_load_warning = w._generate()
         
         # Initialize the base class.
         
         SocketServer.ThreadingTCPServer.__init__(self, server_address,
                                                  RequestHandlerClass)
-
+        
         # Create an auto-incremented thread-safe transaction number.
-
+        
         self.__transaction_lock = threading.Condition(threading.Lock())
         self.__transaction_id = 0
         

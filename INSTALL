@@ -2,18 +2,18 @@ Installation Guide for the TUC Transfer Protocol Daemon
 =======================================================
 
 In the following <version> is a generic identifier of the version you
-are installing; you actual package version may be something like
+are installing; your actual package version may be something like
 '0.9.0'.
 
 To install this package (and its scripts), the following should do:
 
 1. Unpack the source distribution.  
 
-       tar xvzf TTPD-0.9.0.tar.gz
+       tar xvzf TTPD-<version>.tar.gz
 
 2. Change to the directory that was created by the above command.
 
-       cd TTPD-0.9.0/
+       cd TTPD-<version>/
 
 3. Build and install the package.  If you want to install it locally
    (in your $HOME directories), the following comamnd should do:
