@@ -123,6 +123,15 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         self.log.exception('Exception occurred during processing ' \
                            'of request from %s (port %d).',
                            client_address[0], client_address[1])
+
+    def log_vitals(self):
+
+        """ Store some vital process information. """
+        
+        self.log.info('PID = %d, log_level = %s, high-load limit = %d.' %
+                      (os.getpid(),
+                       logging.getLevelName(self.log.getEffectiveLevel()),
+                       self.high_load_limit))
         
     def log_init(self):
 
@@ -136,10 +145,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         self.log.info('%s, version %s, initialized.' % (self.server_name,
                                                         __version__))
-        self.log.info('PID = %d, log_level = %s, high-load limit = %d.' %
-                      (os.getpid(),
-                       logging.getLevelName(self.log.getEffectiveLevel()),
-                       self.high_load_limit))
+        self.log_vitals()
         
         interface, port = self.server_address
         if interface == '0':
@@ -156,6 +162,9 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         self.log.info('Reopening log files...')
         self.handler.reopen()
         self.log.info('... done reopening log files.')
+        self.log.info('%s, version %s, re-initialized.' % (self.server_name,
+                                                           __version__))
+        self.log_vitals()
         
     def hangup(self, signum, frame):
         

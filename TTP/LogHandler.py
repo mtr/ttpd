@@ -11,6 +11,7 @@ __version__ = "$Rev$"
 
 import logging
 
+log_line_re_date = '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
 
 class DaemonFileHandler(logging.FileHandler):
 

@@ -1,0 +1,147 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+# $Id$
+""" 
+Program to easily control starting and stopping of TTPD.
+
+The actions include 'start', 'stop', 'restart', and 'store_alerts'
+(the two latter ones are used in conjunction with log rotation).
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+
+import optparse
+import os
+import re
+import signal
+import sys
+
+
+import TTP.Options
+import TTP.LogHandler
+
+executable = 'ttpd'
+
+init_re = re.compile('^%s ttpd INFO TTPD, .+, r?e?-?initialized.$' % \
+                     TTP.LogHandler.log_line_re_date)
+
+pid_re = re.compile('^%s ttpd INFO PID = (?P<pid>\d+), ' % \
+                    TTP.LogHandler.log_line_re_date)
+
+def get_pid(log_file):
+
+    pids = []
+    
+    f = open(log_file, 'r')
+
+    pid_next = False
+    
+    for line in f:
+        if pid_next:
+            m = pid_re.match(line)
+            if m:
+                pids.append(m.group('pid'))
+                pid_next = False
+        else:
+            if init_re.search(line):
+                pid_next = True
+                
+    f.close()
+    
+    return pids[-1]
+
+def main():
+    
+    """ Module mainline (for standalone execution). """
+    
+    parser = optparse.OptionParser(version = '%%prog version %s' %
+                                   (__version__))
+
+    option_list = TTP.Options.common_options + TTP.Options.ttpd_options
+    
+    TTP.Options.set_default(option_list,
+                            '--log-file', './ttpd.log')
+    TTP.Options.set_default(option_list,
+                            '--path-to-tuc', 'ttpd')
+
+    for option, description in option_list:
+        TTP.Options.update_help(description)
+        parser.add_option(*option, **description)
+                       
+    parser.add_option(*['-o', '--old-log-file'],
+                      **{'dest': 'old_log_file',
+                         'default': None,
+                         'metavar': 'FILE',
+                         'help': 'location of the old log FILE, used to ' \
+                         'retrieve the PID of the current process, when ' \
+                         'restarting after a file has been moved ' \
+                         '(log rotated)'})
+                      
+    options, args = parser.parse_args()
+    
+    commands = ['start', 'stop', 'restart', 'store_alerts']
+    
+    actions = [x for x in args if x in commands]
+    
+    if len(actions) != 1:
+        print 'You must supply one argument for what action to take.'
+        sys.exit(1)
+    else:
+        action = actions[0]
+    
+    # Expand the any paths and make them absolute.
+    
+    options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
+    
+    if not options.old_log_file:
+        options.old_log_file = options.log_file
+    else:
+        options.old_log_file = \
+                             os.path.abspath(os.path.expanduser(options.old_log_file))
+    
+    if not os.access(options.log_file, os.F_OK | os.R_OK):
+        print "You do not have access to read '%s'." % (options.log_file)
+
+    verbs = {'start': ('start', 'Process started'),
+             'restart': ('restart', 'Process restarted', signal.SIGHUP),
+             'store_alerts': ('store alerts', 'Alerts stored', signal.SIGUSR1),
+             'stop': ('stop', 'Process stopped', signal.SIGINT)}
+    
+    if action in ['stop', 'restart', 'store_alerts']:
+        
+        pid = int(get_pid(options.old_log_file))
+        
+        print 'Will attempt to %s ttpd with pid = %d...' % (verbs[action][0],
+                                                            pid)
+        try:
+            os.kill(pid, verbs[action][2])
+        except OSError, reason:
+            print 'Sorry, but the attempt ended with the error, "%s".' % reason
+        print verbs[action][1]
+        
+    if action == 'start':
+
+        exec_file = os.path.abspath(os.path.expanduser(executable))
+        
+        flags = ['%s=%s' % (x[0][1], getattr(options, x[1]['dest']))
+                 for x in option_list if hasattr(options, x[1]['dest']) and \
+                 x[1]['default'] != getattr(options, x[1]['dest'])]
+        
+        print 'Will attempt to %s %s with flags %s' % (verbs[action][0],
+                                                       exec_file,
+                                                       ' '.join(flags))
+        try:
+            os.system('%s %s' % (exec_file, ' '.join(flags)))
+        except OSError, reason:
+            print 'Sorry, but the attempt ended with the error, "%s".' % reason
+        print verbs[action][1]
+        
+    return
+
+
+if __name__ == "__main__":
+    main()

@@ -26,6 +26,7 @@ import logging
 import socket
 
 import TTP.Message
+import TTP.LogHandler
 
 # The following values are only defaults and may be overridden in the
 # constructor call to TUCAlertDaemon.
@@ -217,12 +218,13 @@ class GeneralThreadingScheduler(threading.Thread):
 
 class TUCAlertDaemon(object):
     
-    log_line_re = re.compile('(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ' \
+    log_line_re = re.compile('%s ' \
                              '%s CRITICAL ' \
                              '(?P<command>\S+) ' \
                              '\((?P<id>\d+),? ?' \
                              '(?P<moment>\d+.\d+|),? ?(?P<ext_id>\w*),? ?' \
-                             '"?(?P<message>.*?)"?\)' % (LOG_CHANNEL))
+                             '"?(?P<message>.*?)"?\)' % \
+                             (TTP.LogHandler.log_line_re_date, LOG_CHANNEL))
     
     # Long format: 'COMMAND (id, moment, ext_id, "message")'.
     #
