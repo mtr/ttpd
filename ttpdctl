@@ -107,16 +107,16 @@ def main():
         options.old_log_file = \
                              os.path.abspath(os.path.expanduser(options.old_log_file))
     
-    if not os.access(options.log_file, os.F_OK | os.R_OK):
-        print "You do not have access to read '%s'." % (options.log_file)
-
     verbs = {'start': ('start', 'Process started'),
              'restart': ('restart', 'Process restarted', signal.SIGHUP),
              'store_alerts': ('store alerts', 'Alerts stored', signal.SIGUSR1),
              'stop': ('stop', 'Process stopped', signal.SIGINT)}
     
     if action in ['stop', 'restart', 'store_alerts']:
-        
+
+        if not os.access(options.log_file, os.F_OK | os.R_OK):
+            print "You do not have access to read '%s'." % (options.log_file)
+            
         pid = int(get_pid(options.old_log_file))
         
         print 'Will attempt to %s ttpd with pid = %d...' % (verbs[action][0],
@@ -141,6 +141,8 @@ def main():
             if os.environ['PATH']:
                 paths += os.environ['PATH'].split(':')
 
+            print paths
+            
         for path in paths:
             test_path = os.path.join(path, executable)
             if os.access(test_path, os.F_OK | os.X_OK):
