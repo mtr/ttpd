@@ -16,7 +16,7 @@ import cStringIO
 import re
 import xml.sax
 
-import TTP
+import TTP.Message
 import EncapsulateTUC
 
 
@@ -128,7 +128,7 @@ class Handler(BaseHandler):
             #self.rfile.close()
             #self.wfile.close()
 
-            ack = TTP.MessageAck()
+            ack = TTP.Message.MessageAck()
             ack.MxHead.TransID = meta.MxHead.TransID
             
             self.send(ack)

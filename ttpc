@@ -1,8 +1,12 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-
 """ 
 $Id$
+
+TUC Transfer Protocol Client (TTPC).
+
+The TTPC makes it easy to test the TTPD and to create interfaces that
+interacts with the TTPD.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
@@ -18,9 +22,9 @@ import signal
 import sys
 import time
 
-import TTP
-#import TTPHandler
-#import TTPServer
+import TTP.Handler
+import TTP.Message
+import TTP.Server
 
 
 def parse_command_line():
@@ -111,13 +115,13 @@ def main():
     if options.listen_mode:
 
         # Create a server which will use a TUC Transfer Protocol Handler.
-    
-        server = TTPServer.BaseTTPThreadingTCPServer((options.ip_address,
-                                                      options.port),
-                                                     TTPHandler.BaseTTPHandler,
-                                                     options.log_file,
-                                                     options.log_level,
-                                                     options.socket_queue_size)
+        
+        server = TTP.Server.BaseThreadingTCPServer((options.ip_address,
+                                                    options.port),
+                                                   TTP.Handler.BaseHandler,
+                                                   options.log_file,
+                                                   options.log_level,
+                                                   options.socket_queue_size)
         
         # In Python, when the `signal' module is available, interrupts
         # always go to the main thread.
@@ -133,12 +137,19 @@ def main():
 
         server.serve_forever()
     
-    m = TTP.MessageRequest()
+    m = TTP.Message.MessageRequest()
     m.MxHead.TransID = 'LINGSMSOUT'
 
     if options.test_mode:
-        f = open(options.input_file, 'r')
+
+        if not os.access(options.tuc_command, os.R_OK):
+            print "You have to supply a path to a readable " \
+                  "test-input file.\n" \
+                  "The current value, '%s', is not a readable file." \
+                  % (options.input_file)
+            sys.exit(1)
             
+        f = open(options.input_file, 'r')
         i = 0
         for line in f:
             

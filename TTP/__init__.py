@@ -10,12 +10,11 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-from _TTP import *
-
 __all__ = [
     'EncapsulateTUC',
     'Handler',
     'LogHandler',
+    'Message',
     'Server',
     'TUCThread',
     'ThreadPool',

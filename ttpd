@@ -21,11 +21,8 @@ import locale
 import logging
 import optparse
 import os
-import re
 import signal
 import sys
-import threading
-import time
 
 import TTP.Server
 import TTP.Handler
@@ -163,9 +160,14 @@ def main():
     
     options.tuc_command = \
                         os.path.abspath(os.path.expanduser(options.tuc_command))
-
+    if not os.access(options.tuc_command, os.X_OK):
+        print "You have to supply a path to an executable TUC file.\n" \
+              "The current value, '%s', is not an executable." \
+              % (options.tuc_command)
+        sys.exit(1)
+    
     if options.daemon:
-
+        
         # Daemonize the server.  This will put the server (to be
         # started) in the background and will give back the controll
         # to the process that executed this script.

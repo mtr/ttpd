@@ -4,6 +4,11 @@
 """ 
 $Id$
 
+TUC Transfer Protocol socket server implementations.
+
+These servers are designed to be used with connection handlers (see
+the Handler module) supplied as an argument to the constructor.
+
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
@@ -19,13 +24,19 @@ import sys
 import xml.sax
 
 import EncapsulateTUC                   # For request-type constants.
-import TTP
 import LogHandler
+import Message
 import TUCThread
 import tad
 
+# FIXME:  Actually send things to remote server (don't use netcat).
 
 class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
+
+    """ A Minimal Threading TCP TTP Server.
+
+    Servers instatiated from this class will be well suited for
+    creating simple protocol testing interfaces. """
     
     # Allow the server to reuse its address (no need to wait for a
     # timeout).
@@ -63,7 +74,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
 
         # Initialize the XML parser.
         
-        self.xml_handler = TTP.XML2Message()
+        self.xml_handler = Message.XML2Message()
         
         self.xml_error_handler = xml.sax.ErrorHandler()
         
@@ -139,6 +150,13 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
 
 class ThreadingTCPServer(BaseThreadingTCPServer):
+
+    """ A Full Threading TCP TTP Server.
+
+    In addition to the features of servers instantiated from its base
+    class, servers of this kind features support for running a pool of
+    TUC sub-processes and an instance of the TUC Alert Daemon
+    (TAD). """
     
     log_channel = 'ttpd'
     server_name = 'TTPD'
@@ -156,9 +174,9 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
                                            request_queue_size)
 
         # Store the remote server address.
-
+        
         self.remote_server_address = remote_server_address
-
+        
         self.log.info('Remote server is %s:%d' %
                       (self.remote_server_address))
         
