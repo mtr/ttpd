@@ -131,7 +131,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         self.log.info('%s, version %s, initialized.' % (self.server_name,
                                                         __version__))
-        self.log.info('PID = %d, log_level = %s, high-load limit = %d' %
+        self.log.info('PID = %d, log_level = %s, high-load limit = %d.' %
                       (os.getpid(),
                        logging.getLevelName(self.log.getEffectiveLevel()),
                        self.high_load_limit))

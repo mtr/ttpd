@@ -52,12 +52,17 @@ def parse_command_line():
                       help = 'listen for connections from clients on PORT;' \
                       'the default is 2005.', type = 'int', default = 2005,
                       metavar = 'PORT')
-
+    
+    parser.add_option('-Q', '--high-load-limit', dest='high_load_limit',
+                      help='maximum number of concurrently running threads; ' \
+                      'the default is 10', type='int', default=10,
+                      metavar='SIZE')
+    
     parser.add_option('-q', '--socket-queue-size', dest = 'socket_queue_size',
                       help = 'the SIZE of the socket queue; the default ' \
                       'is 5', type = 'int', default = 5,
                       metavar = 'SIZE')
-
+    
     parser.add_option('-l', '--listen-mode', dest = 'listen_mode',
                       help = 'Listen for inbound connections',
                       action = 'store_true', default = False)
@@ -137,6 +142,7 @@ def run_listening_server(options):
                                                TTP.Handler.BaseHandler,
                                                options.log_file,
                                                options.log_level,
+                                               options.high_load_limit,
                                                options.socket_queue_size)
 
     # In Python, when the `signal' module is available, interrupts
