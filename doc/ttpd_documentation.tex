@@ -22,6 +22,7 @@
 \usepackage{varioref}
 \usepackage{color}
 \usepackage{booktabs}
+\usepackage{verbatim}
 
 \usepackage{graphics}
 \usepackage[dvips]{graphicx}
@@ -71,6 +72,7 @@
 \acrodef{TTPD}{TUC Transfer Protocol Daemon}
 \acrodef{TUC}{The Understanding Computer}
 \acrodef{SMS}{Short Message Service}
+\acrodef{API}{application program interface}
 
 \title{TUC Transfer Protocol Daemon \\ \textit{\&} \\ TUC Alert
   Daemon: \\[2em] System Documentation}
@@ -101,8 +103,9 @@
 \label{cha:abstract}
 
 This document provides an overview of both the \coal{TTPD} and the
-\coal{TAD} software.
-
+\coal{TAD} software.  The software package contains two programs,
+named \code{ttpd} and \code{ttpc}.  These programs use a common
+\coal{API}, which is also documented herein.
 
 \mainmatter
 
@@ -214,6 +217,32 @@ longer delay than when serving single requests, depending both on
 \coa{CPU} and \coa{I/O} intensity).
 
 
+\chapter{Program Usage}
+\label{cha:program-usage}
+
+The programs \code{ttpd} (the \co{daemon}) and \code{ttpc} (the client
+interface application) both contain some built-in help information
+that is always available from the command line.  All you need to do is
+to supply one of the flags \code{--help} or \code{-h} to the program
+on the command line.
+
+\section{TUC Transfer Protocol Daemon}
+\label{sec:tuc-transf-prot-1}
+
+The help menu in \code{ttpd} looks like:
+
+{\small
+\verbatiminput{usage_ttpd.txt}
+}
+
+\section{TUC Transfer Protocol Client Application}
+\label{sec:tuc-transf-prot-2}
+
+The help menu in \code{ttpc} looks like:
+
+{\small
+\verbatiminput{usage_ttpc.txt}
+}
 
 
 %\input{introduction}
@@ -223,7 +252,7 @@ longer delay than when serving single requests, depending both on
 
 \appendix
 
-\chapter{Module API}
+\chapter{Module Application Program Interface}
 
 \input{include_src}
 

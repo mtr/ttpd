@@ -1,3 +1,4 @@
+\acs{API}&\acl{API}\\
 \acs{CPU}&\acl{CPU}\\
 \acs{I/O}&\acl{I/O}\\
 \acs{SMS}&\acl{SMS}\\

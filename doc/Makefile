@@ -19,7 +19,7 @@ PS_DOCS = ttpd_documentation.ps
 INDICES = ttpd_documentation.dnd ttpd_documentation.snd
 BIBS = ttpd_documentation.bbl #bu1.bbl bu2.bbl
 
-docs: figures srcdoc dvi $(BIBS) $(INDICES)
+docs: figures helpdoc srcdoc dvi $(BIBS) $(INDICES)
 
 %.dnd: %.ddx
 	./mkalist.sh alist.txt; \
@@ -43,6 +43,9 @@ dvi: ttpd_documentation.tex
 
 srcdoc:
 	./mksrcdoc.sh
+
+helpdoc:
+	./mkhelpdoc.sh
 
 %.ps: %.dvi
 	$(DVIPS) -o $@ $<
