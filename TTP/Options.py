@@ -184,17 +184,17 @@ def main():
     
     import optparse
     
-    parser_b = optparse.OptionParser(version = '%%prog test_b')
-
+    parser = optparse.OptionParser(version = '%%prog test_b')
+    
     options = common_options + ttpc_options
     
     set_default(options, '--port', 2005),
-
+    
     for option, description in options:
         update_help(description)
-        parser_b.add_option(*option, **description)
+        parser.add_option(*option, **description)
         
-    options, args = parser_b.parse_args()
+    options, args = parser.parse_args()
     
     return
 

@@ -14,11 +14,12 @@ __author__ = "Martin Thorsen Ranang"
 import Queue
 import SocketServer
 import cStringIO
+import htmlentitydefs
+import random
 import re
+import socket
 import time
 import xml.sax
-#import xml.sax.saxutils
-import htmlentitydefs
 
 import Message
 import EncapsulateTUC
@@ -108,6 +109,12 @@ class Handler(BaseHandler):
     command = 'avbestill'
     command_misspellings = [command[:i + 1] for i in range(1,len(command))]
 
+    # Set some time values for attempts to resend messages to the
+    # remote server.  Time values are given in seconds.
+    
+    resend_timeout = 15 * 60
+    resend_delay_range = [60 * m for m in [1, 3]]
+    
     def setup(self):
         
         """ Setup some thread-specific resources before handling the
@@ -126,7 +133,91 @@ class Handler(BaseHandler):
                                           '(?P<ext_id>[0-9a-z]+)' %
                                           '|'.join(self.command_misspellings),
                                           re.IGNORECASE)
+
+    def reply_sms(self, ans, answer, cost, meta):
         
+        # The maximum length of an SMS message is 160 tokens.
+        
+        if len(answer) > 160:
+            answer = answer[:160]
+
+            # If the answer had to be cut down to 160 tokens, it
+            # should be free, unless it was an alert-related
+            # message.
+
+            if cost != 'VARSEL':
+                cost == 'FREE'
+                
+        ans._setMessage(answer)
+
+        ans.MxHead.ORName = str(meta.MxHead.ORName)
+        ans.MxHead.Aux.Billing = self.billings[cost]
+
+        # If necessary, try multiple times to deliver the answer,
+        # but we might time out before it's sent.
+        
+        sent = False
+        retries = 0
+        resend_delay = 0
+        
+        while not sent and (resend_delay < self.resend_timeout):
+            try:
+                Message.communicate(ans,
+                                    self.server.remote_server_address,
+                                    self.xml_parser)
+                
+            except socket.error, desc:
+                
+                delta = random.randint(*self.resend_delay_range)
+                
+                if (resend_delay + delta) > self.resend_timeout:
+                    delta = self.resend_timeout - resend_delay
+                    
+                resend_delay += delta
+
+                # Sleep a little while and try again.
+
+                time.sleep(delta)
+
+                retries += 1
+
+                self.server.log.debug('Could not connect to ' \
+                                      'remote server %s: reason: %s. ' \
+                                      'Will retry in %d seconds' %
+                                      (self.server.remote_server_address,
+                                       desc, delta))
+                
+            else:
+                sent = True
+                
+        if not sent:
+            self.server.log.error('Could not connect to ' \
+                                  'remote server %s: reason: %s. ' \
+                                  'Even tried %d resends.' %
+                                  (self.server.remote_server_address,
+                                   desc, retries))
+            
+            answer = 'Fikk ikke sendt svaret. ' \
+                     'Det opprinnelige svaret var "%s"' % (answer)
+            cost = 'FREE'
+
+        return answer, cost
+
+    def reply_web(self, ans, pre_answer, answer):
+        
+        # A Web-ish client.  Send the answer back to the same socket
+        # we received the request from.
+
+        tuc_ans = Message.Message()
+
+        tuc_ans.TUCAns.Technical = pre_answer,
+        tuc_ans.TUCAns.NaturalLanguage = answer
+
+        ans._setMessage('<?xml version="1.0" encoding="iso-8859-1"?>' \
+                        '%s' % (tuc_ans._xmlify()))
+
+        Message.send(self.connection, ans)
+
     def handle(self):
         
         """ Handles a query received by the socket server.
@@ -206,6 +297,8 @@ class Handler(BaseHandler):
                 
                 id = (id * 97) + 1003
                 
+                # Convert the decimal ID into a base 36.
+                
                 ext_id = num_hash.num2alpha(id)
                 
                 answer = 'Du vil bli varslet %s. %s %s' % \
@@ -239,62 +332,26 @@ class Handler(BaseHandler):
         # Send the answer to the client.
         
         ans = Message.MessageResult()
-        ans.MxHead.TransId = 'LINGSMSOUT' #ans.MxHead.TransId    #meta.MxHead.TransId
+        ans.MxHead.TransId = 'LINGSMSOUT'
         
         # Again, if it is an SMS request we're handling, take special
         # care.
         
         if is_sms_request:
             
-            # The maximum length of an SMS message is 160 tokens.
+            answer, cost = self.reply_sms(ans, answer, cost, meta)
+            log_id = 'SMS'
             
-            if len(answer) > 160:
-                answer = answer[:160]
-                
-                # If the answer had to be cut down to 160 tokens, it
-                # should be free, unless it was an alert-related
-                # message.
-                
-                if cost != 'VARSEL':
-                    cost == 'FREE'
-                    
-            ans._setMessage(answer)
-            
-            ans.MxHead.ORName = str(meta.MxHead.ORName)
-            ans.MxHead.Aux.Billing = self.billings[cost]
-            
-            try:
-                Message.communicate(ans,
-                                    self.server.remote_server_address,
-                                    self.xml_parser)
-            except:
-                
-                self.server.log.error("Couldn't connect to " \
-                                      "remote server (%s, %s)." % \
-                                      (self.server.remote_server_address))
-                answer = 'Fikk ikke sendt svaret. ' \
-                         'Det opprinnelige svaret var %s' % (answer)
-                cost = 'FREE'
         else:
-
-            # A Web-ish client.  Send the answer back to the same
-            # socket we received the request from.
             
-            tuc_ans = Message.Message()
-            
-            tuc_ans.TUCAns.Technical = pre_answer,
-            tuc_ans.TUCAns.NaturalLanguage = answer
-            
-            ans._setMessage('<?xml version="1.0" encoding="iso-8859-1"?>' \
-                            '%s' % (tuc_ans._xmlify()))
-            
-            Message.send(self.connection, ans)
+            self.reply_web(ans, pre_answer, answer)
+            log_id = 'WEB'
             
         # Log any interesting information.
         
-        self.server.log.info('billing =%d\n%s %s\n"%s"\n"%s"\n-'
-                             % (self.billings[cost], cost, ext_id, body,
-                                answer))
+        self.server.log.info('billing = %d\n%s %s %s\n"%s"\n"%s"\n-' %
+                             (self.billings[cost], log_id, cost,
+                              ext_id, body, answer))
 
         # Close the socket.
         
