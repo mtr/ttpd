@@ -1,0 +1,154 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+"""
+
+$Id: TUCThread.py 78 2004-08-17 14:11:07Z mtr $
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "$Rev: 78 $"
+
+
+import EncapsulateTUC
+import ThreadPool
+import Queue
+import time
+
+
+class TUCThreadPool(ThreadPool.ThreadPool):
+
+    """ A thread pool class tailored to the needs of TTPD.
+
+    One of the additional features of this class is the log member
+    variable. """
+
+    def __init__(self, num_threads, command = './busestuc.sav',
+                 thread_class = ThreadPool.ThreadPoolThread,
+                 log = None):
+        
+        """ Intialize a new class instance. """
+
+        self.log = log
+        self.command = command
+
+        ThreadPool.ThreadPool.__init__(self, num_threads, thread_class)
+               
+
+class TUCThread(ThreadPool.ThreadPoolThread):
+    
+    """ A pooled thread class to process TUC queries. """
+    
+    MAGIC = '!#%!MTR!%#!'
+    #CMD = './nrl.sav'
+    
+    def __init__(self, pool):
+        
+        """ Initialize thread instance and logging facilities. """
+        
+        self.log = pool.log
+        
+        # Perform superclass initialization.
+        
+        ThreadPool.ThreadPoolThread.__init__(self, pool)
+        
+    def encapsulate(self):
+
+        """ Perform a TUC subprocess encapsulation. """
+        
+        self.__ep = EncapsulateTUC.EncapsulateTUC(self.pool.command,
+                                                  self.MAGIC, self.log)
+        
+        # Run the encapsulated process.
+        
+        self.__ep.run()
+        
+    def watchdog(self):
+        
+        dead = self.__ep.subprocess.poll()
+        
+        if dead != -1:
+            self.log.error("TUC process with PID = %d died " \
+                           "unexpectedly with exit status '%d'."
+                           % (self.__ep.subprocess.pid, dead))
+            
+            del self.__ep
+            
+            # Encapsulate a new TUC process.
+            
+            self.encapsulate()
+
+    def process(self, task):
+
+        # Process the incoming task and place the result in the
+        # callback queue.
+        
+        data, callback = task
+        type, query = data
+        
+        callback.put(self.__ep.process(data))
+        
+        if type == EncapsulateTUC.TYPE_SHUTDOWN:
+            
+            # A shutdown command was recieved.
+            
+            self.go_away()
+            
+    def run(self):
+        
+        # Encapsulate a TUC process.
+        
+        self.encapsulate()
+        
+        while self.is_dying == False:
+
+            # Perform some sub-process watch-dogging.
+            
+            self.watchdog()
+            
+            # Check the next task in the pool.
+            
+            task = self.pool.get_next_task()
+            
+            if task is None:
+
+                # If there's nothing to do, take a nap.
+                
+                time.sleep(self.thread_sleep_time)
+            else:
+
+                # Process the incoming task.
+                
+                self.process(task)
+                
+    
+def main():
+    """
+    main()
+    Module mainline (for standalone execution)
+    """
+    pool = ThreadPool.ThreadPool(3, TUCThread)
+    result = Queue.Queue(1)
+    
+    # Insert tasks into the queue and let them run.
+    
+    #L = ['Når går bussen fra nardo til byen?', 'Hva er klokka?'] * 10
+    L = ['Hva er klokka?']
+
+    print 'waiting...'
+    time.sleep(10)
+    print 'starting...'
+    
+    pool.queue_task(L[0], result)
+    
+    # When all tasks are finished, allow the threads to terminate.
+    
+    print result.get()
+    
+    pool.join_all()
+    
+    return
+
+
+if __name__ == "__main__":
+    main ()
