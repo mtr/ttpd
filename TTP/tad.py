@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
-
 The TUC Alert Daemon.
 
 A daemon responsible for handling alerts according to the TUC Alert

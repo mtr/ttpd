@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-
-""" 
-$Id$
-
+# $Id$
+"""
 TUC Transfer Protocol socket server implementations.
 
 These servers are designed to be used with connection handlers (see

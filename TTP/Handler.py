@@ -1,8 +1,9 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-
-""" 
-$Id$
+# $Id$
+"""
+Socket server handler implementation for the TUC Transfer Protocol
+(TTP).
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
@@ -24,42 +25,18 @@ import num_hash
 
 class BaseHandler(SocketServer.StreamRequestHandler):
 
-    p_msg_re = re.compile('^(?P<head><\?xml .*</MxHead>)(?P<body>.*)$',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
-
-    # FIXME:  Rename to receive?
-    
-    def handle_request(self, input):
-        
-        data_len = input.read(10)
-        data = input.read(int(data_len))
-        
-        m = self.p_msg_re.match(data)
-        if m:
-            head, body = m.groups()
-            
-        sinput = cStringIO.StringIO(head)
-        inpsrc = xml.sax.InputSource()
-        inpsrc.setByteStream(sinput)
-        
-        self.server.xml_parser.parse(inpsrc)
-        input.close()
-        meta = self.server.xml_handler.data
-        
-        return meta, body
-
-    def send(self, message):
-
-        """ Send a Message. """
-
-        self.wfile.write(message._generate())
-        
     def handle(self):
-
-        meta, body = self.handle_request(self.rfile)
         
-        self.server.log.info('%s\n%s' % (meta, body))
+        meta, body = TTP.Message.receive(self.connection,
+                                         self.server.xml_parser)
+        
+        self.server.log.info('\n%s\n%s' % (meta, body))
+        
+        ack = TTP.Message.MessageAck()
+        ack.MxHead.TransID = meta.MxHead.TransID
 
+        TTP.Message.send(self.connection, ack)
+        
     def escape(self, data):
 
         """ Replace special characters with escaped equivalents. """
@@ -67,7 +44,7 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         data = data.replace('"', '\\"')
 
         return data
-
+    
     def unescape(self, data):
         
         """ Replace escaped special characters with unescaped
@@ -122,10 +99,13 @@ class Handler(BaseHandler):
         
         self.server.log.debug('Connection from %s:%d.' %
                               (self.client_address[0], self.client_address[1]))
-        
-        meta, body = self.handle_request(self.rfile)
 
-        print meta, body
+        # Retrieve incoming request.
+        
+        meta, body = TTP.Message.receive(self.connection,
+                                         self.server.xml_parser)
+        
+        #print meta, body
         if meta.MxHead.TransID == 'LINGSMSOUT':
             #self.rfile.close()
             #self.wfile.close()
@@ -133,7 +113,7 @@ class Handler(BaseHandler):
             ack = TTP.Message.MessageAck()
             ack.MxHead.TransID = meta.MxHead.TransID
             
-            self.send(ack)
+            TTP.Message.send(self.connection, ack)
             
         method, args = self.preprocess(body)
         
@@ -166,7 +146,14 @@ class Handler(BaseHandler):
             
         # Send the answer to the client.
         
-        self.wfile.write(answer)
+        ans = TTP.Message.MessageAck()
+        ans.MxHead.TransID = meta.MxHead.TransID
+        ans._setMessage(answer)
+
+        TTP.Message.communicate(ans, self.server.remote_server_address,
+                                self.server.xml_parser)
+        
+        #self.wfile.write(answer)
         
         # Log any interesting information.
         

@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
+Classes to encapsulate a sub-process and communicate with it.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
@@ -65,7 +65,7 @@ class EncapsulateProcess:
         
         """ Perform non-blocking read until magic is reached. """
         
-        currtime = time.time()
+        started = time.time()
         
         data = ''
         
@@ -90,7 +90,7 @@ class EncapsulateProcess:
                     return (0, data)
                 
                 elif timeout:
-                    if (time.time() - currtime) > timeout:
+                    if (time.time() - started) > timeout:
                         return (1, data) # Timeout -> may be more data.
                     
 

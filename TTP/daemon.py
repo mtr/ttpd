@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
-
 A function that daemonifies its caller process.
 
 This script creates a daemon in a standard Unix way.

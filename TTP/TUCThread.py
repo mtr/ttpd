@@ -1,14 +1,15 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
+A class of worker threads that will encapsulate and controll a TUC
+process.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
-
+__author__ = "Martin Thorsen Ranang"
 
 import EncapsulateTUC
 import ThreadPool

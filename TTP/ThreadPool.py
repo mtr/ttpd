@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
+A thread pool implementation.
 
 Based on a generic-programming thread pool implementation written by
 Tim Lesher 2003-09-24.

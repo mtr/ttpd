@@ -1,9 +1,7 @@
 #! /usr/bin/python -OOtt
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
-
 TUC Transfer Protocol Daemon (TTPD).
 
 This is a socket server responsible for dispatching requests from Web

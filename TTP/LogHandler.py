@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-$Id$
+A log file handler to be used by daemon processes.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """

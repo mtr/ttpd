@@ -1,8 +1,7 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-""" 
-$Id$
-
+# $Id$
+"""
 TUC Transfer Protocol Client (TTPC).
 
 The TTPC makes it easy to test the TTPD and to create interfaces that
@@ -21,6 +20,7 @@ import os
 import signal
 import sys
 import time
+import xml.sax
 
 import TTP.Handler
 import TTP.Message
@@ -35,6 +35,11 @@ def parse_command_line():
     
     parser = optparse.OptionParser(usage = '%prog [options] [request]',
                                    version = '%%prog %s' % (__version__))
+
+    parser.add_option('-I', '--transaction_id', dest = 'trans_id',
+                      help = 'the TRANS_ID to use when communicating with ' \
+                      'a remote server. Default is LINGSMSOUT.',
+                      metavar = 'TRANS_ID', default = 'LINGSMSOUT')
     
     parser.add_option('-a', '--ip-address', dest = 'ip_address',
                       help = 'the ADDRESS of the interface on which ' \
@@ -100,11 +105,10 @@ def parse_command_line():
     
     return options, args
 
-
-def send(msg, host, port):
+# def send(msg, host, port):
     
-    return commands.getoutput("echo -n '%s' | netcat -q 10 %s %s"
-                              % (msg, host, port))
+#     return commands.getoutput("echo -n '%s' | netcat -q 10 %s %s"
+#                               % (msg, host, port))
     
 def main():
     
@@ -129,47 +133,55 @@ def main():
         # Register a signal handler for the hang-up signal.
         
         signal.signal(signal.SIGHUP, server.hangup)
-
+        
         # Register signal handlers for terminating signals.
-
+        
         signal.signal(signal.SIGINT, server.shutdown)
         signal.signal(signal.SIGTERM, server.shutdown)
-
+        
         server.serve_forever()
     
     m = TTP.Message.MessageRequest()
-    m.MxHead.TransID = 'LINGSMSOUT'
+    m.MxHead.TransID = options.trans_id
 
+    parser = xml.sax.make_parser()
+    parser.setContentHandler(TTP.Message.XML2Message())
+    parser.setErrorHandler(xml.sax.ErrorHandler())
+    
     if options.test_mode:
-
+        
         if not os.access(options.input_file, os.R_OK):
             print "You have to supply a path to a readable " \
                   "test-input file.\n" \
                   "The current value, '%s', is not a readable file." \
                   % (options.input_file)
             sys.exit(1)
-            
+
+        
         f = open(options.input_file, 'r')
-        i = 0
-        for line in f:
+        
+        for i, line in enumerate(f):
             
             m.MxHead.MsgId = i
+            m._setMessage(line)
             
-            output = send(m._generate(line), options.ip_address, options.port)
+            meta, body = TTP.Message.communicate(m, (options.ip_address,
+                                                     options.port), parser)
             
-            print '%d: %s' % (i, output)
-            time.sleep(.5)
-            # time.sleep(2) Not necessary with only one client.
-            i += 1
-        
-        f.close()
+            print '%d: %s\n%s' % (i, meta, body)
 
+            time.sleep(.5)
+            
+        f.close()
+        
     else:
         m.MxHead.MsgId = -1
-
-        output = send(m._generate(args[0]), options.ip_address, options.port)
+        m._setMessage(args[0])
         
-        print '%s' % (output)
+        meta, body = TTP.Message.communicate(m, (options.ip_address,
+                                                 options.port), parser)
+        
+        print '%s\n%s' % (meta, body)
                 
     return
 

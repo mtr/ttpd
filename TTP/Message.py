@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
-
-""" 
-$Id$
-
+# $Id$
+"""
 An implementation of the TUC Transfer Protocol.
 
 This module contains a TTP message class and an XML parser that
@@ -18,15 +16,20 @@ __author__ = "Martin Thorsen Ranang"
 import cStringIO
 import Queue
 import re
+import socket
 import sys
+import time
 import xml.sax
-import copy
+#import copy
 
 __all__ = ['Message',
            'MessageAck',
            'MessageRequest',
            'MessageResult',
            'XML2Message']
+
+msg_re = re.compile('^(?P<head><\?xml .*</MxHead>)(?P<body>.*)$',
+                    re.MULTILINE | re.DOTALL | re.IGNORECASE)
 
 class Hierarchy(object):
     
@@ -110,6 +113,7 @@ class Message(Hierarchy):
         Hierarchy.__init__(self)
         
         self._class = Message
+        self._message = ''
         
         if meta:
             self.__setstate__(meta.__getstate__())
@@ -129,13 +133,22 @@ class Message(Hierarchy):
                 obj = ''                # None attributes becomes ''
             str += '<%s>%s</%s>' % (at, obj, at)
         return str
-   
+
+    def _setMessage(self, message):
+
+        """ Set the textual data of this Message."""
+        
+        self._message = message
+        
     def _generate(self, data = ''):
         
         """ Generate a string ready to be sent over a network
         connection, accroding to the protocol specifications by
         eSolutions. """
-        
+
+        if not data:
+            data = self._message
+            
         self.MxHead.Len = len(data)
         
         tmp = '<?xml version="1.0"?>%s%s' % (self._xmlify(), data)
@@ -227,6 +240,79 @@ class XML2Message(xml.sax.ContentHandler):
         if self.set == False:
             self.set_current(None)
         self.stack.pop()
+
+
+def _recv(connection, buf_size, timeout = None):
+    
+    """ Read bufsize bytes or error on timeout. """
+    
+    started = time.time()
+    buf = ''
+    
+    while (buf_size - len(buf)) > 0 or \
+              (timeout and ((time.time() - started) > timeout)):
+        buf += connection.recv(buf_size - len(buf))
+        
+    return buf
+
+
+def receive(connection, parser = None, timeout = False):
+    
+    """ Receive a message from a socket connection. """
+
+    preamble_len = 10
+    len_data = _recv(connection, preamble_len, timeout)
+    
+    data = _recv(connection, int(len_data), timeout)
+    
+    m = msg_re.match(data)
+    if m:
+        head, body = m.groups()
+        
+    sinput = cStringIO.StringIO(head)
+    inpsrc = xml.sax.InputSource()
+    inpsrc.setByteStream(sinput)
+    
+    if not parser:
+        parser = xml.sax.make_parser()
+        parser.setContentHandler(XML2Message())
+        parser.setErrorHandler(xml.sax.ErrorHandler())
+        
+    parser.parse(inpsrc)
+    
+    sinput.close()
+    
+    meta = parser.getContentHandler().data
+    
+    return meta, body
+
+
+def send(connection, message):
+    
+    """ Send a message to the remote address. """
+    
+    connection.send(message._generate())
+
+    
+def connect(remote_address):
+
+    """ Connect to the remote_address. """
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(remote_address)
+    return s
+
+
+def communicate(message, remote_address, parser = None, timeout = False):
+    
+    """ Communicate message and return with the reply. """
+    
+    connection = connect(remote_address)
+    send(connection, message)
+    reply = receive(connection, parser, timeout)
+    connection.close()
+
+    return reply
 
 def main():
     

@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
+# $Id$
 """
-
-$Id$
+Converts numbers from base 10 (decimal) to base 36.
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
