@@ -14,6 +14,8 @@ __author__ = "Martin Thorsen Ranang"
 import sys
 import os
 
+import LogHandler
+
 basename = os.path.basename(sys.argv[0])
 
 common_options = [
@@ -68,8 +70,11 @@ common_options = [
       'default': 'info',
       'metavar': 'LEVEL',
       'help': "the filter LEVEL used when logging; possible values are " \
-      "'debug' < 'info' < 'warning' < 'error' < 'critical'; " \
-      "the default is %(default)s"}),
+      "%(log_levels)s; " \
+      "the default is '%(default)s'" % \
+      {'log_levels':
+       ' < '.join(["'%s'" % x for x in LogHandler.get_log_levels()]),
+       'default': '%(default)s'}}),
     
     (['-f', '--log-file'],
      {'dest': 'log_file',
@@ -114,6 +119,22 @@ ttpd_options = [
       'help': 'don\'t run as a daemon process'}),
     
     ]
+
+ttpdctl_options = [
+    (['-o', '--old-log-file'],
+     {'dest': 'old_log_file',
+      'default': None,
+      'metavar': 'FILE',
+      'help': 'location of the old log FILE, used to ' \
+      'retrieve the PID of the current process, when ' \
+      'restarting after a file has been moved ' \
+      '(e.g., log rotated)'}),
+    (['-e', '--executable'],
+     {'dest': 'executable',
+      'default': 'ttpd',
+      'metavar': 'EXECUTABLE',
+      'help': 'location of the ttpd EXECUTABLE; ' \
+      'the default is %(default)s'})]
 
 ttpc_options = [
     

@@ -23,6 +23,7 @@ import signal
 import sys
 
 import TTP.Handler
+import TTP.LogHandler
 import TTP.Options
 import TTP.Server
 import TTP.daemon
@@ -34,12 +35,7 @@ def run(options):
     """ Setup the server and start the encapsulated-TUC thread
     pool. """
 
-    # Create a mapping between the user-supplied log level string and
-    # the constants define by the logging module.
-    
-    log_levels = dict([(logging.getLevelName(l).lower(), l)
-                       for l in [logging.DEBUG, logging.INFO, logging.WARNING,
-                                 logging.ERROR, logging.CRITICAL]])
+    log_level = TTP.LogHandler.log_levels[options.log_level]
     
     # Create a server which will use a TUC Transfer Protocol Handler.
     
@@ -47,7 +43,7 @@ def run(options):
                                             options.port),
                                            TTP.Handler.Handler,
                                            options.log_file,
-                                           log_levels[options.log_level],
+                                           log_level,
                                            options.high_load_limit,
                                            options.socket_queue_size,
                                            options.tuc_pool_size,

@@ -50,20 +50,6 @@ def get_pid(log_file):
     
     return pids[-1]
 
-local_options = [(['-o', '--old-log-file'],
-                  {'dest': 'old_log_file',
-                   'default': None,
-                   'metavar': 'FILE',
-                   'help': 'location of the old log FILE, used to ' \
-                   'retrieve the PID of the current process, when ' \
-                   'restarting after a file has been moved ' \
-                   '(e.g., log rotated)'}),
-                 (['-e', '--executable'],
-                  {'dest': 'executable',
-                   'default': 'ttpd',
-                   'metavar': 'EXECUTABLE',
-                   'help': 'location of the ttpd EXECUTABLE; ' \
-                   'the default is %(default)s'})]
 
 def main():
     
@@ -81,10 +67,10 @@ def main():
     TTP.Options.set_default(option_list,
                             '--path-to-tuc', 'ttpd')
 
-    for option, description in option_list + local_options:
+    for option, description in option_list + TTP.Options.ttpdctl_options:
         TTP.Options.update_help(description)
         parser.add_option(*option, **description)
-                       
+        
     options, args = parser.parse_args()
     
     commands = ['start', 'stop', 'restart', 'store_alerts']

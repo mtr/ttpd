@@ -346,7 +346,7 @@ def communicate(message, remote_address, parser = None, timeout = False):
     send(connection, message)
     reply = receive(connection, parser, timeout)
     connection.close()
-
+    
     return reply
 
 def main():

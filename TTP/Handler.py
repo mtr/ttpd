@@ -21,8 +21,9 @@ import socket
 import time
 import xml.sax
 
-import Message
 import EncapsulateTUC
+import LogHandler
+import Message
 import num_hash
 
 
@@ -30,7 +31,9 @@ class BaseHandler(SocketServer.StreamRequestHandler):
 
     def setup(self):
         
-        """ Create an XML parser for this handler instance. """
+        """ Create an XML parser for this handler instance.
+        
+        Additionally get this requests transaction number. """
         
         # Call the base class setup method.
         
@@ -46,15 +49,17 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         self.xml_parser = xml.sax.make_parser()
         self.xml_parser.setContentHandler(self.xml_handler)
         self.xml_parser.setErrorHandler(self.xml_error_handler)
+
+        # Get a transaction ID.
+        
+        self.transaction = self.server.get_next_transaction_id()
         
     def handle(self):
         
         meta, body = Message.receive(self.connection, self.xml_parser)
         
-        #if meta.MxHead.Len == 0:
-        #    self.server.log.info('\n%s\n%s' % ('ACK', body))
-        
-        self.server.log.info('\n%s\n%s' % (meta, body))
+        self.server.log.log(LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
+                            self.transaction, meta, body)
         
         ack = Message.MessageAck()
         ack.MxHead.TransId = 'LINGSMSOUT'
@@ -99,7 +104,7 @@ class Handler(BaseHandler):
                 'AVBEST': 2,
                 'AVBEST_WRONG_ID': 2}
     
-    sms_trans_id = 'LINGSMS'
+    sms_trans_id = 'LINGSMS'            # Followed by 'IN' and 'OUT'
     
     service_name = 'TEAM'
     
@@ -162,9 +167,10 @@ class Handler(BaseHandler):
         
         while not sent and (resend_delay < self.resend_timeout):
             try:
-                Message.communicate(ans,
-                                    self.server.remote_server_address,
-                                    self.xml_parser)
+                meta, body = \
+                      Message.communicate(ans,
+                                          self.server.remote_server_address,
+                                          self.xml_parser)
                 
             except socket.error, desc:
                 
@@ -180,22 +186,30 @@ class Handler(BaseHandler):
                 time.sleep(delta)
 
                 retries += 1
-
-                self.server.log.debug('Could not connect to ' \
+                
+                self.server.log.debug('[%0x] Could not connect to ' \
                                       'remote server %s: reason: %s. ' \
-                                      'Will retry in %d seconds' %
-                                      (self.server.remote_server_address,
-                                       desc, delta))
+                                      'Will retry in %d seconds',
+                                      self.transaction,
+                                      self.server.remote_server_address,
+                                      desc, delta)
                 
             else:
                 sent = True
                 
-        if not sent:
-            self.server.log.error('Could not connect to ' \
+        if sent:
+            if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
+                self.server.log.log(LogHandler.PROTOCOL,
+                                    '[%0x] Recieved ACK:\n%s\n%s',
+                                    self.transaction,
+                                    meta, body)
+        else:
+            self.server.log.error('[%0x] Could not connect to ' \
                                   'remote server %s: reason: %s. ' \
-                                  'Even tried %d resends.' %
-                                  (self.server.remote_server_address,
-                                   desc, retries))
+                                  'Even tried %d resends.',
+                                  self.transaction,
+                                  self.server.remote_server_address,
+                                  desc, retries)
             
             answer = 'Fikk ikke sendt svaret. ' \
                      'Det opprinnelige svaret var "%s"' % (answer)
@@ -217,7 +231,7 @@ class Handler(BaseHandler):
                         '%s' % (tuc_ans._xmlify()))
 
         Message.send(self.connection, ans)
-
+        
     def handle(self):
         
         """ Handles a query received by the socket server.
@@ -229,10 +243,11 @@ class Handler(BaseHandler):
         
         Depending on the nature of the TUC results, the appropriate
         action is taken.  If it is an alert canelation, the request
-        will be handled in another method.  """
+        will be handled in another method. """
         
-        self.server.log.debug('Connection from %s:%d.' %
-                              (self.client_address[0], self.client_address[1]))
+        self.server.log.info('[%0x] Connection from %s:%d.',
+                             self.transaction, self.client_address[0],
+                             self.client_address[1])
         
         # Retrieve incoming request.
         
@@ -243,12 +258,16 @@ class Handler(BaseHandler):
         
         if not meta:
             if body:
-                self.server.log.warn('Did not receive complete request ' \
-                                     'from %s: %s', self.client_address, body)
+                self.server.log.warn('[%0x] Did not receive complete ' \
+                                     'request from %s: %s', self.transaction,
+                                     self.client_address, body)
             self.request.close()
             return
 
-        self.server.log.debug('Received package:\n%s\n%s', meta, body)
+        if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
+            self.server.log.log(LogHandler.PROTOCOL,
+                                '[%0x] Received package:\n%s\n%s',
+                                self.transaction, meta, body)
         
         # Remove "dangerous" tokens from the request.
         
@@ -273,7 +292,7 @@ class Handler(BaseHandler):
         
         method, args = self.preprocess(body, is_sms_request)
         
-        self.server.log.debug('"%s"' % body)
+        self.server.log.debug('[%0x] "%s"', self.transaction, body)
         
         # Apply method to args.
         
@@ -302,7 +321,7 @@ class Handler(BaseHandler):
                 ext_id = num_hash.num2alpha(id)
                 
                 answer = 'Du vil bli varslet %s. %s %s' % \
-                         (time.strftime('%X, %x', alert_date),
+                         (time.strftime('%H:%M:%S, %d.%m.%y', alert_date),
                           self.cancel_command_info % ext_id.upper(), answer)
                 
             elif cost == 'AVBEST':
@@ -326,8 +345,8 @@ class Handler(BaseHandler):
         # for internal use.
         
         if cost == 'FREE' and (not answer) or answer[0] == '%':
-            self.server.log.error('"%s"' % answer)
-            answer = 'Forespørselen ble avbrutt.  Vennligst prøv igjen senere.'
+            self.server.log.error('[%0x] "%s"', self.transaction, answer)
+            answer = 'Forespørselen ble avbrutt. Vennligst prøv igjen senere.'
             
         # Send the answer to the client.
         
@@ -347,11 +366,28 @@ class Handler(BaseHandler):
             self.reply_web(ans, pre_answer, answer)
             log_id = 'WEB'
             
-        # Log any interesting information.
+        # Log some interesting information.  Used for billing and
+        # statistics.  The format og the first line is:
+        #
+        # [transaction_id] billing=<price> <interface> (<host>, <TransId>) <W>
+        #
+        # Where <W> signifies what kind of action this was.
         
-        self.server.log.info('billing = %d\n%s %s %s\n"%s"\n"%s"\n-' %
-                             (self.billings[cost], log_id, cost,
-                              ext_id, body, answer))
+        self.server.log.info('[%0x] billing=%d %s (%s, %s) %s' \
+                             '\n%s %s %s\n' \
+                             '"%s"' \
+                             '\n"%s"\n-',
+                             self.transaction,
+                             self.billings[cost],
+                             log_id,
+                             self.client_address[0],
+                             str(meta.MxHead.TransId),
+                             cost,
+                             log_id,
+                             cost,
+                             ext_id,
+                             body,
+                             answer)
 
         # Close the socket.
         
@@ -361,8 +397,6 @@ class Handler(BaseHandler):
 
         """ Parse the result received from TUC. """
 
-        self.server.log.debug('Parsing result: "%s".' % data)
-        
         if data.find(self.result_separator) != -1:
             
             # Split the output from TUC according to its "block
@@ -390,7 +424,8 @@ class Handler(BaseHandler):
             # from TUC as a "simple answer" or an error message (like
             # "% Execution aborted").
             
-            self.server.log.debug('Found no separator.')
+            self.server.log.debug('[%0x] Found no separator.',
+                                  self.transaction)
             
             pre, cost, alert_date, answer = (None, self.prices['-'],
                                              None,
@@ -414,8 +449,8 @@ class Handler(BaseHandler):
         num_id = num_hash.alpha2num(ext_id)
         
         if ((num_id - 1003) % 97):
-            self.server.log.warn('Received non-valid alert ID = "%s"' %
-                                 (ext_id))
+            self.server.log.warn('[%0x] Received non-valid alert ID = "%s"',
+                                 self.transaction, ext_id)
             return ('AVBEST_WRONG_ID', None,
                     'Kan ikke avbestille "%s".' % (ext_id), ext_id)
         else:
@@ -452,17 +487,17 @@ class Handler(BaseHandler):
         
         result = result_queue.get()
         if not result:
-            self.server.log.error('Received empty result from TUC process')
+            self.server.log.error('[%0x] Received empty result from ' \
+                                  'TUC process', self.transaction)
             result = 'Forespørselen ble avbrutt.  Vennligst prøv igjen senere.'
             
-        # self.server.log.debug('result = "%s"' % result)
-        
         try:
             pre, cost, alert_date, answer = self.parse_result(result)
         except:
-            self.server.log.exception('There was a problem handling ' \
-                                      'the result:\n%s\nInput: "%s"'
-                                      % (result, data))
+            self.server.log.exception('[%0x] There was a problem handling ' \
+                                      'the result:\n%s\nInput: "%s"',
+                                      self.transaction, result, data)
+            
             pre, cost, alert_date, answer = None, 'FREE', \
                                             None, 'Beklager, ' \
                                             'det oppstod en feil.'
@@ -498,7 +533,7 @@ class Handler(BaseHandler):
                 return self.tuc_query, body
         else:
             return self.tuc_query, request
-
+        
 def main():
     
     """ Module mainline (for standalone execution). """

@@ -82,11 +82,28 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         SocketServer.ThreadingTCPServer.__init__(self, server_address,
                                                  RequestHandlerClass)
+
+        # Create an auto-incremented thread-safe transaction number.
+
+        self.__transaction_lock = threading.Condition(threading.Lock())
+        self.__transaction_id = 0
         
         # Initialize the logging facilities.
         
         self.log_init()
 
+    def get_next_transaction_id(self):
+
+        """ Returns a thread-safe auto-incrementing transaction
+        number.  Should be called once from each handler."""
+        
+        self.__transaction_lock.acquire()
+        try:
+            self.__transaction_id += 1
+            return self.__transaction_id
+        finally:
+            self.__transaction_lock.release()
+        
     def process_request(self, request, client_address):
         
         """ Start a new thread to process the request.  But, if the
@@ -143,8 +160,8 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         self.log.addHandler(self.handler)
         self.log.setLevel(self.log_level)
         
-        self.log.info('%s, version %s, initialized.' % (self.server_name,
-                                                        __version__))
+        self.log.info('%s, version %s, initialized.',
+                      self.server_name, __version__)
         self.log_vitals()
         
         interface, port = self.server_address

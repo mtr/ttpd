@@ -10,9 +10,30 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 
 import logging
+import types
 
 log_line_re_date = '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
 
+# Define a new logging level.
+
+PROTOCOL = (logging.NOTSET + logging.DEBUG) / 2
+
+logging.addLevelName(PROTOCOL, 'PROTOCOL')
+
+# Create a mapping between the user-supplied log level string and the
+# constants define by the logging module.
+
+log_levels = dict([(logging.getLevelName(l).lower(), l)
+                   for l in logging._levelNames if type(l) == types.IntType])
+
+def get_log_levels():
+
+    """ Return a sorted list of log levels. """
+
+    items = [(v, k) for k, v in log_levels.items()]
+    items.sort()
+    return [k for v, k in items]
+    
 class DaemonFileHandler(logging.FileHandler):
 
     """ A log file handler implementation well suited for daemon

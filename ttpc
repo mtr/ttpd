@@ -24,6 +24,7 @@ import xml.sax
 
 import TTP.Message
 import TTP.Options
+import TTP.LogHandler
 
 import locale
 
@@ -56,15 +57,11 @@ def parse_command_line():
     # Expand the any paths and make them absolute.
     
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
+
+    # Convert the textual representation of debug level into an
+    # integer.
     
-    # Create a mapping between the user-supplied log level string and
-    # the constants define by the logging module.
-    
-    log_levels = dict([(logging.getLevelName(l).lower(), l)
-                       for l in [logging.DEBUG, logging.INFO, logging.WARNING,
-                                 logging.ERROR, logging.CRITICAL]])
-    
-    options.log_level = log_levels[options.log_level]
+    options.log_level = TTP.LogHandler.log_levels[options.log_level]
     
     return options, args
 
@@ -193,7 +190,7 @@ def main():
         
         meta, body = run_single_test(m, options, parser)
         
-        if options.log_level == logging.DEBUG:
+        if options.log_level <= logging.DEBUG:
             print '%s\n%s' % (meta, body)
         else:
             print '%s' % (body)

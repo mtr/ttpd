@@ -1,0 +1,74 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+# $Id$
+"""
+A script meant to make the job of analyzing the TTPD log files easier.
+
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+import re
+import optparse
+
+#import TTP.Options
+import TTP.LogHandler
+
+option_list = []
+
+billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]+\] ' \
+                        'billing=(?P<billing>\d+) (?P<interface>\S+) ' \
+                        '\((?P<host>[^,]+), (?P<trans_id>\w+)\) ' \
+                        '(?P<what>\w+)$'
+                        % (TTP.LogHandler.log_line_re_date))
+
+ttpdctl_options = [
+    (['-F', '--filter-only'],
+     {'dest': 'filter_only',
+      'default': False,
+      'action': 'store_true',
+      'help': 'if this flag is given, the program will only return a ' \
+      'filtered list of "billing lines"'})]
+
+def file_filter(options, filename):
+    
+    """ Parse a log file and return the necessary information. """
+    
+    file = open(filename, 'r')
+    for line in file:
+        m = billing_re.match(line)
+        if m:
+            yield m.groups()
+
+    file.close()
+            
+def main():
+    
+    """ Module mainline (for standalone execution). """
+    
+    parser = optparse.OptionParser(usage = '%prog [options] [file] [file] ...',
+                                   version = '%%prog version %s' %
+                                   (__version__))
+    
+    for option, description in option_list:
+        #TTP.Options.update_help(description)
+        parser.add_option(*option, **description)
+        
+    options, args = parser.parse_args()
+
+    for file in args:
+        lines = file_filter(options, file)
+        
+        for line in lines:
+            print line
+            
+            #return ':'.join([list(x) for x in lines])
+        
+    return
+
+
+if __name__ == "__main__":
+    main()

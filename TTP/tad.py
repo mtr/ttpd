@@ -500,7 +500,7 @@ class TUCAlertDaemon(object):
     def insert_alert(self, moment, message, ext_id):
         
         """ Insert an alert into the TAD scheduler.
-
+        
         @param moment: The time at which the alert should take place.
 
         @param message: The message to be included in the alert.
@@ -510,8 +510,6 @@ class TUCAlertDaemon(object):
         
         self.__lock.acquire()
         try:
-            #print 'moment', moment
-        
             id = self.next_id()
             self._insert_alert(moment, message, id, ext_id)
             
