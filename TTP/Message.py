@@ -151,7 +151,7 @@ class Message(Hierarchy):
             
         self.MxHead.Len = len(data)
         
-        tmp = '<?xml version="1.0"?>%s%s' % (self._xmlify(), data)
+        tmp = '<?xml version="1.0"?>%s%s' % (str(self._xmlify()), data)
         
         return '%010d%s' % (len(tmp), tmp)
 
