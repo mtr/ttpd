@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: ThreadPool.py 68 2004-08-12 11:24:43Z mtr $
+$Id$
 
 Based on a generic-programming thread pool implementation written by
 Tim Lesher 2003-09-24.
@@ -10,7 +10,7 @@ Tim Lesher 2003-09-24.
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 68 $"
+__version__ = "$Rev$"
 
 import threading
 import time

@@ -2,12 +2,12 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: num_hash.py 68 2004-08-12 11:24:43Z mtr $
+$Id$
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 68 $"
+__version__ = "$Rev$"
 
 n2a_map = {}
 for i in range(36):

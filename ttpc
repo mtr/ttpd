@@ -19,8 +19,8 @@ import sys
 import time
 
 import TTP
-import TTPHandler
-import TTPServer
+#import TTPHandler
+#import TTPServer
 
 
 def parse_command_line():

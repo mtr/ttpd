@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: daemon.py 80 2004-08-19 12:24:00Z mtr $
+$Id$
 
 A function that daemonifies its caller process.
 
@@ -12,7 +12,7 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
 __author__ = "Martin Thorsen Ranang"
-__version__ = "$Rev: 80 $"
+__version__ = "$Rev$"
 
 import os
 import signal

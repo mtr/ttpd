@@ -2,12 +2,12 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: TUCLog.py 70 2004-08-12 17:16:25Z mtr $
+$Id$
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 70 $"
+__version__ = "$Rev$"
 
 import logging
 

@@ -2,12 +2,12 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: EncapsulateTUC.py 78 2004-08-17 14:11:07Z mtr $
+$Id$
 
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 78 $"
+__version__ = "$Rev$"
 
 
 import os, sys

@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 """
 
-$Id: tad.py 78 2004-08-17 14:11:07Z mtr $
+$Id$
 
 The TUC Alert Daemon.
 
@@ -12,7 +12,7 @@ service.  This module is designed to work in co-existence with TTPD.
 Copyright (C) 2004 by Martin Thorsen Ranang
 """
 
-__version__ = "$Rev: 78 $"
+__version__ = "$Rev$"
 
 
 import Queue
