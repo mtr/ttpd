@@ -31,6 +31,20 @@
 
 \bibliographystyle{achicago}
 
+% Needed because of API documentation.
+\usepackage{alltt, parskip, fancyheadings, boxedminipage}
+\usepackage{makeidx, multirow, longtable, tocbibind, amssymb}
+
+\newlength{\BCL} % base class length, for base trees.
+
+\newenvironment{Ventry}[1]%
+{\begin{list}{}{%
+      \renewcommand{\makelabel}[1]{\texttt{##1:}\hfil}%
+      \settowidth{\labelwidth}{\texttt{#1:}}%
+      \setlength{\leftmargin}{\labelsep}%
+      \addtolength{\leftmargin}{\labelwidth}}}%
+  {\end{list}}
+
 \usepackage{index}
 
 \usepackage{concept}
@@ -65,14 +79,15 @@
 
 \newcommand{\code}[1]{\texttt{#1}}
 
+
 \begin{document}
 
 \frontmatter
 \maketitle
 
 \tableofcontents
-\listoffigures
-\listoftables
+%\listoffigures
+%\listoftables
 
 %\input{preface}
 %\input{acknowledgments}
@@ -208,19 +223,24 @@ longer delay than when serving single requests, depending both on
 
 \appendix
 
-\chapter{Source Code}
-{
-% A little hack to create a ``function index''.
-\makeatletter%
-\let\oldindex\index%
-\newcommand{\mtrindex}[1]{%
-\oldindex[src]{#1}%
-}
-\let\index\mtrindex%
-\makeatother%
-\input{include_src} % Include source-code listings.
-\let\index\oldindex%
-}
+\chapter{Module API}
+
+\input{include_src}
+
+%\chapter{Source Code}
+
+%% {
+%% % A little hack to create a ``function index''.
+%% \makeatletter%
+%% \let\oldindex\index%
+%% \newcommand{\mtrindex}[1]{%
+%% \oldindex[src]{#1}%
+%% }
+%% \let\index\mtrindex%
+%% \makeatother%
+%% \input{include_src} % Include source-code listings.
+%% \let\index\oldindex%
+%% }
 
 %\input{include_src}
 

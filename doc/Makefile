@@ -1,16 +1,12 @@
 # $Id$
 #
 
-figures = ttpdarchitecture.ps
+figures: ttpdarchitecture.ps
 
 %.ps: %.mp
 	TEX=latex mpost $< && tex mproof.tex $*.[0-9] && dvips -o $*.ps mproof.dvi
 
 $(figures):
-
-#all: 
-
-#clean:
 
 LATEX = latex
 MAKEINDEX = makeindex
@@ -23,7 +19,7 @@ PS_DOCS = ttpd_documentation.ps
 INDICES = ttpd_documentation.dnd ttpd_documentation.snd
 BIBS = ttpd_documentation.bbl #bu1.bbl bu2.bbl
 
-docs: srcdoc dvi $(BIBS) $(INDICES)
+docs: figures srcdoc dvi $(BIBS) $(INDICES)
 
 %.dnd: %.ddx
 	./mkalist.sh alist.txt; \
