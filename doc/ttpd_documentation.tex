@@ -66,13 +66,14 @@
 \newindex{src}{sdx}{snd}{\SrcIndex}
 
 % Definition of acronyms used throughout the text.
+\acrodef{API}{application program interface}
 \acrodef{CPU}{central processing unit}
 \acrodef{I/O}{input/output}
+\acrodef{SMS}{Short Message Service}
 \acrodef{TAD}{TUC Alert Daemon}
 \acrodef{TTPD}{TUC Transfer Protocol Daemon}
 \acrodef{TUC}{The Understanding Computer}
-\acrodef{SMS}{Short Message Service}
-\acrodef{API}{application program interface}
+\acrodef{XML}{Extensible Markup Language}
 
 \title{TUC Transfer Protocol Daemon \\ \textit{\&} \\ TUC Alert
   Daemon: \\[2em] System Documentation}
@@ -184,8 +185,15 @@ the \co{database engine}.  The communication between a \co{TTPD
 shared request pool (thread-safely protected by \coP{lock}).
 
 
-\chapter{Design Criteria}
-\label{cha:design-criteria}
+
+\chapter{Features}
+\label{cha:features}
+
+This chapter presents the design criteria and features that
+characterizes \coa{TTPD} and \coa{TAD}.
+
+\section{Design Criteria}
+\label{sec:design-criteria}
 
 The main goals of this work was to make the system more robust and to
 implement an alert service.  In addition to this, where there have
@@ -197,24 +205,95 @@ and that will \emph{probably not need to be changed} in the near
 future.  In addition, the system has been designed in the spirit of
 \con{Unix} philosophy; embracing modularity, the use of stream
 redirection and process control as described
-by~\citeN{ranang03:fragrance_of_unix}.  For a very concise
-introduction to the theory and pragmatics of server/daemon design,
-please see~\cite{327245,327308,327345}.
+in~\cite{ranang03:fragrance_of_unix}.  For a very concise introduction
+to the theory and pragmatics of server/daemon design, please
+see~\cite{327245,327308,327345}.
 
 
 \section{Scalability and Robustness}
 \label{sec:scalability}
 
-The \co{scalability} of the system has been improved in several ways.
-First of all, the design of \coa{TTPD} allows a computer to serve
-multiple \coa{TUC} requests in parallel.  This is ensured through the
-use of the pool of \co{TUC-threads} where each thread controls an
-externally started \coa{TUC} process.  This means that if more
-\coap{CPU} are added to the computer, each processes can run on its
-own \coa{CPU}.  Even without multiple \coap{CPU}, the computer can
-serve multiple requests in multiplexed parallel (but possibly with a
-longer delay than when serving single requests, depending both on
-\coa{CPU} and \coa{I/O} intensity).
+First of all, the \co{scalability} of the system has been improved in
+several ways:
+
+\begin{itemize}
+\item The design of \coa{TTPD} allows a computer to serve multiple
+  \coa{TUC} requests in parallel.  This is ensured through the use of
+  the pool of \co{TUC-threads} where each thread controls an
+  externally running \coa{TUC} process.  This means that if more
+  \coap{CPU} are added to the computer, each processes can run on its
+  own \coa{CPU}.  Even without multiple \coap{CPU}, the computer can
+  serve multiple requests in multiplexed parallel (but possibly with a
+  longer delay than when serving single requests, depending both on
+  \coa{CPU}- and \coa{I/O} intensity).
+
+\item By combining the use of \coP{socket} with \coP{tread} (could
+  have used \co{forked processes} but they take longer to create) the
+  \coa{daemon} is able to stack up incoming requests and serve them as
+  soon as possible.  This feature ensures that the clients can deliver
+  their requests even when other requests are already being processed.
+
+\end{itemize}
+
+Secondly, the following features have been implemented to ensure a
+high level of \co{robustness} of the system:
+
+\begin{itemize}
+
+\item The use of \coP{socket} ensure that \emph{if} the \co{daemon}
+  process should crash, any transaction received but not finished will
+  silently be lost.  That is, the log will contain information about
+  the reception of the requests, but when the daemon is restarted, it
+  will not result in a bombardment of the users with their old
+  requests.  An exception from this is the handling of any due
+  \coa{TAD} alerts.  They will be sent out as soon as possible after
+  the alert moment have passed.
+
+
+\item Efforts have been made to graciously handle extremely high
+  workloads.  The daemon has a configurable ``soft'' high-load limit.
+  This results in a predefined message being sent back to users---when
+  the current number of concurrently handled requests is above this
+  limit---telling the user that due to very high demand, the request
+  cannot be handled at this moment.
+
+\item The daemon tries to cope with non-perfect conditions in a
+  controlled way:
+  
+  \begin{itemize}
+    
+  \item If one of the encapsulated \coa{TUC} processes die
+    unexpectedly, the daemon will start a replacement process
+    immediately (this constitutes a built-in \co{watch dog} feature).
+
+  \item All alerts that are registered by the \coa{TAD} is immediately
+    saved to disk.  This is done to ensure that during startup, the
+    daemon consults the old log file to restore it state.
+
+  \item Because the \co{protocol} for \co{communication} with the
+    \coa{SMS} \co{message switch} defines the communication as
+    asynchronous, it is possible that the daemon experiences
+    situations when it cannot connect to the remote server to deliver
+    its answer.  If such a situation should arise---and it has, during
+    intensive testing of the system---a \co{retry/resend algorithm}
+    has been implemented.  The \co{handler} of that request will sleep
+    for a random number of seconds (within a predefined interval) and
+    then try to resend the answer when it awakens.  If it still does
+    not succeed, it repeats this behavior until a total time limit has
+    been reached (suggestively sat to 15 minutes).
+
+  \end{itemize}
+
+\item Since the \co{SMS message switch} \co{communication protocol}
+  uses \coa{XML}-based headers, the daemon parses these with the
+  default \con{Python} \co{SAX-parser} (usually an \co{expat parser}).
+  This ensures a robust handling of incoming messages and an automatic
+  check for \coa{XML} compliance.
+
+\item The \coa{TTPD} is designed to handle random connections to its
+  socket, so that non-protocol clients will not crash it.
+
+\end{itemize}
 
 
 \chapter{Program Usage}

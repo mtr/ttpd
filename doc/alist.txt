@@ -5,3 +5,4 @@
 \acs{TAD}&\acl{TAD}\\
 \acs{TTPD}&\acl{TTPD}\\
 \acs{TUC}&\acl{TUC}\\
+\acs{XML}&\acl{XML}\\

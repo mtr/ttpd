@@ -19,6 +19,8 @@ import datetime
 import TTP.Options
 import TTP.LogHandler
 
+from pychart import *
+
 option_list = []
 
 billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]*\] ' \
@@ -29,20 +31,64 @@ billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]*\] ' \
 
 resolutions = {
     'hours':
-    ('%s Hour %02d',
-     (lambda t: (t.date(), t.time().hour))),
+    ((lambda t: '%s Hour %02d' % (t[0], t[1])),
+     (lambda t: (t.date(), t.time().hour)),
+     'Hour',
+     (lambda t1, t2: abs(t1 - t2).seconds > (60 * 60)),
+     datetime.timedelta(hours=1)),
     'days':
-    ('Day %s',
-     (lambda t: t.date())),
+    ((lambda t: '%s' % t),
+     (lambda t: t.date()),
+     'Date',
+     (lambda t1, t2: abs(t1 - t2).days > 1),
+     datetime.timedelta(days=1)),
     'weeks':
     ('%d Week %02d',
-     (lambda t: (t.year, t.isocalendar()[1]))),
+     (lambda t: (t.year, t.isocalendar()[1])),
+     'Week',
+     datetime.timedelta(weeks=1)),
     'months':
     ('%d Month %02d',
-     (lambda t: (t.year, t.month))),
+     (lambda t: (t.year, t.month)),
+     'Month',
+     None), #datetime.timedelta(months=1)),
     'years':
     ('Year %d',
-     (lambda t: t.year))
+     (lambda t: t.year),
+     'Year',
+     None), #datetime.timedelta(years=1))
+    }
+
+resolution_order = ['year', 'month', 'week', 'day', 'hour']
+
+weekdays = {
+    0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday',
+    4: 'Friday', 5: 'Saturday', 6: 'Sunday'
+    }
+
+months = {
+    1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May',
+    6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October',
+    11: 'November', 12: 'December'
+    }
+
+periods = {
+    'hour_of_day':
+    ((lambda t: '%02d' % t),
+     (lambda t: (t.time().hour)),
+     'Hour of Day'),
+    'day_of_week':
+    ((lambda t: weekdays[t]),
+     (lambda t: t.weekday()),
+     'Day of Week'),
+    'week_of_year':
+    ((lambda t: 'Week %02d' % t),
+     (lambda t: (t.isocalendar()[1])),
+     'Week of Year'),
+    'month_of_year':
+    ((lambda t: months[t]),
+     (lambda t: (t.year, t.month)),
+     'Month of Year'),
     }
 
 ttpd_analyze_options = [
@@ -59,6 +105,12 @@ ttpd_analyze_options = [
       'help': 'if this flag is given, the output is cost based ' \
       'instead of transaction based; the default is ' \
       'transaction based'}),
+    (['-C', '--chart'],
+     {'dest': 'chart',
+      'default': None,
+      'metavar': 'FILENAME',
+      'help': 'if this flag is given, the program will output a graphical ' \
+      'chart in the given filename'}),
     (['-r', '--resolution'],
      {'dest': 'resolution',
       'default': 'weeks',
@@ -66,9 +118,9 @@ ttpd_analyze_options = [
       'help': "duration of TIME_UNITS for each temporal grouping; " \
       "available values are %s; the default is '%%(default)s'" %
       (', '.join(["'%s'" % x for x in resolutions]))}),
-    (['-m', '--averages-for'], # FIXEM: Maybe 'units' would match 'resolution'?
-     {'dest': 'averages_for',
-      'default': 'day_of_week',
+    (['-m', '--period'], # FIXEM: Maybe 'units' would match 'resolution'?
+     {'dest': 'period',
+      'default': None,
       'metavar': 'TIME_UNITS',
       'help': "duration of TIME_UNITS for each temporal grouping; " \
       "available values are %s; the default is '%%(default)s'" %
@@ -77,12 +129,22 @@ ttpd_analyze_options = [
      {'dest': 'start',
       'default': False,
       'metavar': 'DATE',
-      'help': "Only consider entries including and later than DATE"}),
+      'help': "only consider entries including and later than DATE"}),
     (['-t', '--to'],
      {'dest': 'end',
       'default': False,
       'metavar': 'DATE',
-      'help': "Only consider entries up to and including DATE"}),
+      'help': "only consider entries up to and including DATE"}),
+    (['-w', '--week'],
+     {'dest': 'week',
+      'default': False,
+      'metavar': 'YEAR,WEEK',
+      'help': "only consider entries from WEEK of YEAR"}),
+    (['-W', '--this-week'],
+     {'dest': 'this_week',
+      'default': False,
+      'action': 'store_true',
+      'help': "only consider entries from the current week"}),
     (['-g', '--group-by'],
      {'dest': 'group_by',
       'default': 'interface,host,trans_type',
@@ -140,6 +202,64 @@ def group_by(extract_discriminators, set):
 
     return groups
 
+def make_bar_chart(data, x_axis_title, filename):
+    
+    theme.get_options()
+    
+    can = canvas.init(fname=filename)
+    
+    ChartSize = (300, 200)
+    MaxWidth=500
+    chart_object.set_defaults(area.T, size = ChartSize)
+    
+    ar = area.T(x_coord=category_coord.T(data, 0),
+                y_range=(0, max([x + plus for c, x, minus, plus in data])),
+                x_axis=axis.X(label=x_axis_title),
+                y_axis=axis.Y(label="Requests"))
+    
+    ar.add_plot(bar_plot.T(data=data,
+                           fill_style=\
+                           fill_style.Plain(bgcolor=color.cornflowerblue),
+                           error_bar = error_bar.bar2, 
+                           error_minus_col=3,
+                           error_plus_col=2,
+                           #line_style=None,
+                           label = 'Average'))
+    ar.draw(can)
+    
+    can.close()
+
+
+def make_line_chart(data, x_axis_title, filename, transform):
+    
+    data = [(transform(d[1]), d[3]) for d in data]
+    
+    theme.get_options()
+    
+    can = canvas.init(fname=filename)
+    
+    ChartSize = (500, 200)
+    MaxWidth=500
+    chart_object.set_defaults(area.T, size = ChartSize)
+    
+    ar = area.T(x_coord=category_coord.T(data, 0),legend=None,
+                y_range=(0, None),
+                x_axis=axis.X(label=x_axis_title, tic_interval=24,
+                              format="/a-60/hL{}%s"),
+                y_axis=axis.Y(label="Requests"))
+
+    ar.add_plot(bar_plot.T(data=data,
+                           fill_style=\
+                           fill_style.Plain(bgcolor=color.cornflowerblue),
+                           line_style=None,
+                           label='Requests'
+                           ))
+
+    #delattr(ar, 'legend')
+    ar.draw(can)
+    
+    can.close()
+
 def main():
     
     """ Module mainline (for standalone execution). """
@@ -158,7 +278,7 @@ def main():
     if options.restrict_to:
         options.restrict_to = dict([tuple(x.split('='))
                                     for x in options.restrict_to.split(',')])
-
+    
     for moment, default in [('start', datetime.date.min),
                             ('end', datetime.date.max)]:
         if getattr(options, moment):
@@ -167,10 +287,26 @@ def main():
                                                  '%Y-%m-%d')[:3]))
         else:
             setattr(options, moment, default)
-            
-    transactions = []
 
-    # Add the contents of each file.
+    # This is not elegant, because strptime is not able to construct a
+    # corret date give the year and the week number:
+    
+    if options.week:
+        if options.week == 'this':
+            year = int(datetime.date.today().year)
+            week = datetime.date.today().isocalendar()[1]
+            print year, week
+        else:
+            year, week = [int(m) for m in options.week.split(',')]
+            
+        D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week - 1))
+        options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
+        options.end = options.start + datetime.timedelta(days=6)
+        print options.start, options.end
+    
+    # Add the contents of each file to the list of transactions.
+    
+    transactions = []
     
     for file in args:
         lines = file_filter(options, file)
@@ -184,12 +320,37 @@ def main():
             if options.filter_only:
                 print format_trans(trans)
                 continue
-            
-            transactions.append(trans)
 
+            #print trans['date'], t
+            #diff = resolutions[options.resolution][3](trans['date'], t)
+            #if diff:
+            #    print 'Diff:', trans['date'], t
+            #    t += resolutions[options.resolution][4]
+                
+            transactions.append(trans)
+            
     if options.filter_only:
         return
 
+
+    # Insert temporal resolution place-holders.
+
+    t = datetime.datetime.combine(options.start, datetime.time())
+
+    while t < options.end:
+        obj = {'date': t}
+        
+        for key in ['interface', 'host', 'trans_type']:
+            if key in options.restrict_to:
+                obj[key] = options.restrict_to[key]
+            else:
+                obj[key] = None
+            
+        transactions.append(obj)
+        t += resolutions[options.resolution][4]
+        
+    transactions.sort()
+    
     # Create the temporal groups, dependent of options.resolution.
     
     groups = group_by(lambda x:
@@ -200,9 +361,11 @@ def main():
     
     units = groups.keys()
     units.sort()
+
+    L = []
     
     for unit in units:
-        print resolutions[options.resolution][0] % unit
+        #print resolutions[options.resolution][0] % unit
         
         subgroups = group_by(lambda x:
                              tuple([x[key] for key in options.group_by]),
@@ -220,16 +383,60 @@ def main():
                 if options.cost:
                     billing += trans['billing']
                 else:
-                    billing += 1
+                    if 'billing' in trans: # Place-holder trick
+                        billing += 1
                     
             for i, field in enumerate(options.group_by):
                 if field in options.restrict_to and \
                        options.restrict_to[field] != subunit[i]:
                     break
             else:
-                print '%s:\t%d' % (subunit, billing)
+                L.append((trans, unit, subunit, billing))
 
-                
+    if not transactions:
+        return
+    
+    print '# Log started %s, and ended %s' % (transactions[0]['date'],
+                                              transactions[-1]['date'])
+    
+    if options.period:
+        
+        stats = group_by(lambda x:
+                         periods[options.period][1](x[0]['date']),
+                         L)
+
+        print '# %12s:%12s%12s%12s' % \
+              (periods[options.period][2], 'Average', '-', '+')
+        output = []
+        
+        for y in stats:
+            #print y, stats[y]
+            values = [x[3] for x in stats[y]]
+            average = sum(values) / float(len(values))
+            low, high = min(values), max(values)
+            #print (y, low, average, high)
+            output.append((periods[options.period][0](y),
+                           average, (average - low), (high - average)))
+            
+            
+        print '\n'.join(['%14s:%12.2f%12.2f%12.2f' % x for x in output])
+        
+    else:
+        print '\n'.join(['%s: %s: %6d' %
+                         (resolutions[options.resolution][0](x[1]),
+                          x[2], x[3]) for x in L])
+
+    # Produce some graphical charts.
+    
+    if options.chart:
+
+        if options.period:
+            make_bar_chart(output, periods[options.period][2],
+                           options.chart)
+        else:
+            make_line_chart(L, resolutions[options.resolution][2],
+                            options.chart, resolutions[options.resolution][0])
+            
     return
 
 
