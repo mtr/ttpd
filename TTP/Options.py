@@ -119,7 +119,7 @@ ttpc_options = [
     
     (['-I', '--transaction-id'],
      {'dest': 'trans_id',
-      'default': 'LINGSMSOUT',
+      'default': 'LINGSMSIN',
       'metavar': 'TRANS_ID',
       'help': "the TRANS_ID to use when communicating with " \
       "a remote server.  The default is '%(default)s'."}),
@@ -142,7 +142,13 @@ ttpc_options = [
       'metavar': 'PHONE',
       'help': "the number that the message supposedly was sent from; " \
       "the deault is '%(default)s'"}),
-    
+
+    (['-F', '--fake-outgoing'],
+     {'dest': 'fake_outgoing',
+      'default': False,
+      'action': 'store_true',
+      'help': "fake an outgoing message from the server"}),
+
     (['-i', '--input-file'],
      {'dest': 'input_file',
       'default': None,

@@ -57,8 +57,8 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         self.server.log.info('\n%s\n%s' % (meta, body))
         
         ack = Message.MessageAck()
-        ack.MxHead.TransId = 'LINGSMSOUT' # meta.MxHead.TransId
-        #ack.MxHead.Ref = meta.MxHead.MsgId
+        ack.MxHead.TransId = 'LINGSMSOUT'
+        
         Message.send(self.connection, ack)
         
     def escape(self, data):

@@ -149,7 +149,9 @@ def main():
     if options.listen_mode:
         
         run_listening_server(options)
-        
+
+    # If we did not start a listening server, we will act as a client.
+    
     parser = xml.sax.make_parser()
     parser.setContentHandler(TTP.Message.XML2Message())
     
@@ -158,7 +160,7 @@ def main():
     if options.phone_number:
         m.MxHead.ORName = options.phone_number
         
-    if options.trans_id == 'LINGSMSOUT':
+    if options.trans_id == 'LINGSMSIN':
         pre_msg = 'TEAM '
     else:
         pre_msg = ''
@@ -177,8 +179,16 @@ def main():
     else:
 
         # Request a single (non-alert) answer (as from a Web page).
-        
-        m.MxHead.MsgId = -1
+
+        if options.fake_outgoing:
+            m.MxHead.MsgId = None
+            m.MxHead.TransId = 'LINGSMSOUT'
+            m.MxHead.Aux.Billing = 2
+            m.MxHead.Aux.InitProto = 'REMOTE'
+            m.MxHead.Aux.InitIf = 'IP'
+        else:
+            m.MxHead.MsgId = -1
+            
         m._setMessage('%s%s' % (pre_msg, args[0]))
         
         meta, body = run_single_test(m, options, parser)
