@@ -22,8 +22,6 @@ import sys
 import TTP.Options
 import TTP.LogHandler
 
-executable = 'ttpd'
-
 init_re = re.compile('^%s ttpd INFO TTPD, .+, r?e?-?initialized.$' % \
                      TTP.LogHandler.log_line_re_date)
 
@@ -52,6 +50,21 @@ def get_pid(log_file):
     
     return pids[-1]
 
+local_options = [(['-o', '--old-log-file'],
+                  {'dest': 'old_log_file',
+                   'default': None,
+                   'metavar': 'FILE',
+                   'help': 'location of the old log FILE, used to ' \
+                   'retrieve the PID of the current process, when ' \
+                   'restarting after a file has been moved ' \
+                   '(e.g., log rotated)'}),
+                 (['-e', '--executable'],
+                  {'dest': 'executable',
+                   'default': 'ttpd',
+                   'metavar': 'EXECUTABLE',
+                   'help': 'location of the ttpd EXECUTABLE; ' \
+                   'the default is %(default)s'})]
+
 def main():
     
     """ Module mainline (for standalone execution). """
@@ -68,19 +81,10 @@ def main():
     TTP.Options.set_default(option_list,
                             '--path-to-tuc', 'ttpd')
 
-    for option, description in option_list:
+    for option, description in option_list + local_options:
         TTP.Options.update_help(description)
         parser.add_option(*option, **description)
                        
-    parser.add_option(*['-o', '--old-log-file'],
-                      **{'dest': 'old_log_file',
-                         'default': None,
-                         'metavar': 'FILE',
-                         'help': 'location of the old log FILE, used to ' \
-                         'retrieve the PID of the current process, when ' \
-                         'restarting after a file has been moved ' \
-                         '(log rotated)'})
-                      
     options, args = parser.parse_args()
     
     commands = ['start', 'stop', 'restart', 'store_alerts']
@@ -124,8 +128,29 @@ def main():
         print verbs[action][1]
         
     if action == 'start':
+        
+        # Find out which executable we should run.
+        
+        exec_file = None
+        
+        path, executable = os.path.split(options.executable)
 
-        exec_file = os.path.abspath(os.path.expanduser(executable))
+        paths = [path]
+
+        if not options.executable:
+            if os.environ['PATH']:
+                paths += os.environ['PATH'].split(':')
+
+        for path in paths:
+            test_path = os.path.join(path, executable)
+            if os.access(test_path, os.F_OK | os.X_OK):
+                exec_file = test_path
+                break
+                
+        if not exec_file:
+            print "Could not find any executable '%s' in your PATH." % \
+                  options.executable
+            sys.exit(1)
         
         flags = ['%s=%s' % (x[0][1], getattr(options, x[1]['dest']))
                  for x in option_list if hasattr(options, x[1]['dest']) and \

@@ -7,7 +7,7 @@ After you have installed the programs (as described in the file
 The easiest way to start and stop the TTPD is by using the program
 'ttpdctl'.
 
-The typical flags to pay attention to are:
+The most important flags to pay attention to are:
 
   -aADDRESS, --ip-address=ADDRESS
                         the ADDRESS of the interface on which to listen for
@@ -28,13 +28,18 @@ The typical flags to pay attention to are:
   -sCOMMAND, --path-to-tuc=COMMAND
                         run COMMAND as TUC subprocess; the default is
                         ./busestuc.sav
+  -eEXECUTABLE, --executable=EXECUTABLE
+                        location of the ttpd EXECUTABLE; the default is ttpd
 
 
 A typical Web-installation would be started like:
 
   ttpdctl --path-to-tuc=$HOME/buster/busestuc start
 
-possibly with the additional flag '--log-level=debug'.
+possibly with the additional flag '--log-level=debug' to get detailed
+debug information in the log.  If not specified with the
+'--executable' flag, the daemon executable that will be started is the
+first ttpd found in the current user's PATH environment variable.
 
 If you would like to communicate with eSolutions, the following flags
 must be used:
@@ -48,7 +53,7 @@ To stop the daemon, type:
 
 If you have changed the location of the log file, which is used for
 retrieveing the PID of the currently running process, add the flag
-'--old-log-file=<file>, where <file> denotes the new location.
+'--old-log-file=<file>', where <file> denotes the new location.
 
 The actions 'restart' and 'store_alerts' may be used in the same way
 as 'stop'.
