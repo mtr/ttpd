@@ -18,27 +18,45 @@ import re
 import time
 import xml.sax
 
-import TTP.Message
+import Message
 import EncapsulateTUC
 import num_hash
 
 
 class BaseHandler(SocketServer.StreamRequestHandler):
 
+    def setup(self):
+        
+        """ Create an XML parser for this handler instance. """
+        
+        # Call the base class setup method.
+        
+        SocketServer.StreamRequestHandler.setup(self)
+        
+        # Initialize the XML parser.  We keep one parser per thread,
+        # in an attempt to avoid any shared resource problems.
+        
+        self.xml_handler = Message.XML2Message()
+        
+        self.xml_error_handler = xml.sax.ErrorHandler()
+        
+        self.xml_parser = xml.sax.make_parser()
+        self.xml_parser.setContentHandler(self.xml_handler)
+        self.xml_parser.setErrorHandler(self.xml_error_handler)
+        
     def handle(self):
         
-        meta, body = TTP.Message.receive(self.connection,
-                                         self.server.xml_parser)
-
+        meta, body = Message.receive(self.connection, self.xml_parser)
+        
         #if meta.MxHead.Len == 0:
         #    self.server.log.info('\n%s\n%s' % ('ACK', body))
         
         self.server.log.info('\n%s\n%s' % (meta, body))
         
-        ack = TTP.Message.MessageAck()
+        ack = Message.MessageAck()
         ack.MxHead.TransID = meta.MxHead.TransID
         ack.MxHead.Ref = meta.MxHead.MsgId
-        TTP.Message.send(self.connection, ack)
+        Message.send(self.connection, ack)
         
     def escape(self, data):
 
@@ -114,8 +132,8 @@ class Handler(BaseHandler):
         
         # Retrieve incoming request.
         
-        meta, body = TTP.Message.receive(self.connection,
-                                         self.server.xml_parser)
+        meta, body = Message.receive(self.connection,
+                                         self.xml_parser)
         
         if meta.MxHead.TransID[:len(self.sms_trans_id)] == self.sms_trans_id:
             
@@ -123,9 +141,9 @@ class Handler(BaseHandler):
             
             # Since it is a SMS request, send an ACK.
             
-            ack = TTP.Message.MessageAck()
+            ack = Message.MessageAck()
             ack.MxHead.TransID = meta.MxHead.TransID
-            TTP.Message.send(self.connection, ack)
+            Message.send(self.connection, ack)
             
         else:
             
@@ -159,8 +177,10 @@ class Handler(BaseHandler):
 
             elif cost == 'AVBEST':
                 ext_id = extra
+            else:
+                ext_id = ''
         else:
-
+            
             # Non-SMS request for SMS-only services.
             
             if cost in ['VARSEL', 'AVBEST']:
@@ -181,7 +201,7 @@ class Handler(BaseHandler):
             
         # Send the answer to the client.
         
-        ans = TTP.Message.MessageAck()
+        ans = Message.MessageAck()
         ans.MxHead.TransID = meta.MxHead.TransID
         ans._setMessage(answer)
         
@@ -193,9 +213,9 @@ class Handler(BaseHandler):
             ans.MxHead.Aux.Billing = self.billings[cost]
             
             try:
-                TTP.Message.communicate(ans,
+                Message.communicate(ans,
                                         self.server.remote_server_address,
-                                        self.server.xml_parser)
+                                        self.xml_parser)
             except:
                 
                 self.server.log.error("Couldn't connect to " \
@@ -206,7 +226,7 @@ class Handler(BaseHandler):
                 cost = 'FREE'
         else:
             
-            TTP.Message.send(self.connection, ans)
+            Message.send(self.connection, ans)
             
         # Log any interesting information.
         

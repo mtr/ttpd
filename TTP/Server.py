@@ -70,21 +70,10 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         self.log_init()
 
-        # Initialize the XML parser.
-        
-        self.xml_handler = Message.XML2Message()
-        
-        self.xml_error_handler = xml.sax.ErrorHandler()
-        
-        self.xml_parser = xml.sax.make_parser()
-        self.xml_parser.setContentHandler(self.xml_handler)
-        self.xml_parser.setErrorHandler(self.xml_error_handler)
-        
-
     def handle_error(self, request, client_address):
 
         """ Handle an error gracefully. """
-        
+
         self.log.exception('Exception occurred during processing ' \
                            'of request from %s (port %d).',
                            client_address[0], client_address[1])

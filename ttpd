@@ -26,7 +26,7 @@ import TTP.daemon
 import TTP.Server
 import TTP.Handler
 
-locale.setlocale(locale.LC_ALL, 'no_NO')
+#locale.setlocale(locale.LC_ALL, 'no_NO')
 
 def run(options):
     

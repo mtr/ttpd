@@ -18,7 +18,7 @@ To install this package (and its scripts), the following should do:
 3. Build and install the package.  If you want to install it locally
    (in your $HOME directories), the following comamnd should do:
 
-       python setup.py install --home=$HOME
+       python setup.py install --optimize 2 --home=$HOME
 
    If you would like to install it system-wide, just skip the --home
    argument.

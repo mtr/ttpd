@@ -172,13 +172,16 @@ def main():
             
             m.MxHead.MsgId = i
             m._setMessage('%s%s' % (pre_msg, line))
-            
-            meta, body = TTP.Message.communicate(m, (options.ip_address,
-                                                     options.port), parser)
-            
+
+            try:
+                meta, body = TTP.Message.communicate(m, (options.ip_address,
+                                                         options.port), parser)
+            except:
+                print 'An error occured. Service not available'
+                
             print '%d: %s\n%s' % (i, meta, body)
 
-            time.sleep(.5)
+            time.sleep(3)
             
         f.close()
         

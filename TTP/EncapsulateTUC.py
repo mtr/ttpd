@@ -9,12 +9,13 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 
 __version__ = "$Rev$"
 
-
-import os, sys
-import popen2
-import time
-import select
 import fcntl
+import os
+import popen2
+import re
+import select
+import sys
+import time
 
 TYPE_NORMAL = 0
 TYPE_SHUTDOWN = 1
@@ -114,7 +115,15 @@ class EncapsulateTUC(EncapsulateProcess):
     def __init__(self, command, eos_magic, log = None):
         
         self.magic = eos_magic
-        self.eos_magic = '%s yes\n' % self.magic
+        
+        # In SICStus 3.8.7 self.eos_magic should look like:
+        #    '%s \nyes\n' % self.magic
+
+        #self.eos_magic = '%s yes\n' % self.magic
+        self.eos_magic_re = re.compile('%s \n?yes\n$' %
+                                       (re.escape(self.magic)), re.MULTILINE)
+        self.magic_len = len('%s \nyes\n' % (self.magic))
+        
         self.global_timeout = 60
         self.local_timeout = .01
         
@@ -176,14 +185,20 @@ class EncapsulateTUC(EncapsulateProcess):
         while not done:
             
             status, delta = EncapsulateProcess.read(self, self.local_timeout)
-            data += delta
-            
-            if data[-len(self.eos_magic):] == self.eos_magic:
-                data = data[:-len(self.eos_magic)]
-                done = True
+            if delta:
+                data += delta
                 
-            # self.log.debug('delta = "%s"' % delta)
-            
+                m = self.eos_magic_re.search(data, -self.magic_len)
+                if m:
+                    data = data[:-(m.end() - m.start())]
+                    done = True
+                    
+                    # self.log.debug('delta = "%s"' % delta)
+
+                #print 'delta = "%s"' % delta
+
+                #print 'data[-self.magic_len:] = "%s"' % data[-self.magic_len:]
+                
             if status == 0:
                 done = True
                 
