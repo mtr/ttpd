@@ -1,0 +1,66 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+
+""" 
+$Id$
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+import re
+import sys
+import TTP.LogHandler
+
+billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]*\] ' \
+                        'billing=(?P<billing>\d+) (?P<interface>\S+) ' \
+                        '\((?P<host>[^,]+), (?P<trans_type>\w+)\) ' \
+                        '(?P<what>\w+)$'
+                        % (TTP.LogHandler.log_line_re_date))
+
+def file_filter(file):
+    
+    """ Parse a log file and return the necessary information. """
+    
+    in_block = False
+    
+    for line in file:
+        if not in_block:
+            if billing_re.search(line):
+                lines = [line]
+                in_block = True
+        else:
+            lines.append(line)
+            
+            if line == '-\n':
+                in_block = False
+                
+                yield ''.join(lines)
+            
+    file.close()
+
+
+def main():
+    
+    """ Module mainline (for standalone execution). """
+    
+    if len(sys.argv) > 1:
+        for filename in sys.argv[1:]:
+            file = open(filename, 'r')
+            requests = file_filter(file)
+            
+            for request in requests:
+                print request,
+    else:
+        requests = file_filter(sys.stdin)
+        
+        for request in requests:
+            print request,
+            
+    return
+
+
+if __name__ == "__main__":
+    main()
