@@ -1,0 +1,24 @@
+
+		 TUC Transfer Protocol Daemon (TTPD)
+
+				 and
+
+		       TUC Alert Daemon (TAD)
+
+
+
+This software is Copyright (C) 2004 by Martin Thorsen Ranang.
+
+This package contains the implementation of TTPD and TAD.  The package
+is written in Python (and was tested with Python 2.3.4 [on Linux] and
+Python 2.3.3 [on SunOS]) and requires the Python installation to
+support threads.
+  
+See the file INSTALLATION for information on how to build and install
+the programs and the Python modules they use.
+
+
+
+	 Martin Thorsen Ranang <mtr@ranang.org>, 2004-08-24.
+
+$Id$

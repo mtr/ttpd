@@ -1,0 +1,36 @@
+Installation guide for the TUC Transfer Protocol Daemon
+=======================================================
+
+In the following <version> is a generic identifier of the version you
+are installing; you actual package version may be something like
+'0.9.0'.
+
+To install this package (and its scripts), the following should do:
+
+1. Unpack the source distribution.  
+
+       tar xvzf TTPD-0.9.0.tar.gz
+
+2. Change to the directory that was created by the above command.
+
+       cd TTPD-0.9.0/
+
+3. Build and install the package.  If you want to install it locally
+   (in your $HOME directories), the following comamnd should do:
+
+       python setup.py install --home=$HOME
+
+   If you would like to install it system-wide, just skip the --home
+   argument.
+
+4. After you have installed the packages, you should add the path to
+   where the Python modules from this package have been installed to
+   the PYTHONPATH environment variable.  If you installed the package
+   in your $HOME, that means adding something like this to your
+   $HOME/.bash_profile (if you are using the BASH shell):
+   
+       export PYTHONPATH=$PYTHONPATH:$HOME/lib/python
+
+That should be all that's needed to install this package.  After this,
+the commands 'ttpd' and 'ttpc' should be available in the
+'<your-install-path>/bin/' directory.

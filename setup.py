@@ -15,6 +15,8 @@ setup(name = 'TTPD',
       author = 'Martin Thorsen Ranang',
       author_email = 'mtr@ranang.org',
       url = 'http://www.ranang.org/',
+      platforms = ['Linux-2.6.7-686-mtr-i686-with-debian-3.1',
+                   'SunOS-5.9-sun4u-sparc-32bit-ELF'],
       packages = ['TTP'],
       scripts = ['ttpd', 'ttpc']
       )

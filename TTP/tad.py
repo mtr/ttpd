@@ -460,6 +460,11 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def _insert_alert(self, moment, message, id, ext_id):
+
+        """ The core functionality of insert_alert().
+
+        Called both by outside objects (through insert_alarm()) and
+        from the inside (through the restore() method)."""
         
         self.__lock.acquire()
         try:
@@ -471,7 +476,7 @@ class TUCAlertDaemon(object):
     def insert_alert(self, moment, message, ext_id):
         
         """ Insert an alert into the TAD scheduler.
-        
+
         @param moment: The time at which the alert should take place.
 
         @param message: The message to be included in the alert.

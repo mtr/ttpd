@@ -1,0 +1,59 @@
+Spørsmål til eSolutions angående protokoll for kommunikasjon mellom
+TTPD og "eSolutions":
+
+- Har dere en nyere beskrivelse av protokollen?
+
+  Vi har:
+       
+  * Client Interface for eSolutions Access System, 2001-08-15
+  
+  * Online Interface Message Switch 2.0, 2000-12-18
+  
+  * Use of ORName and AUX tags in incoming messages, 2001-02-23
+
+  
+- Mottar vi <ORName>-informasjon per i dag?  Kan vi få det?  Hva er
+  reglene for bruk av denne?
+
+  
+- Er det likegyldig hvilken rekkefølge XML-elementene kommer, så lenge
+  de er "nøstet" korrekt (og starter med <?xml version="1.0"?>)?
+  
+  Selvfølgelig vil de da begynne og slutte med <MxHead>...</MxHead>.
+
+  Svar:  Ja, det skal gå bra.
+
+- Er dette korrekt navngivning:
+
+  Application	   Message Switch	Client Application
+  TTPD		   "eSolutions"		Bruker/Telefon
+
+
+- I protokoll-beskrivelsen "6. GORM Message Interface (XML)" (Online
+  Interface Message Switch 2.0, 2000-12-18), står det at <Ref> er 16
+  bytes (if present) og <MsgId> er 32 bytes (if present).  Hvordan
+  fungere disse?
+
+
+- Hva er reglene for setting av <InitIf> og <InitProto>?
+
+
+- Er det meningen at <Stat>-feltet skal settes med bakgrunn i "Error
+  Codes"?  Hva er sammenhengen mellom <Ack>-verdi og <Stat>?
+
+
+- Hva er "destination application"?  Hvordan angår dette
+  <Aux><AdapStat></Aux>?
+
+
+- Hvem kan benytte <MsgExpiry>?  (Kun UCP, hva betyr det?)
+
+
+- Når er "Message Inquiry" ment å benyttes?
+
+- Sender dere en ACK på våre forespørsler også?
+
+  Svar:  Ja.
+
+  Kommentar:  Ble ikke sjekket i Perl-scriptet.
+
