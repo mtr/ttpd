@@ -96,6 +96,7 @@ class Handler(BaseHandler):
                 'AVBEST': 2}
     
     whitespace_replace_re = re.compile('\s+', re.MULTILINE)
+    dangerous_removes_re = re.compile('[\\\´`\'"]', re.MULTILINE)
     
     sms_trans_id = 'LINGSMSOUT'
     
@@ -132,8 +133,11 @@ class Handler(BaseHandler):
         
         # Retrieve incoming request.
         
-        meta, body = Message.receive(self.connection,
-                                         self.xml_parser)
+        meta, body = Message.receive(self.connection, self.xml_parser)
+
+        # Remove "dangerous" tokens from the request.
+
+        body = self.dangerous_removes_re.sub('', body)
         
         if meta.MxHead.TransID[:len(self.sms_trans_id)] == self.sms_trans_id:
             
