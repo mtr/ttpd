@@ -202,7 +202,7 @@ def group_by(extract_discriminators, set):
 
     return groups
 
-def make_bar_chart(data, x_axis_title, filename):
+def make_avg_chart(data, x_axis_title, filename):
     
     theme.get_options()
     
@@ -230,32 +230,53 @@ def make_bar_chart(data, x_axis_title, filename):
     can.close()
 
 
-def make_line_chart(data, x_axis_title, filename, transform):
+def make_chart(data, x_axis_title, filename, transform):
     
     data = [(transform(d[1]), d[3]) for d in data]
     
     theme.get_options()
     
     can = canvas.init(fname=filename)
+
+    chart_setup = {
+        24: {
+        'tic_interval': 3,
+        'minor_tic_interval': 1,
+        'chart_size_x': 500,
+        'chart_size_y': 200,
+        'max_width' : 500,
+        'width': 5},
+        168: {
+        'tic_interval': 6,
+        'minor_tic_interval': 1,
+        'chart_size_x': 500,
+        'chart_size_y': 200,
+        'max_width' : 500,
+        'width': 1}
+        }
     
-    ChartSize = (500, 200)
-    MaxWidth=500
+    cs = chart_setup[len(data)]
+    
+    ChartSize = (cs['chart_size_x'], cs['chart_size_y'])
+    MaxWidth = cs['max_width']
     chart_object.set_defaults(area.T, size = ChartSize)
-    
+
     ar = area.T(x_coord=category_coord.T(data, 0),legend=None,
                 y_range=(0, None),
-                x_axis=axis.X(label=x_axis_title, tic_interval=24,
+                x_axis=axis.X(label=x_axis_title,
+                              tic_interval=cs['tic_interval'],
+                              minor_tic_interval=cs['minor_tic_interval'],
                               format="/a-60/hL{}%s"),
                 y_axis=axis.Y(label="Requests"))
-
+    
     ar.add_plot(bar_plot.T(data=data,
                            fill_style=\
                            fill_style.Plain(bgcolor=color.cornflowerblue),
                            line_style=None,
+                           width=cs['width'],
                            label='Requests'
                            ))
 
-    #delattr(ar, 'legend')
     ar.draw(can)
     
     can.close()
@@ -295,14 +316,14 @@ def main():
         if options.week == 'this':
             year = int(datetime.date.today().year)
             week = datetime.date.today().isocalendar()[1]
-            print year, week
+            #print year, week
         else:
             year, week = [int(m) for m in options.week.split(',')]
             
         D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week - 1))
         options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
         options.end = options.start + datetime.timedelta(days=6)
-        print options.start, options.end
+        #print options.start, options.end
     
     # Add the contents of each file to the list of transactions.
     
@@ -320,12 +341,6 @@ def main():
             if options.filter_only:
                 print format_trans(trans)
                 continue
-
-            #print trans['date'], t
-            #diff = resolutions[options.resolution][3](trans['date'], t)
-            #if diff:
-            #    print 'Diff:', trans['date'], t
-            #    t += resolutions[options.resolution][4]
                 
             transactions.append(trans)
             
@@ -336,8 +351,13 @@ def main():
     # Insert temporal resolution place-holders.
 
     t = datetime.datetime.combine(options.start, datetime.time())
+    
+    if (options.resolution == 'hours'):
+        end = datetime.datetime.combine(options.end, datetime.time(23, 59, 0))
+    else:
+        end = options.end
 
-    while t < options.end:
+    while t < end:
         obj = {'date': t}
         
         for key in ['interface', 'host', 'trans_type']:
@@ -395,9 +415,10 @@ def main():
 
     if not transactions:
         return
-    
-    print '# Log started %s, and ended %s' % (transactions[0]['date'],
-                                              transactions[-1]['date'])
+
+    print '# This analysis was generated %s.' % str(datetime.datetime.now())
+    print '# First entry %s, and last endtry %s.' % (transactions[0]['date'],
+                                                     transactions[-1]['date'])
     
     if options.period:
         
@@ -431,11 +452,11 @@ def main():
     if options.chart:
 
         if options.period:
-            make_bar_chart(output, periods[options.period][2],
+            make_avg_chart(output, periods[options.period][2],
                            options.chart)
         else:
-            make_line_chart(L, resolutions[options.resolution][2],
-                            options.chart, resolutions[options.resolution][0])
+            make_chart(L, resolutions[options.resolution][2],
+                       options.chart, resolutions[options.resolution][0])
             
     return
 
