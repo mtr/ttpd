@@ -66,13 +66,37 @@ ttpd_analyze_options = [
       'help': "duration of TIME_UNITS for each temporal grouping; " \
       "available values are %s; the default is '%%(default)s'" %
       (', '.join(["'%s'" % x for x in resolutions]))}),
+    (['-m', '--averages-for'], # FIXEM: Maybe 'units' would match 'resolution'?
+     {'dest': 'averages_for',
+      'default': 'day_of_week',
+      'metavar': 'TIME_UNITS',
+      'help': "duration of TIME_UNITS for each temporal grouping; " \
+      "available values are %s; the default is '%%(default)s'" %
+      (', '.join(["'%s'" % x for x in resolutions]))}),
+    (['-f', '--from'],
+     {'dest': 'start',
+      'default': False,
+      'metavar': 'DATE',
+      'help': "Only consider entries including and later than DATE"}),
+    (['-t', '--to'],
+     {'dest': 'end',
+      'default': False,
+      'metavar': 'DATE',
+      'help': "Only consider entries up to and including DATE"}),
     (['-g', '--group-by'],
      {'dest': 'group_by',
       'default': 'interface,host,trans_type',
-      'metavar': 'GROUPS',
-      'help': "the GROUPS of the groupings used; available values are %s; " \
-      "the default is %%(default)s" %
-      (', '.join(["'%s'" % x for x in billing_re.groupindex]))})]
+      'metavar': 'FIELD,FIELD,...',
+      'help': "the FIELDS used to discriminate between groups used; " \
+      "available values are %s; the default is %%(default)s" %
+      (', '.join(["'%s'" % x for x in billing_re.groupindex]))}),
+    (['-R', '--restrict-to'],
+     {'dest': 'restrict_to',
+      'default': {},
+      'metavar': 'FIELD=VALUE,FIELD=VALUE,...',
+      'help': "the FIELD and value pairs used to restrict the output; " \
+      "only groups fulfilling the criteria are output"})]
+
 
 def file_filter(options, filename):
     
@@ -99,15 +123,16 @@ def format_trans(trans, reparsable = True):
 def convert_types(trans):
 
     trans['date_str'] = trans['date']
-    trans['date'] = time.strptime(trans['date'], '%Y-%m-%d %H:%M:%S')
+    tmp = time.strptime(trans['date'], '%Y-%m-%d %H:%M:%S')
+    trans['date'] = datetime.datetime(*tmp[:6])
     trans['billing'] = int(trans['billing'])
 
-def group_by(set, groups, extract_discriminators):
+def group_by(extract_discriminators, set):
+    
+    groups = {}
     
     for element in set:
-
         group = extract_discriminators(element)
-        
         if group not in groups:
             groups[group] = [element]
         else:
@@ -128,56 +153,61 @@ def main():
         parser.add_option(*option, **description)
         
     options, args = parser.parse_args()
-
-    options.group_by = options.group_by.split(',')
     
-    T = []
+    options.group_by = options.group_by.split(',')
+    if options.restrict_to:
+        options.restrict_to = dict([tuple(x.split('='))
+                                    for x in options.restrict_to.split(',')])
+
+    for moment, default in [('start', datetime.date.min),
+                            ('end', datetime.date.max)]:
+        if getattr(options, moment):
+            setattr(options, moment,
+                    datetime.date(*time.strptime(getattr(options, moment),
+                                                 '%Y-%m-%d')[:3]))
+        else:
+            setattr(options, moment, default)
+            
+    transactions = []
+
+    # Add the contents of each file.
     
     for file in args:
         lines = file_filter(options, file)
         
         for trans in lines:
             convert_types(trans)
+
+            if trans['date'] < options.start or options.end < trans['date']:
+                continue
             
             if options.filter_only:
                 print format_trans(trans)
                 continue
             
-            T.append(trans)
+            transactions.append(trans)
 
     if options.filter_only:
         return
 
-    groups = {}
-
     # Create the temporal groups, dependent of options.resolution.
     
-    for trans in T:
-        dt = datetime.datetime(*trans['date'][:6])
-        unit = resolutions[options.resolution][1](dt)
-        if unit not in groups:
-            groups[unit] = [trans]
-        else:
-            groups[unit].append(trans)
+    groups = group_by(lambda x:
+                      resolutions[options.resolution][1](x['date']),
+                      transactions)
 
+    #print groups
+    
     units = groups.keys()
     units.sort()
     
     for unit in units:
         print resolutions[options.resolution][0] % unit
-
-        subgroups = {}
         
-        for trans in groups[unit]:
-            subunit = tuple([trans[key] for key in options.group_by])
-            if subunit not in subgroups:
-                subgroups[subunit] = [trans]
-            else:
-                subgroups[subunit].append(trans)
-                
-            #print '\t', format_trans(trans)
-
-        #print subgroups
+        subgroups = group_by(lambda x:
+                             tuple([x[key] for key in options.group_by]),
+                             groups[unit])
+        
         subunits = subgroups.keys()
         subunits.sort()
 
@@ -191,8 +221,13 @@ def main():
                     billing += trans['billing']
                 else:
                     billing += 1
-
-            print '%s:\t%d' % (subunit, billing)
+                    
+            for i, field in enumerate(options.group_by):
+                if field in options.restrict_to and \
+                       options.restrict_to[field] != subunit[i]:
+                    break
+            else:
+                print '%s:\t%d' % (subunit, billing)
 
                 
     return
