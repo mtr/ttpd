@@ -13,13 +13,11 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-
 import optparse
 import os
 import re
 import signal
 import sys
-
 
 import TTP.Options
 import TTP.LogHandler
