@@ -15,5 +15,6 @@ setup(name = 'TTPD',
       author = 'Martin Thorsen Ranang',
       author_email = 'mtr@ranang.org',
       url = 'http://www.ranang.org/',
-      packages = ['ttpd']
+      packages = ['ttp'],
+      scripts = ['ttpd', 'ttpc']
       )
