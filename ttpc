@@ -213,7 +213,7 @@ def main():
     parser.setContentHandler(TTP.Message.XML2Message())
     
     m = TTP.Message.MessageRequest()
-    m.MxHead.TransID = options.trans_id
+    m.MxHead.TransId = options.trans_id
     if options.phone_number:
         m.MxHead.ORName = options.phone_number
         

@@ -19,6 +19,7 @@ import os
 import Queue
 import signal
 import sys
+import time
 import threading
 import xml.sax
 
@@ -92,6 +93,8 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         current load (measured in live threads) is to high, alert the
         sender that the load is currently too high. This method is
         called very early in the request-handling pipeline."""
+
+        time.sleep(3)
         
         thread_count = threading.activeCount()
         if thread_count >= self.high_load_limit:

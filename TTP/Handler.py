@@ -56,8 +56,8 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         self.server.log.info('\n%s\n%s' % (meta, body))
         
         ack = Message.MessageAck()
-        ack.MxHead.TransID = meta.MxHead.TransID
-        ack.MxHead.Ref = meta.MxHead.MsgId
+        ack.MxHead.TransId = 'LINGSMSOUT' # meta.MxHead.TransId
+        #ack.MxHead.Ref = meta.MxHead.MsgId
         Message.send(self.connection, ack)
         
     def escape(self, data):
@@ -95,9 +95,10 @@ class Handler(BaseHandler):
     billings = {'BILLING': 2,
                 'FREE': 0,
                 'VARSEL': 2,
-                'AVBEST': 2}
-        
-    sms_trans_id = 'LINGSMSOUT'
+                'AVBEST': 2,
+                'AVBEST_WRONG_ID': 2}
+    
+    sms_trans_id = 'LINGSMS'
     
     service_name = 'TEAM'
     
@@ -122,7 +123,7 @@ class Handler(BaseHandler):
                                      (self.service_name), re.IGNORECASE)
         self.cancel_command_re = \
                                re.compile('^(?P<command>%s) ' \
-                                          '(?P<ext_id>\S+)' %
+                                          '(?P<ext_id>[0-9a-z]+)' %
                                           '|'.join(self.command_misspellings),
                                           re.IGNORECASE)
         
@@ -155,19 +156,21 @@ class Handler(BaseHandler):
                                      'from %s: %s', self.client_address, body)
             self.request.close()
             return
+
+        self.server.log.debug('Received package:\n%s\n%s', meta, body)
         
         # Remove "dangerous" tokens from the request.
         
         body = self.dangerous_removes_re.sub('', body)
         
-        if meta.MxHead.TransID[:len(self.sms_trans_id)] == self.sms_trans_id:
+        if meta.MxHead.TransId[:len(self.sms_trans_id)] == self.sms_trans_id:
             
             is_sms_request = True
             
             # Since it is a SMS request, send an ACK.
             
             ack = Message.MessageAck()
-            ack.MxHead.TransID = meta.MxHead.TransID
+            ack.MxHead.TransId = meta.MxHead.TransId
             Message.send(self.connection, ack)
             
         else:
@@ -184,7 +187,7 @@ class Handler(BaseHandler):
         # Apply method to args.
         
         cost, pre_answer, answer, extra = method(args)
-
+        
         # Some special considerations to make when we answer an SMS
         # request.
         
@@ -197,7 +200,12 @@ class Handler(BaseHandler):
                 
                 id = self.server.tad.insert_alert(time.mktime(alert_date),
                                                   answer[:160],
-                                                  meta.MxHead.ORName)
+                                                  str(meta.MxHead.ORName))
+                
+                # Make the ID's seem a little more random.
+                
+                id = (id * 97) + 1003
+                
                 ext_id = num_hash.num2alpha(id)
                 
                 answer = 'Du vil bli varslet %s. %s %s' % \
@@ -231,7 +239,7 @@ class Handler(BaseHandler):
         # Send the answer to the client.
         
         ans = Message.MessageResult()
-        ans.MxHead.TransID = meta.MxHead.TransID
+        ans.MxHead.TransId = 'LINGSMSOUT' #ans.MxHead.TransId    #meta.MxHead.TransId
         
         # Again, if it is an SMS request we're handling, take special
         # care.
@@ -252,7 +260,7 @@ class Handler(BaseHandler):
                     
             ans._setMessage(answer)
             
-            ans.MxHead.ORName = meta.MxHead.ORName
+            ans.MxHead.ORName = str(meta.MxHead.ORName)
             ans.MxHead.Aux.Billing = self.billings[cost]
             
             try:
@@ -338,7 +346,7 @@ class Handler(BaseHandler):
         else:
             alert_date = None
             
-        # POST is deliberately not returned.
+        # The variable post is deliberately not returned.
         
         return pre, cost, alert_date, answer
     
@@ -346,14 +354,24 @@ class Handler(BaseHandler):
         
         """ Cancel the alert signified by ext_id. """
         
-        if ext_id.isalnum() and \
-               self.server.tad.cancel_alert(num_hash.alpha2num(ext_id)):
-            return ('AVBEST', None, 'Varsling med referanse ' \
-                    '%s ble avbestilt.' % (ext_id), ext_id)
+        num_id = num_hash.alpha2num(ext_id)
+        
+        if ((num_id - 1003) % 97):
+            self.server.log.warn('Received non-valid alert ID = "%s"' %
+                                 (ext_id))
+            return ('AVBEST_WRONG_ID', None,
+                    'Kan ikke avbestille "%s".' % (ext_id), ext_id)
         else:
-            return ('FREE', None,
-                    'Kunne ikke avbestille.  Fant ikke bestilling "%s".'
-                    % (ext_id), ext_id)
+            num_id = (num_id - 1003) / 97
+                
+            if self.server.tad.cancel_alert(num_id):
+                return ('AVBEST', None, 'Varsling med referanse ' \
+                        '%s ble avbestilt.' % (ext_id.upper()), ext_id)
+            else:
+                return ('FREE', None,
+                        'Kunne ikke avbestille. Fant ikke bestilling "%s".'
+                        % (ext_id), ext_id)
+            
         
     def tuc_query(self, data):
         

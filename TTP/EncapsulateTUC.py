@@ -137,7 +137,7 @@ class EncapsulateTUC(EncapsulateProcess):
                 exception = info
                 
             self.log = __ZeroLogger()
-        
+            
         # Call the parent's class constructor.
         
         EncapsulateProcess.__init__(self, command)

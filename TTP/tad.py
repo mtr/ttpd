@@ -22,6 +22,8 @@ import re
 import sys
 import threading
 import time
+import logging
+import socket
 
 import TTP.Message
 
@@ -47,8 +49,8 @@ class GeneralThreadingScheduler(threading.Thread):
     thread-safe.  Hence, I wrote this class.  The sheduler thread is
     started with <instance>.start(). """
     
-    def __init__(self, time_func = time.time, delay_func = time.sleep,
-                 delay = 0.01):
+    def __init__(self, log=None, time_func=time.time, delay_func=time.sleep,
+                 delay=0.01):
         
         """ Initialize the thread and remember timing options. """
         
@@ -56,6 +58,8 @@ class GeneralThreadingScheduler(threading.Thread):
         self.__queue_lock = threading.Condition(threading.Lock())
         self.__shutdown = False
         self.__shutdown_lock = threading.Condition(threading.Lock())
+        
+        self.log = logging.getLogger('ttpd.tad.handler')
         
         threading.Thread.__init__(self)
         
@@ -161,9 +165,30 @@ class GeneralThreadingScheduler(threading.Thread):
                 # arguments.
                 
                 moment, priority, action, arguments = event
+
+                try:
+                    action(arguments)
+                except socket.error:
+                    
+                    # Delay somewhere between 30 seconds and 3
+                    # minutes.
                 
-                action(arguments)
-                
+                    delay = random.randint(30, 3 * 60)
+                    
+                    self.__queue_lock.acquire()
+                    try:
+                        bisect.insort(self.__queue, (moment + delay, priority, action, arguments))
+                        
+                        self.delay_func(1)
+                    finally:
+                        self.__queue_lock.release()
+
+                    #self.log.debug('Could not perform action %s. Will try ' \
+                    #               'again in %d seconds (%s and %s)',
+                    #               (action, arguments),
+                    #               delay, moment, self.time_func())
+             
+                    
             # Wait some time while releasing the processor for other
             # threads.
             
@@ -212,9 +237,8 @@ class TUCAlertDaemon(object):
     
     short_log_format = '%s (%d)'
     
-    def __init__(self, remote_server_address,
-                 log_channel = LOG_CHANNEL, log_filename = None,
-                 log_level = logging.DEBUG):
+    def __init__(self, remote_server_address, log_channel=LOG_CHANNEL,
+                 log_filename=None, log_level=logging.DEBUG):
         
         """ Initialize the daemon. """
         
@@ -229,28 +253,28 @@ class TUCAlertDaemon(object):
             # our alerts.
             
             self.remote_server_address = remote_server_address
+
+            # First, initialize the logging facilities and start logging.
+
+            self.log_channel = log_channel
+            self.__log_filename = log_filename
+            
+            self.log_init(log_level)
             
             # A map from the ids of events to the events themselves.
             # The map is used to lookup the events given an id; needed
             # by e.g. cancel_alert.
-        
+            
             self.__events = {}
             
             self.scheduler = GeneralThreadingScheduler()
             self.__shutdown = False
             
-            self.__log_channel = log_channel
-            self.__log_filename = log_filename
-            
             self.__highest_id = 0
-            
-            # First, initialize the logging facilities and start logging.
-        
-            self.log_init(log_level)
 
             # Then restore the state of the scheduler based on the
             # very same (current) logs.
-        
+            
             self.restore()
             
         finally:
@@ -263,7 +287,7 @@ class TUCAlertDaemon(object):
         
         self.__lock.acquire()
         try:
-            self.log = logging.getLogger(self.__log_channel)
+            self.log = logging.getLogger(self.log_channel)
         finally:
             self.__lock.release()
             
@@ -378,8 +402,9 @@ class TUCAlertDaemon(object):
                 moment, priority, handler, data = self.__events[id]
                 ignore_id, ext_id, message = data
                 
-                self.log.critical(self.log_format % ('INSERTED', id, moment,
-                                                     ext_id, message))
+                self.log.critical(self.log_format, 'INSERTED', id,
+                                  moment, ext_id, message)
+                
             self.scheduler.release()
             
             self.log.info('... done storing the scheduler state.')
@@ -426,10 +451,8 @@ class TUCAlertDaemon(object):
             
             id, ext_id, message = data
             
-            # FIXME:  Send the actual alert.
-
             ans = TTP.Message.MessageAck()
-            ans.MxHead.TransID = 'LINGSMSOUT'
+            ans.MxHead.TransId = 'LINGSMSOUT'
             ans.MxHead.ORName = ext_id
             ans.MxHead.Aux.InitIf = 'IP'
             ans.MxHead.Aux.InitProto = 'REMOTE' # FIXME: Is this correct?
@@ -437,9 +460,8 @@ class TUCAlertDaemon(object):
             ans._setMessage(message)
             
             TTP.Message.communicate(ans, self.remote_server_address)
-                                    #self.server.xml_parser)
             
-            self.log.critical(self.short_log_format % ('ALERTED', id))
+            self.log.critical(self.short_log_format, 'ALERTED', id)
             
             del self.__events[id]
             
@@ -490,8 +512,10 @@ class TUCAlertDaemon(object):
         
             id = self.next_id()
             self._insert_alert(moment, message, id, ext_id)
-            self.log.critical(self.log_format % ('INSERTED', id, moment,
-                                                 ext_id, message))
+            
+            self.log.critical(self.log_format, 'INSERTED', id, moment,
+                              ext_id, message)
+            
             return id
         finally:
             self.__lock.release()

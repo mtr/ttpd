@@ -11,10 +11,13 @@ TTPD og "eSolutions":
   
   * Use of ORName and AUX tags in incoming messages, 2001-02-23
 
-  
+  Svar:  Jeg mottok nytt dokument, det hjalp veldig.
+
 - Mottar vi <ORName>-informasjon per i dag?  Kan vi få det?  Hva er
   reglene for bruk av denne?
 
+  Ikke spurt: Vi er nødt til å motta denne, fordi svaret må sendes
+  asynkront _og_ svaret skal komme frem til rett mobiltelefon.
   
 - Er det likegyldig hvilken rekkefølge XML-elementene kommer, så lenge
   de er "nøstet" korrekt (og starter med <?xml version="1.0"?>)?
