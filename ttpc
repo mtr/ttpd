@@ -40,6 +40,7 @@ def parse_command_line():
     options = TTP.Options.common_options + TTP.Options.ttpc_options
     
     TTP.Options.set_default(options, '--port', 2005),
+    TTP.Options.set_default(options, '--remote-port', 2004),
     
     for option, description in options:
         TTP.Options.update_help(description)

@@ -175,7 +175,6 @@ def update_help(option):
     
     if 'default' in option:
         value = option['default']
-        print option['help'], value
         option['help'] = option['help'] % {'default': value}
 
         
@@ -184,15 +183,6 @@ def main():
     """ Module mainline (for standalone execution). """
     
     import optparse
-    
-#     parser_a = optparse.OptionParser(version = '%%prog test')
-    
-#     for option in ttpd_options:
-#         parser_a.add_option(*option[0], **option[1])
-
-#     options, args = parser_a.parse_args()
-
-    #print ttpc_options
     
     parser_b = optparse.OptionParser(version = '%%prog test_b')
 
