@@ -18,7 +18,7 @@ ttpd_analyze $LOGS \
     --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
     --resolution=$RESOLUTION \
     --from=$START --to=$END \
-    --chart=$EXPORT/graphics/$FNAME.png \
+#    --chart=$EXPORT/graphics/$FNAME.png \
     > $EXPORT/$FNAME.txt
 
 RESOLUTION=hours

@@ -239,14 +239,22 @@ def make_chart(data, x_axis_title, filename, transform):
     can = canvas.init(fname=filename)
 
     chart_setup = {
-        24: {
+        7: {                            # Days per week.
+        'tic_interval': 1,
+        'minor_tic_interval': None,
+        'chart_size_x': 500,
+        'chart_size_y': 200,
+        'max_width' : 500,
+        'width': 5},
+        
+        24: {                           # Hours per day.
         'tic_interval': 3,
         'minor_tic_interval': 1,
         'chart_size_x': 500,
         'chart_size_y': 200,
         'max_width' : 500,
         'width': 5},
-        168: {
+        168: {                          # Hours per week.
         'tic_interval': 6,
         'minor_tic_interval': 1,
         'chart_size_x': 500,
@@ -254,7 +262,7 @@ def make_chart(data, x_axis_title, filename, transform):
         'max_width' : 500,
         'width': 1}
         }
-    
+        
     cs = chart_setup[len(data)]
     
     ChartSize = (cs['chart_size_x'], cs['chart_size_y'])
@@ -263,7 +271,7 @@ def make_chart(data, x_axis_title, filename, transform):
 
     ar = area.T(x_coord=category_coord.T(data, 0),legend=None,
                 y_range=(0, None),
-                x_axis=axis.X(label=x_axis_title,
+                x_axis=axis.X(label='Time', # x_axis_title,
                               tic_interval=cs['tic_interval'],
                               minor_tic_interval=cs['minor_tic_interval'],
                               format="/a-60/hL{}%s"),
@@ -352,10 +360,10 @@ def main():
 
     t = datetime.datetime.combine(options.start, datetime.time())
     
-    if (options.resolution == 'hours'):
-        end = datetime.datetime.combine(options.end, datetime.time(23, 59, 0))
-    else:
-        end = options.end
+    #if (options.resolution == 'hours'):
+    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 0))
+    #else:
+    #    end = options.end
 
     while t < end:
         obj = {'date': t}
