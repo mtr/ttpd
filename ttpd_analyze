@@ -42,19 +42,19 @@ ttpd_analyze_options = [
 
 resolutions = {
     'hours':
-    ('Hour',
+    ('%s Hour %02d',
      (lambda t: (t.date(), t.time().hour))),
     'days':
-    ('Day',
+    ('Day %s',
      (lambda t: t.date())),
     'weeks':
-    ('Week',
+    ('%d Week %02d',
      (lambda t: (t.year, t.isocalendar()[1]))),
     'months':
-    ('Month',
+    ('%d Month %02d',
      (lambda t: (t.year, t.month))),
     'years':
-    ('Year',
+    ('Year %d',
      (lambda t: t.year))
     }
                   
@@ -125,22 +125,37 @@ def main():
     units = groups.keys()
     units.sort()
 
+    options.subgroups = ['interface', 'host', 'trans_type'] 
+    
     for unit in units:
-        print resolutions[options.resolution][0], unit
-        for trans in groups[unit]:
-            print '\t', format_trans(trans)
-            
-    # Find the monday before start.
-    
-#     week_start = (log_start -
-#                   datetime.timedelta(days=log_start.weekday())).date()
+        print resolutions[options.resolution][0] % unit
 
-#     print 'Starting with week:', log_start.isocalendar()[1]
-    
-#     for trans in T:
-#         if datetime.datetime(*trans['date'][:6]) < week_start + datetime.timedelta(days=7):
-#             print 
-    
+        subgroups = {}
+        
+        for trans in groups[unit]:
+            subunit = tuple([trans[key] for key in options.subgroups])
+            if subunit not in subgroups:
+                subgroups[subunit] = []
+            else:
+                subgroups[subunit].append(trans)
+                
+            #print '\t', format_trans(trans)
+
+        #print subgroups
+        subunits = subgroups.keys()
+        subunits.sort()
+
+        for subunit in subunits:
+
+            billing = 0
+
+            for trans in subgroups[subunit]:
+                #print trans
+                billing += trans['billing']
+
+            print '%s:\t%d' % (subunit, billing)
+
+                
     return
 
 
