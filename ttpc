@@ -133,7 +133,7 @@ def main():
 
         server.serve_forever()
     
-    m = TTP.TTPMessageRequest()
+    m = TTP.MessageRequest()
     m.MxHead.TransID = 'LINGSMSOUT'
 
     if options.test_mode:

@@ -94,7 +94,7 @@ class Hierarchy(object):
         return '\n'.join(rl)
 
 
-class TTPMessage(Hierarchy):
+class Message(Hierarchy):
     
     """ A class for representing and handling hierarchally structured
     TTP messages. """
@@ -103,7 +103,7 @@ class TTPMessage(Hierarchy):
         
         Hierarchy.__init__(self)
         
-        self._class = TTPMessage
+        self._class = Message
         
         if meta:
             self.__setstate__(meta.__getstate__())
@@ -136,14 +136,14 @@ class TTPMessage(Hierarchy):
         
         return '%010d%s' % (len(tmp), tmp)
 
-class TTPMessageAck(TTPMessage):
+class MessageAck(Message):
 
-    """ A TTPMessage with some parameters set according to 'ACK'
+    """ A Message with some parameters set according to 'ACK'
     messages of the protocol. """
 
     def __init__(self):
         
-        TTPMessage.__init__(self)
+        Message.__init__(self)
         
         # Ack = 0 gives an immediate response from Message Switch (no end
         # to end confirmation).
@@ -166,37 +166,37 @@ class TTPMessageAck(TTPMessage):
         self.MxHead.Stat = 0
 
 
-class TTPMessageRequest(TTPMessageAck):
+class MessageRequest(MessageAck):
 
-    """ A TTPMessage pre-fit for sending requests. """
+    """ A Message pre-fit for sending requests. """
     
     def __init__(self):
 
-        TTPMessageAck.__init__(self)
+        MessageAck.__init__(self)
 
         del self.MxHead.Stat
         
-class TTPMessageResult(TTPMessageAck):
+class MessageResult(MessageAck):
 
-    """ A TTPMessage pre-fit for providing results. """
+    """ A Message pre-fit for providing results. """
     
     def __init__(self):
 
-        TTPMessageAck.__init__(self)
+        MessageAck.__init__(self)
         
         self.MxHead.Aux.Billing = 0
         self.MxHead.Aux.InitIf = 'IP'
         self.MxHead.Aux.InitProto = 'REMOTE'
 
 
-class XML2TTPMessage(xml.sax.ContentHandler):
+class XML2Message(xml.sax.ContentHandler):
     
     all_whitespace_re = re.compile('^\s+$')
     
     def startDocument(self):
 
         self.stack = []
-        self.data = TTPMessage() #Hierarchy()
+        self.data = Message() #Hierarchy()
         
     def set_current(self, value):
         

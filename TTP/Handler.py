@@ -20,7 +20,7 @@ import TTP
 import EncapsulateTUC
 
 
-class BaseTTPHandler(SocketServer.StreamRequestHandler):
+class BaseHandler(SocketServer.StreamRequestHandler):
 
     p_msg_re = re.compile('^(?P<head><\?xml .*</MxHead>)(?P<body>.*)$',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
@@ -48,7 +48,7 @@ class BaseTTPHandler(SocketServer.StreamRequestHandler):
 
     def send(self, message):
 
-        """ Send a TTPMessage. """
+        """ Send a Message. """
 
         self.wfile.write(message._generate())
         
@@ -75,8 +75,8 @@ class BaseTTPHandler(SocketServer.StreamRequestHandler):
         
         return data
 
-        
-class TTPHandler(BaseTTPHandler):
+    
+class Handler(BaseHandler):
     
     """ A handler class for request received over the TUC Transfer
     Protocol. """
@@ -128,7 +128,7 @@ class TTPHandler(BaseTTPHandler):
             #self.rfile.close()
             #self.wfile.close()
 
-            ack = TTP.TTPMessageAck()
+            ack = TTP.MessageAck()
             ack.MxHead.TransID = meta.MxHead.TransID
             
             self.send(ack)

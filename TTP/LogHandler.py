@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: latin-1 -*-
 """
-
 $Id$
 
 Copyright (C) 2004 by Martin Thorsen Ranang
@@ -16,7 +15,7 @@ class DaemonFileHandler(logging.FileHandler):
 
     """ A log file handler implementation well suited for daemon
     usage.  It's considered nice behavior of a daemon to reopen its
-    log files when it recieves a certain signal (usually SIGHUP). """
+    log files when it recieves a certain signal (usually SIGHUP)."""
     
     def reopen(self, mode = 'a'):
         
@@ -28,7 +27,7 @@ class DaemonFileHandler(logging.FileHandler):
         self.stream = new_stream
         
 
-class TTPDLogHandler(DaemonFileHandler):
+class LogHandler(DaemonFileHandler):
     
     """ A handler class which writes formatted logging records to disk
     files. """

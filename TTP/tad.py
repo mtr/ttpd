@@ -26,7 +26,7 @@ import time
 import random
 import threading
 
-import TTPDLogHandler
+#import LogHandler
 
 # The following values are only defaults and may be overridden in the
 # constructor call to TUCAlertDaemon.

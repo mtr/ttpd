@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# $Id: mksrcdoc.sh,v 1.2 2002/05/23 14:17:51 mtr Exp $
+# $Id$
 #
 # Copyright (C) 2002 by Martin Thorsen Ranang
 #

@@ -20,12 +20,12 @@ import xml.sax
 
 import EncapsulateTUC                   # For request-type constants.
 import TTP
-import TTPDLogHandler
+import LogHandler
 import TUCThread
 import tad
 
 
-class BaseTTPThreadingTCPServer(SocketServer.ThreadingTCPServer):
+class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
     
     # Allow the server to reuse its address (no need to wait for a
     # timeout).
@@ -63,7 +63,7 @@ class BaseTTPThreadingTCPServer(SocketServer.ThreadingTCPServer):
 
         # Initialize the XML parser.
         
-        self.xml_handler = TTP.XML2TTPMessage()
+        self.xml_handler = TTP.XML2Message()
         
         self.xml_error_handler = xml.sax.ErrorHandler()
         
@@ -86,7 +86,7 @@ class BaseTTPThreadingTCPServer(SocketServer.ThreadingTCPServer):
         information. """
         
         self.log = logging.getLogger(self.log_channel)
-        self.handler = TTPDLogHandler.TTPDLogHandler(self.log_filename)
+        self.handler = LogHandler.LogHandler(self.log_filename)
         self.log.addHandler(self.handler)
         self.log.setLevel(self.log_level)
         
@@ -138,7 +138,7 @@ class BaseTTPThreadingTCPServer(SocketServer.ThreadingTCPServer):
         sys.exit(0)
         
 
-class TTPThreadingTCPServer(BaseTTPThreadingTCPServer):
+class ThreadingTCPServer(BaseThreadingTCPServer):
     
     log_channel = 'ttpd'
     server_name = 'TTPD'
@@ -150,7 +150,7 @@ class TTPThreadingTCPServer(BaseTTPThreadingTCPServer):
         
         # Initialize base class.
         
-        BaseTTPThreadingTCPServer.__init__(self, server_address,
+        BaseThreadingTCPServer.__init__(self, server_address,
                                            RequestHandlerClass,
                                            log_filename, log_level,
                                            request_queue_size)
@@ -200,7 +200,7 @@ class TTPThreadingTCPServer(BaseTTPThreadingTCPServer):
         """ Handler for the HUP signal (as receive from a 'kill -HUP
         <pid>' command. """
         
-        BaseTTPThreadingTCPServer.hangup(self, signum, frame)
+        BaseThreadingTCPServer.hangup(self, signum, frame)
         
         if self.tad:
             self.store_tad_state(signum, frame)
