@@ -195,7 +195,8 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
         # alert daemon.
         
         if run_tad:
-            self.tad = tad.TUCAlertDaemon('%s.tad' % (self.log_channel),
+            self.tad = tad.TUCAlertDaemon(self.remote_server_address,
+                                          '%s.tad' % (self.log_channel),
                                           self.log_filename)
             self.tad.run()
         else:

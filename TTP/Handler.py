@@ -29,12 +29,15 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         
         meta, body = TTP.Message.receive(self.connection,
                                          self.server.xml_parser)
+
+        #if meta.MxHead.Len == 0:
+        #    self.server.log.info('\n%s\n%s' % ('ACK', body))
         
         self.server.log.info('\n%s\n%s' % (meta, body))
         
         ack = TTP.Message.MessageAck()
         ack.MxHead.TransID = meta.MxHead.TransID
-
+        ack.MxHead.Ref = meta.MxHead.MsgId
         TTP.Message.send(self.connection, ack)
         
     def escape(self, data):
@@ -66,24 +69,33 @@ class Handler(BaseHandler):
               '-': 'FREE',
               '!': 'VARSEL'}
     
+    # According to "Online Interface EAS Message Switch 2.4", a
+    # billing value of 1 == 0.5 NOK.
+    
     billings = {'BILLING': 2,
                 'FREE': 0,
                 'VARSEL': 2,
                 'AVBEST': 2}
     
     whitespace_replace_re = re.compile('\s+', re.MULTILINE)
-
+    
+    sms_trans_id = 'LINGSMSOUT'
+    
+    service_name = 'TEAM'
+    service_re = re.compile('^(?P<service>%s) (?P<body>.*)$' % (service_name),
+                            re.IGNORECASE)
+    
     cancel_command_info = 'Avbestill ved å sende ' \
-                          'TEAM AVBEST %s til 1939.'
+                          '%s AVBEST %%s til 1939.' % (service_name)
     
     command = 'avbestill'
     command_misspellings = [command[:i + 1] for i in range(1,len(command))]
-    cancel_command_re = re.compile('team ' \
-                                   '(?P<command>%s) ' \
+    cancel_command_re = re.compile(#'^(?P<service>%s) ' \
+                                   '^(?P<command>%s) ' \
                                    '(?P<ext_id>\S+)' %
                                    '|'.join(command_misspellings),
                                    re.IGNORECASE)
-
+    
     def handle(self):
 
         """ Handles a query received by the socket server.
@@ -99,48 +111,71 @@ class Handler(BaseHandler):
         
         self.server.log.debug('Connection from %s:%d.' %
                               (self.client_address[0], self.client_address[1]))
-
+        
         # Retrieve incoming request.
         
         meta, body = TTP.Message.receive(self.connection,
                                          self.server.xml_parser)
         
-        #print meta, body
-        if meta.MxHead.TransID == 'LINGSMSOUT':
-            #self.rfile.close()
-            #self.wfile.close()
-
+        if meta.MxHead.TransID[:len(self.sms_trans_id)] == self.sms_trans_id:
+            
+            is_sms_request = True
+            
+            # Since it is a SMS request, send an ACK.
+            
             ack = TTP.Message.MessageAck()
             ack.MxHead.TransID = meta.MxHead.TransID
-            
             TTP.Message.send(self.connection, ack)
             
-        method, args = self.preprocess(body)
+        else:
+            
+            is_sms_request = False
+            
+        # The preprocessing returns a method and some arguments.  The
+        # method should be applied on the arguments.
+        
+        method, args = self.preprocess(body, is_sms_request)
         
         self.server.log.debug('"%s"' % body)
         
+        # Apply method to args.
+        
         cost, answer, extra = method(args)
         
-        if cost == 'VARSEL':
-            alert_date = extra
+        if is_sms_request:
             
-            id = self.server.tad.insert_alert(time.mktime(alert_date),
-                                              answer, None)
-            ext_id = num_hash.num2alpha(id)
-            
-            answer = 'Du vil bli varslet %s. %s %s' % \
-                     (time.strftime('%X, %x', alert_date),
-                      self.cancel_command_info % ext_id.upper(), answer)
-            
-        elif cost == 'AVBEST':
-            ext_id = extra
+            if cost == 'VARSEL':
+                alert_date = extra
+                
+                # Insert the alert into the TAD scheduler.
+                
+                id = self.server.tad.insert_alert(time.mktime(alert_date),
+                                                  answer, meta.MxHead.ORName)
+                ext_id = num_hash.num2alpha(id)
+                
+                answer = 'Du vil bli varslet %s. %s %s' % \
+                         (time.strftime('%X, %x', alert_date),
+                          self.cancel_command_info % ext_id.upper(), answer)
+
+            elif cost == 'AVBEST':
+                ext_id = extra
         else:
+
+            # Non-SMS request for SMS-only services.
+            
+            if cost in ['VARSEL', 'AVBEST']:
+                answer = 'Beklager, %s av varsel er ' \
+                         'kun mulig via SMS.' % \
+                         ({'VARSEL': 'bestilling',
+                           'AVBEST': 'avbestilling'}[cost])
+                cost = 'FREE'
+                
             ext_id = ''
             
         # Hide "machinery" error messages from the user, but log them
         # for internal use.
         
-        if cost == 'FREE' and answer[0] == '%':
+        if cost == 'FREE' and (not answer) or answer[0] == '%':
             self.server.log.error('"%s"' % answer)
             answer = 'Forespørselen ble avbrutt.  Vennligst prøv igjen senere.'
             
@@ -149,12 +184,30 @@ class Handler(BaseHandler):
         ans = TTP.Message.MessageAck()
         ans.MxHead.TransID = meta.MxHead.TransID
         ans._setMessage(answer)
-
-        TTP.Message.communicate(ans, self.server.remote_server_address,
-                                self.server.xml_parser)
         
-        #self.wfile.write(answer)
-        
+        if is_sms_request:
+            
+            ans.MxHead.ORName = meta.MxHead.ORName
+            ans.MxHead.Aux.InitIf = 'IP'
+            ans.MxHead.Aux.InitProto = 'REMOTE' # FIXME: Is this correct?
+            ans.MxHead.Aux.Billing = self.billings[cost]
+            
+            try:
+                TTP.Message.communicate(ans,
+                                        self.server.remote_server_address,
+                                        self.server.xml_parser)
+            except:
+                
+                self.server.log.error("Couldn't connect to " \
+                                      "remote server (%s, %s)." % \
+                                      (self.server.remote_server_address))
+                answer = 'Fikk ikke sendt svaret. ' \
+                         'Det opprinnelige svaret var %s' % (answer)
+                cost = 'FREE'
+        else:
+            
+            TTP.Message.send(self.connection, ans)
+            
         # Log any interesting information.
         
         self.server.log.info('billing =%d\n%s %s\n"%s"\n"%s"\n-'
@@ -181,7 +234,7 @@ class Handler(BaseHandler):
             
             # The first line of the main block should contain billing
             # and timing information.
-
+            
             if main[0] in self.prices:
                 
                 meta, answer = main.split('\n', 1)
@@ -210,11 +263,11 @@ class Handler(BaseHandler):
             alert_date = time.strptime(meta[2:], '%Y%m%d%H%M%S')
         else:
             alert_date = None
-
+            
         # POST is deliberately not returned.
         
         return pre, cost, alert_date, answer
-
+    
     def cancel_alert(self, ext_id):
         
         """ Cancel the alert signified by ext_id. """
@@ -225,7 +278,7 @@ class Handler(BaseHandler):
         else:
             return ('FREE',
                     'Kunne ikke avbestille.  Fant ikke bestilling %s.'
-                    % ext_id, ext_id)
+                    % (ext_id), ext_id)
         
     def tuc_query(self, data):
         
@@ -263,14 +316,34 @@ class Handler(BaseHandler):
             
         return cost, answer, alert_date
     
-    def preprocess(self, request):
-
+    def preprocess(self, request, is_sms_request = False):
+        
         """ Perform pre-processing of the request. """
         
-        m = self.cancel_command_re.match(request)
+        # Check for (and handle) "TEAM ..." in start of message.
+        
+        m = self.service_re.match(request)
         if m:
-            ext_id = m.group('ext_id').lower()
-            return self.cancel_alert, ext_id
+            
+            # Service should become 'TEAM' here.
+            
+            service, body = m.groups()
+            
+            m = self.cancel_command_re.match(body)
+            if m and is_sms_request:
+                ext_id = m.group('ext_id').lower()
+                return self.cancel_alert, ext_id
+            elif m:
+
+                # Return a function that always returns _one_
+                # particular result, regardless of its input.  The
+                # return values should match those of self.tuc_query
+                # and self.cancel_alert.
+                
+                return (lambda x: ('AVBEST', None, None)), None
+            
+            else:
+                return self.tuc_query, body
         else:
             return self.tuc_query, request
 

@@ -17,14 +17,13 @@ import Queue
 import bisect
 import logging
 import os
+import random
 import re
 import sys
+import threading
 import time
 
-import random
-import threading
-
-#import LogHandler
+import TTP.Message
 
 # The following values are only defaults and may be overridden in the
 # constructor call to TUCAlertDaemon.
@@ -213,8 +212,9 @@ class TUCAlertDaemon(object):
     
     short_log_format = '%s (%d)'
     
-    def __init__(self, log_channel = LOG_CHANNEL,
-                 log_filename = None, log_level = logging.DEBUG):
+    def __init__(self, remote_server_address,
+                 log_channel = LOG_CHANNEL, log_filename = None,
+                 log_level = logging.DEBUG):
         
         """ Initialize the daemon. """
         
@@ -225,6 +225,11 @@ class TUCAlertDaemon(object):
         self.__lock.acquire()
         try:
 
+            # Remember the address of the remote to which we will send
+            # our alerts.
+            
+            self.remote_server_address = remote_server_address
+            
             # A map from the ids of events to the events themselves.
             # The map is used to lookup the events given an id; needed
             # by e.g. cancel_alert.
@@ -259,10 +264,6 @@ class TUCAlertDaemon(object):
         self.__lock.acquire()
         try:
             self.log = logging.getLogger(self.__log_channel)
-            
-            #self.handler = TTPDLogHandler.TTPDLogHandler(self.__log_filename)
-            #self.log.addHandler(self.handler)
-            #self.log.setLevel(log_level)
         finally:
             self.__lock.release()
             
@@ -414,14 +415,32 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def handle_alert(self, data):
+
+        """ A thread-safe alert handler.
         
+        @param data: A variable that holds the necessary information
+        to perform a meaningful alert.
+        """
         self.__lock.acquire()
         try:
-
+            
             id, ext_id, message = data
+            
+            # FIXME:  Send the actual alert.
 
+            ans = TTP.Message.MessageAck()
+            ans.MxHead.TransID = 'LINGSMSOUT'
+            ans.MxHead.ORName = ext_id
+            ans.MxHead.Aux.InitIf = 'IP'
+            ans.MxHead.Aux.InitProto = 'REMOTE' # FIXME: Is this correct?
+            ans.MxHead.Aux.Billing = 2
+            ans._setMessage(message)
+            
+            TTP.Message.communicate(ans, self.remote_server_address)
+                                    #self.server.xml_parser)
+            
             self.log.critical(self.short_log_format % ('ALERTED', id))
-
+            
             del self.__events[id]
             
         finally:
@@ -450,10 +469,19 @@ class TUCAlertDaemon(object):
             self.__lock.release()
         
     def insert_alert(self, moment, message, ext_id):
+        
+        """ Insert an alert into the TAD scheduler.
+        
+        @param moment: The time at which the alert should take place.
 
+        @param message: The message to be included in the alert.
+
+        @param ext_id: The ID of the entity to be alerted.
+        """
+        
         self.__lock.acquire()
         try:
-            print 'moment', moment
+            #print 'moment', moment
         
             id = self.next_id()
             self._insert_alert(moment, message, id, ext_id)
@@ -462,21 +490,27 @@ class TUCAlertDaemon(object):
             return id
         finally:
             self.__lock.release()
-        
+            
     def cancel_alert(self, id, command = 'CANCELED'):
+
+        """ Cancel an alert from the scheduler.
+
+        @param id: The id of the alert to be canceled.
         
+        @param command: The command word to write in the log file
+        (used for later restore operations).
+        
+        """
         self.__lock.acquire()
         try:
             if id not in self.__events:
                 return False
             
             event = self.__events[id]
-
-            (moment, priority, self.handle_alert, (id, ext_id, message)) = \
-                     event
-
-            self.log.critical(self.short_log_format %
-                              (command, id))
+            
+            (moment, priority, handle_alert, (id, ext_id, message)) = event
+            
+            self.log.critical(self.short_log_format % (command, id))
             
             self.scheduler.cancel(event)
             

@@ -64,11 +64,16 @@ def parse_command_line():
     
     parser.add_option('-t', '--test', dest = 'test_mode',
                       action = 'store_true', default = False,
-                      help = 'Run in looping test-mode.')
+                      help = 'run in looping test-mode')
     
     #parser.add_option('-d', '--no-daemon', dest = 'daemon',
     #                  action = 'store_false', default = True,
     #                  help = 'don\'t run as a daemon process')
+
+    parser.add_option('-T', '--phone-number', dest = 'phone_number',
+                      default = None, help = 'the number that the message ' \
+                      'supposedly was sent from',
+                      metavar = 'PHONE')
     
     parser.add_option('-i', '--input-file', dest = 'input_file',
                       default = None, help = 'Read input from FILE',
@@ -105,10 +110,6 @@ def parse_command_line():
     
     return options, args
 
-# def send(msg, host, port):
-    
-#     return commands.getoutput("echo -n '%s' | netcat -q 10 %s %s"
-#                               % (msg, host, port))
     
 def main():
     
@@ -143,10 +144,17 @@ def main():
     
     m = TTP.Message.MessageRequest()
     m.MxHead.TransID = options.trans_id
-
+    if options.phone_number:
+        m.MxHead.ORName = options.phone_number
+        
     parser = xml.sax.make_parser()
     parser.setContentHandler(TTP.Message.XML2Message())
     parser.setErrorHandler(xml.sax.ErrorHandler())
+
+    if options.trans_id == 'LINGSMSOUT':
+        pre_msg = 'TEAM '
+    else:
+        pre_msg = ''
     
     if options.test_mode:
         
@@ -163,7 +171,7 @@ def main():
         for i, line in enumerate(f):
             
             m.MxHead.MsgId = i
-            m._setMessage(line)
+            m._setMessage('%s%s' % (pre_msg, line))
             
             meta, body = TTP.Message.communicate(m, (options.ip_address,
                                                      options.port), parser)
@@ -175,14 +183,20 @@ def main():
         f.close()
         
     else:
+
+        # Request a single (non-alert) answer (as from a Web page).
+        
         m.MxHead.MsgId = -1
-        m._setMessage(args[0])
+        m._setMessage('%s%s' % (pre_msg, args[0]))
         
         meta, body = TTP.Message.communicate(m, (options.ip_address,
                                                  options.port), parser)
         
-        print '%s\n%s' % (meta, body)
-                
+        if options.log_level == logging.DEBUG:
+            print '%s\n%s' % (meta, body)
+        else:
+            print '%s' % (body)
+            
     return
 
 if __name__ == "__main__":
