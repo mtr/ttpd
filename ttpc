@@ -1,0 +1,167 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+
+""" 
+$Id$
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+import commands
+import logging
+import optparse
+import os
+import signal
+import sys
+import time
+
+import TTP
+import TTPHandler
+import TTPServer
+
+
+def parse_command_line():
+    
+    """ Parse the command line options. """
+    
+    basename = os.path.basename(sys.argv[0])
+    
+    parser = optparse.OptionParser(usage = '%prog [options] [request]',
+                                   version = '%%prog %s' % (__version__))
+    
+    parser.add_option('-a', '--ip-address', dest = 'ip_address',
+                      help = 'the ADDRESS of the interface on which ' \
+                      'to listen for connections from clients; ' \
+                      'if ADDRESS is 0 (the default) the server will ' \
+                      'listen on all available network interfaces.',
+                      metavar = 'ADDRESS', default = '0')
+    
+    parser.add_option('-p', '--port', dest = 'port',
+                      help = 'listen for connections from clients on PORT;' \
+                      'the default is 2005.', type = 'int', default = 2005,
+                      metavar = 'PORT')
+
+    parser.add_option('-q', '--socket-queue-size', dest = 'socket_queue_size',
+                      help = 'the SIZE of the socket queue; the default ' \
+                      'is 5', type = 'int', default = 5,
+                      metavar = 'SIZE')
+
+    parser.add_option('-l', '--listen-mode', dest = 'listen_mode',
+                      help = 'Listen for inbound connections',
+                      action = 'store_true', default = False)
+    
+    parser.add_option('-t', '--test', dest = 'test_mode',
+                      action = 'store_true', default = False,
+                      help = 'Run in looping test-mode.')
+    
+    #parser.add_option('-d', '--no-daemon', dest = 'daemon',
+    #                  action = 'store_false', default = True,
+    #                  help = 'don\'t run as a daemon process')
+    
+    parser.add_option('-i', '--input-file', dest = 'input_file',
+                      default = None, help = 'Read input from FILE',
+                      metavar = 'FILE')
+
+    parser.add_option('-f', '--log-file', dest = 'log_file',
+                      default = '%s.log' % basename,
+                      help = 'store the log in FILE; the default is ' \
+                      '\'%s.log\'' % basename, metavar = 'FILE')
+    
+    parser.add_option('-L', '--log-level', dest = 'log_level',
+                      default = 'info',
+                      help = 'the filter LEVEL used when logging; possible ' \
+                      'values are ' \
+                      'DEBUG < INFO < WARNING < ERROR < CRITICAL; the ' \
+                      'default is INFO' , metavar = 'LEVEL')
+
+    # Parse the command line.
+    
+    options, args = parser.parse_args()
+    
+    # Expand the any paths and make them absolute.
+    
+    options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
+    
+    # Create a mapping between the user-supplied log level string and
+    # the constants define by the logging module.
+    
+    log_levels = dict([(logging.getLevelName(l).lower(), l)
+                       for l in [logging.DEBUG, logging.INFO, logging.WARNING,
+                                 logging.ERROR, logging.CRITICAL]])
+    
+    options.log_level = log_levels[options.log_level]
+    
+    return options, args
+
+
+def send(msg, host, port):
+    
+    return commands.getoutput("echo -n '%s' | netcat -q 10 %s %s"
+                              % (msg, host, port))
+    
+def main():
+    
+    """ Module mainline (for standalone execution) """
+    
+    options, args = parse_command_line()
+    
+    if options.listen_mode:
+
+        # Create a server which will use a TUC Transfer Protocol Handler.
+    
+        server = TTPServer.BaseTTPThreadingTCPServer((options.ip_address,
+                                                      options.port),
+                                                     TTPHandler.BaseTTPHandler,
+                                                     options.log_file,
+                                                     options.log_level,
+                                                     options.socket_queue_size)
+        
+        # In Python, when the `signal' module is available, interrupts
+        # always go to the main thread.
+        #
+        # Register a signal handler for the hang-up signal.
+        
+        signal.signal(signal.SIGHUP, server.hangup)
+
+        # Register signal handlers for terminating signals.
+
+        signal.signal(signal.SIGINT, server.shutdown)
+        signal.signal(signal.SIGTERM, server.shutdown)
+
+        server.serve_forever()
+    
+    m = TTP.TTPMessageRequest()
+    m.MxHead.TransID = 'LINGSMSOUT'
+
+    if options.test_mode:
+        f = open(options.input_file, 'r')
+            
+        i = 0
+        for line in f:
+            
+            m.MxHead.MsgId = i
+            
+            output = send(m._generate(line), options.ip_address, options.port)
+            
+            print '%d: %s' % (i, output)
+            time.sleep(.5)
+            # time.sleep(2) Not necessary with only one client.
+            i += 1
+        
+        f.close()
+
+    else:
+        m.MxHead.MsgId = -1
+
+        output = send(m._generate(args[0]), options.ip_address, options.port)
+        
+        print '%s' % (output)
+                
+    return
+
+if __name__ == "__main__":
+    main()
+    

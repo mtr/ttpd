@@ -1,0 +1,73 @@
+#! /bin/sh
+#
+# ttpd		startup/shutdown script for the TTPD server.
+#
+# Author:	Martin Thorsen Ranang <mtr@ranang.org>.
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=./ttpd
+NAME=ttpd
+DESC="the TUC Transfer Protocol Daemon (TTPD)"
+LOG=./ttpd.log
+
+# Gracefully exit if the package has been removed.
+test -x $DAEMON || exit 0
+
+# Read config file if it is present.
+#[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+set -e
+
+FLAGS="-Ldebug --tuc-threads=1"
+
+function get_ttpd_pid()
+{
+    PID=`grep "ttpd INFO PID =" $LOG |tail -1 |cut -f 2 -d '=' |cut -f 1 -d ','`;
+    return
+}
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: $NAME"
+	$DAEMON $FLAGS #start
+	echo "."
+	;;
+  no-daemon)
+	echo -n "Starting $DESC: $NAME"
+	$DAEMON $FLAGS --no-daemon &
+	echo "."
+	;;
+  stop)
+	echo -n "Stopping $DESC: $NAME"
+	get_ttpd_pid
+	kill $PID
+	echo "."
+	;;
+  force-stop)
+	echo -n "Force-stopping $DESC: $NAME"
+	get_ttpd_pid
+	kill -9 $PID
+	echo "."
+	;;
+  restart)
+	echo -n "Restarting $DESC configuration..."
+	get_ttpd_pid
+	kill -HUP $PID
+	echo "done."
+	;;
+  store-state)
+	echo -n "Storing scheduler state in $DESC: $NAME"
+	get_ttpd_pid
+	kill -USR1 $PID
+	echo "."
+	;;
+  *)
+	N=/etc/init.d/$NAME
+	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $N {start|stop|restart|store-state}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

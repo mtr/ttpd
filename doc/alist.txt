@@ -1,0 +1,6 @@
+\acs{CPU}&\acl{CPU}\\
+\acs{I/O}&\acl{I/O}\\
+\acs{SMS}&\acl{SMS}\\
+\acs{TAD}&\acl{TAD}\\
+\acs{TTPD}&\acl{TTPD}\\
+\acs{TUC}&\acl{TUC}\\

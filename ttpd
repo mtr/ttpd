@@ -1,0 +1,186 @@
+#! /usr/bin/python -OOtt
+# -*- coding: latin-1 -*-
+"""
+
+$Id: ttpd 81 2004-08-20 17:36:33Z mtr $
+
+TUC Transfer Protocol Daemon (TTPD).
+
+This is a socket server responsible for dispatching requests from Web
+pages and SMS messages to TUC and for providing the clients with the
+corresponding output.
+
+Copyright (C) 2004 by Martin Thorsen Ranang
+"""
+
+__version__ = "0.8.0"
+
+# A diversity of imports.
+
+import locale
+import logging
+import optparse
+import os
+import re
+import signal
+import sys
+import threading
+import time
+
+import TTPHandler
+import TTPServer
+import ThreadPool
+import daemon
+import num_hash
+
+
+locale.setlocale(locale.LC_ALL, 'no_NO')
+
+def run(options):
+    
+    """ Setup the server and start the encapsulated-TUC thread
+    pool. """
+
+    # Create a mapping between the user-supplied log level string and
+    # the constants define by the logging module.
+    
+    log_levels = dict([(logging.getLevelName(l).lower(), l)
+                       for l in [logging.DEBUG, logging.INFO, logging.WARNING,
+                                 logging.ERROR, logging.CRITICAL]])
+    
+    # Create a server which will use a TUC Transfer Protocol Handler.
+    
+    server = TTPServer.TTPThreadingTCPServer((options.ip_address,
+                                              options.port),
+                                             TTPHandler.TTPHandler,
+                                             options.log_file,
+                                             log_levels[options.log_level],
+                                             options.socket_queue_size,
+                                             options.tuc_pool_size,
+                                             options.tuc_command,
+                                             options.run_tad,
+                                             (options.remote_ip_address,
+                                              options.remote_port))
+    
+    # In Python, when the `signal' module is available, interrupts
+    # always go to the main thread.
+    #
+    # Register a signal handler for the hang-up signal.
+    
+    signal.signal(signal.SIGHUP, server.hangup)
+    
+    # If the TAD is running, register a signal handler for storing the
+    # current scheduler information.
+    
+    if options.run_tad:
+        signal.signal(signal.SIGUSR1, server.store_tad_state)
+        
+    # Register signal handlers for terminating signals.
+    
+    signal.signal(signal.SIGINT, server.shutdown)
+    signal.signal(signal.SIGTERM, server.shutdown)
+    
+    server.serve_forever()
+
+    
+def main():
+
+    """ Module mainline (for standalone execution).  Define and parse
+    the various options that may be specified at the command line. """
+
+    basename = os.path.basename(sys.argv[0])
+    
+    # Define the parser options.
+    
+    parser = optparse.OptionParser(version = '%%prog %s' % (__version__))
+    
+    parser.add_option('-a', '--ip-address', dest = 'ip_address',
+                      help = 'the ADDRESS of the interface on which ' \
+                      'to listen for connections from clients; ' \
+                      'if ADDRESS is 0 (the default) the server will ' \
+                      'listen on all available network interfaces',
+                      metavar = 'ADDRESS', default = '0')
+    
+    parser.add_option('-p', '--port', dest = 'port',
+                      help = 'listen for connections from clients on PORT;' \
+                      'the default is 2004', type = 'int', default = 2004,
+                      metavar = 'PORT')
+    
+    parser.add_option('-b', '--remote-ip-address', dest = 'remote_ip_address',
+                      help = 'the ADDRESS of the interface on which ' \
+                      'to send outgoing communication; ' \
+                      'default is \'localhost\'',
+                      metavar = 'ADDRESS', default = 'localhost')
+    
+    parser.add_option('-P', '--remote-port', dest = 'remote_port',
+                      help = 'the remote PORT;' \
+                      'the default is 2005', type = 'int', default = 2005,
+                      metavar = 'PORT')
+
+    parser.add_option('-q', '--socket-queue-size', dest = 'socket_queue_size',
+                      help = 'the SIZE of the socket queue; the default ' \
+                      'is 5', type = 'int', default = 5,
+                      metavar = 'SIZE')
+
+    parser.add_option('-n', '--tuc-threads', dest = 'tuc_pool_size',
+                      help = 'start NUMBER concurrent TUC processes; ' \
+                      'the default is 3', type = 'int', default = 3,
+                      metavar = 'NUMBER')
+    
+    parser.add_option('-T', '--without-tuc', dest = 'run_tuc',
+                      action = 'store_false', default = True,
+                      help = 'don\'t start the TUC processes')
+
+    parser.add_option('-t', '--without-tad', dest = 'run_tad',
+                      action = 'store_false', default = True,
+                      help = 'don\'t start the TUC alert daemon (tad)')
+    
+    parser.add_option('-d', '--no-daemon', dest = 'daemon',
+                      action = 'store_false', default = True,
+                      help = 'don\'t run as a daemon process')
+    
+    parser.add_option('-f', '--log-file', dest = 'log_file',
+                      default = '%s.log' % basename,
+                      help = 'store the log in FILE; the default is ' \
+                      '\'%s.log\'' % basename, metavar = 'FILE')
+    
+    parser.add_option('-L', '--log-level', dest = 'log_level',
+                      default = 'info',
+                      help = 'the filter LEVEL used when logging; possible ' \
+                      'values are ' \
+                      'DEBUG < INFO < WARNING < ERROR < CRITICAL; the ' \
+                      'default is INFO' , metavar = 'LEVEL')
+    
+    parser.add_option('-s', '--path-to-tuc', dest = 'tuc_command',
+                      default = './busestuc.sav',
+                      help = 'run COMMAND as a TUC subprocess; ' \
+                      'the default is ./busestuc.sav',
+                      metavar = 'COMMAND')
+    
+    # Parse the command line.
+    
+    options, args = parser.parse_args()
+    
+    # Expand the any paths and make them absolute.
+    
+    options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
+    
+    options.tuc_command = \
+                        os.path.abspath(os.path.expanduser(options.tuc_command))
+
+    if options.daemon:
+
+        # Daemonize the server.  This will put the server (to be
+        # started) in the background and will give back the controll
+        # to the process that executed this script.
+        
+        daemon.create_daemon()
+        
+    # Run the server.
+    
+    run(options)
+    
+    return
+
+if __name__ == "__main__":
+    main ()
