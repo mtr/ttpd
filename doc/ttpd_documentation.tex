@@ -270,20 +270,20 @@ included here to make the \coa{API} documentation meaningful.
 
 \input{include_src}
 
-%\chapter{Source Code}
+\chapter{Source Code}
 
-%% {
-%% % A little hack to create a ``function index''.
-%% \makeatletter%
-%% \let\oldindex\index%
-%% \newcommand{\mtrindex}[1]{%
-%% \oldindex[src]{#1}%
-%% }
-%% \let\index\mtrindex%
-%% \makeatother%
-%% \input{include_src} % Include source-code listings.
-%% \let\index\oldindex%
-%% }
+{
+% A little hack to create a ``function index''.
+\makeatletter%
+\let\oldindex\index%
+\newcommand{\mtrindex}[1]{%
+\oldindex[src]{#1}%
+}
+\let\index\mtrindex%
+\makeatother%
+\input{include_src_src} % Include source-code listings.
+\let\index\oldindex%
+}
 
 %\input{include_src}
 

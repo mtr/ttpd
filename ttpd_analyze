@@ -11,8 +11,10 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-import re
 import optparse
+import re
+import time
+import datetime
 
 #import TTP.Options
 import TTP.LogHandler
@@ -21,18 +23,41 @@ option_list = []
 
 billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]+\] ' \
                         'billing=(?P<billing>\d+) (?P<interface>\S+) ' \
-                        '\((?P<host>[^,]+), (?P<trans_id>\w+)\) ' \
+                        '\((?P<host>[^,]+), (?P<trans_type>\w+)\) ' \
                         '(?P<what>\w+)$'
                         % (TTP.LogHandler.log_line_re_date))
 
-ttpdctl_options = [
+ttpd_analyze_options = [
     (['-F', '--filter-only'],
      {'dest': 'filter_only',
       'default': False,
       'action': 'store_true',
       'help': 'if this flag is given, the program will only return a ' \
-      'filtered list of "billing lines"'})]
+      'filtered list of "billing lines"'}),
+    (['-r', '--resolution'],
+     {'dest': 'resolution',
+      'default': 'weeks',
+      'metavar': 'RESOLUTION',
+      'help': 'the resolution of the groupings used'})]
 
+resolutions = {
+    'hours':
+    ('Hour',
+     (lambda t: (t.date(), t.time().hour))),
+    'days':
+    ('Day',
+     (lambda t: t.date())),
+    'weeks':
+    ('Week',
+     (lambda t: (t.year, t.isocalendar()[1]))),
+    'months':
+    ('Month',
+     (lambda t: (t.year, t.month))),
+    'years':
+    ('Year',
+     (lambda t: t.year))
+    }
+                  
 def file_filter(options, filename):
     
     """ Parse a log file and return the necessary information. """
@@ -41,10 +66,21 @@ def file_filter(options, filename):
     for line in file:
         m = billing_re.match(line)
         if m:
-            yield m.groups()
+            yield m.groupdict() #m.groups()
 
     file.close()
-            
+
+def format_trans(trans):
+    
+    return '%(date_str)s, %(billing)d, %(interface)s, %(host)s, ' \
+           '%(trans_type)s, %(what)s' % trans
+
+def convert_types(trans):
+
+    trans['date_str'] = trans['date']
+    trans['date'] = time.strptime(trans['date'], '%Y-%m-%d %H:%M:%S')
+    trans['billing'] = int(trans['billing'])
+    
 def main():
     
     """ Module mainline (for standalone execution). """
@@ -53,20 +89,58 @@ def main():
                                    version = '%%prog version %s' %
                                    (__version__))
     
-    for option, description in option_list:
+    for option, description in ttpd_analyze_options:
         #TTP.Options.update_help(description)
         parser.add_option(*option, **description)
         
     options, args = parser.parse_args()
 
+    T = []
+    
     for file in args:
         lines = file_filter(options, file)
         
-        for line in lines:
-            print line
+        for trans in lines:
+            convert_types(trans)
             
-            #return ':'.join([list(x) for x in lines])
-        
+            if options.filter_only:
+                print format_trans(trans)
+                continue
+            
+            T.append(trans)
+
+    if options.filter_only:
+        return
+
+    groups = {}
+    
+    for trans in T:
+        dt = datetime.datetime(*trans['date'][:6])
+        unit = resolutions[options.resolution][1](dt)
+        if unit not in groups:
+            groups[unit] = [trans]
+        else:
+            groups[unit].append(trans)
+
+    units = groups.keys()
+    units.sort()
+
+    for unit in units:
+        print resolutions[options.resolution][0], unit
+        for trans in groups[unit]:
+            print '\t', format_trans(trans)
+            
+    # Find the monday before start.
+    
+#     week_start = (log_start -
+#                   datetime.timedelta(days=log_start.weekday())).date()
+
+#     print 'Starting with week:', log_start.isocalendar()[1]
+    
+#     for trans in T:
+#         if datetime.datetime(*trans['date'][:6]) < week_start + datetime.timedelta(days=7):
+#             print 
+    
     return
 
 
