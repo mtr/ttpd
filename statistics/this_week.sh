@@ -5,7 +5,9 @@
 # Copyright (C) 2004 by Martin Thorsen Ranang
 #
 
-. ./general_config.sh
+CONFPATH=$HOME/statistics
+
+. $CONFPATH/general_config.sh
 
 RESOLUTION=days
 WEEK=this
