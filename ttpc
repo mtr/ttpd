@@ -23,6 +23,7 @@ import time
 import xml.sax
 
 import TTP.Message
+import TTP.Options
 
 import locale
 
@@ -31,80 +32,19 @@ def parse_command_line():
     
     """ Parse the command line options. """
     
-    basename = os.path.basename(sys.argv[0])
+    #basename = os.path.basename(sys.argv[0])
     
     parser = optparse.OptionParser(usage = '%prog [options] [request]',
                                    version = '%%prog %s' % (__version__))
 
-    parser.add_option('-I', '--transaction-id', dest = 'trans_id',
-                      help = 'the TRANS_ID to use when communicating with ' \
-                      'a remote server. Default is LINGSMSOUT.',
-                      metavar = 'TRANS_ID', default = 'LINGSMSOUT')
+    options = TTP.Options.common_options + TTP.Options.ttpc_options
     
-    parser.add_option('-a', '--ip-address', dest = 'ip_address',
-                      help = 'the ADDRESS of the interface on which ' \
-                      'to listen for connections from clients; ' \
-                      'if ADDRESS is 0 (the default) the server will ' \
-                      'listen on all available network interfaces.',
-                      metavar = 'ADDRESS', default = '0')
+    TTP.Options.set_default(options, '--port', 2005),
     
-    parser.add_option('-p', '--port', dest = 'port',
-                      help = 'listen for connections from clients on PORT;' \
-                      'the default is 2005.', type = 'int', default = 2005,
-                      metavar = 'PORT')
-    
-    parser.add_option('-Q', '--high-load-limit', dest='high_load_limit',
-                      help='maximum number of concurrently running threads; ' \
-                      'the default is 10', type='int', default=10,
-                      metavar='SIZE')
-    
-    parser.add_option('-q', '--socket-queue-size', dest = 'socket_queue_size',
-                      help = 'the SIZE of the socket queue; the default ' \
-                      'is 5', type = 'int', default = 5,
-                      metavar = 'SIZE')
-    
-    parser.add_option('-l', '--listen-mode', dest = 'listen_mode',
-                      help = 'Listen for inbound connections',
-                      action = 'store_true', default = False)
-    
-    parser.add_option('-t', '--test', dest = 'test_mode',
-                      action = 'store_true', default = False,
-                      help = 'run in looping test-mode')
-    
-    #parser.add_option('-d', '--no-daemon', dest = 'daemon',
-    #                  action = 'store_false', default = True,
-    #                  help = 'don\'t run as a daemon process')
-
-    parser.add_option('-T', '--phone-number', dest = 'phone_number',
-                      default = None, help = 'the number that the message ' \
-                      'supposedly was sent from; deault is None',
-                      metavar = 'PHONE')
-    
-    parser.add_option('-i', '--input-file', dest = 'input_file',
-                      default = None, help = 'Read input from FILE',
-                      metavar = 'FILE')
-
-    parser.add_option('-f', '--log-file', dest = 'log_file',
-                      default = '%s.log' % basename,
-                      help = 'store the log in FILE; the default is ' \
-                      '\'%s.log\'' % basename, metavar = 'FILE')
-    
-    parser.add_option('-L', '--log-level', dest = 'log_level',
-                      default = 'info',
-                      help = 'the filter LEVEL used when logging; possible ' \
-                      'values are ' \
-                      'DEBUG < INFO < WARNING < ERROR < CRITICAL; the ' \
-                      'default is INFO' , metavar = 'LEVEL')
-    
-    parser.add_option('-w', '--web', dest = 'web',
-                      help = 'generate output suitable for the Web; ' \
-                      'this implicates --transaction-id=WEB',
-                      action = 'store_true', default = False)
-
-    parser.add_option('-W', '--show-technical', dest = 'show_technical',
-                      help = 'show technical information (semantics)',
-                      action = 'store_true', default = False)
-    
+    for option, description in options:
+        TTP.Options.update_help(description)
+        parser.add_option(*option, **description)
+        
     # Parse the command line.
     
     options, args = parser.parse_args()
@@ -163,8 +103,8 @@ def run_listening_server(options):
 def run_single_test(m, options, parser):
     
     try:
-        meta, body = TTP.Message.communicate(m, (options.ip_address,
-                                                 options.port), parser)
+        meta, body = TTP.Message.communicate(m, (options.remote_ip_address,
+                                                 options.remote_port), parser)
     except:
         meta, body = None, 'An error occured. Service currently not available.'
         return meta, body

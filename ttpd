@@ -22,9 +22,10 @@ import os
 import signal
 import sys
 
-import TTP.daemon
-import TTP.Server
 import TTP.Handler
+import TTP.Options
+import TTP.Server
+import TTP.daemon
 
 #locale.setlocale(locale.LC_ALL, 'no_NO')
 
@@ -80,78 +81,20 @@ def main():
 
     """ Module mainline (for standalone execution).  Define and parse
     the various options that may be specified at the command line. """
-
+    
     basename = os.path.basename(sys.argv[0])
     
     # Define the parser options.
     
     parser = optparse.OptionParser(version = '%%prog %s' % (__version__))
-    
-    parser.add_option('-a', '--ip-address', dest='ip_address',
-                      help='the ADDRESS of the interface on which ' \
-                      'to listen for connections from clients; ' \
-                      'if ADDRESS is 0 (the default) the server will ' \
-                      'listen on all available network interfaces',
-                      metavar='ADDRESS', default='0')
-    
-    parser.add_option('-p', '--port', dest='port',
-                      help='listen for connections from clients on PORT;' \
-                      'the default is 2004', type='int', default=2004,
-                      metavar='PORT')
-    
-    parser.add_option('-b', '--remote-ip-address', dest='remote_ip_address',
-                      help='the ADDRESS of the interface on which ' \
-                      'to send outgoing communication; ' \
-                      'default is \'localhost\'',
-                      metavar='ADDRESS', default='localhost')
-    
-    parser.add_option('-P', '--remote-port', dest='remote_port',
-                      help='the remote PORT; the default is 2005',
-                      type='int', default=2005, metavar='PORT')
 
-    parser.add_option('-Q', '--high-load-limit', dest='high_load_limit',
-                      help='maximum number of concurrently running threads; ' \
-                      'the default is 10', type='int', default=10,
-                      metavar='SIZE')
+    # Merge the common (for both TTPD and TTPC) options.
     
-    parser.add_option('-q', '--socket-queue-size', dest='socket_queue_size',
-                      help='the SIZE of the socket queue; the default ' \
-                      'is 5', type='int', default=5,
-                      metavar='SIZE')
-
-    parser.add_option('-n', '--tuc-threads', dest='tuc_pool_size',
-                      help='start NUMBER concurrent TUC processes;' \
-                      'the default is 3', type='int', default=3,
-                      metavar='NUMBER')
+    options = TTP.Options.common_options + TTP.Options.ttpd_options
     
-    parser.add_option('-T', '--without-tuc', dest='run_tuc',
-                      action='store_false', default=True, help='don\'t ' \
-                      'start the TUC processes')
-
-    parser.add_option('-t', '--without-tad', dest='run_tad',
-                      action='store_false', default=True, help='don\'t ' \
-                      'start the TUC alert daemon (tad)')
-    
-    parser.add_option('-d', '--no-daemon', dest='daemon',
-                      action='store_false', default=True, help='don\'t ' \
-                      'run as a daemon process')
-    
-    parser.add_option('-f', '--log-file', dest='log_file',
-                      default='%s.log' % basename, help='store the log ' \
-                      'in FILE; the default is \'%s.log\'' %
-                      basename, metavar='FILE')
-    
-    parser.add_option('-L', '--log-level', dest='log_level',
-                      default='info',
-                      help='the filter LEVEL used when logging; possible ' \
-                      'values are ' \
-                      'DEBUG < INFO < WARNING < ERROR < CRITICAL; the ' \
-                      'default is INFO' , metavar='LEVEL')
-    
-    parser.add_option('-s', '--path-to-tuc', dest='tuc_command',
-                      default='./busestuc.sav', help='run COMMAND as a ' \
-                      'TUC subprocess; the default is ./busestuc.sav',
-                      metavar='COMMAND')
+    for option, description in options:
+        TTP.Options.update_help(description)
+        parser.add_option(*option, **description)
     
     # Parse the command line.
     
