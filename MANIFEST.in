@@ -1,0 +1,4 @@
+include *.txt INSTALL USAGE
+recursive-include examples *.txt *.py
+include doc/ttpd_documentation.ps
+prune examples/sample?/build
