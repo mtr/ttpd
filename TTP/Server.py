@@ -45,7 +45,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
     # Set the log channel of this server.
     
     log_channel = 'base'
-    server_name = 'Base TPP server'
+    server_name = 'Base TPP Server'
 
     def __init__(self, server_address, RequestHandlerClass,
                  log_filename, log_level=logging.DEBUG,
@@ -69,13 +69,13 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         # Prepare the high load warning/excuse message.
         
-        hlw = Message.MessageResult()
-        hlw.MxHead.Stat = 51 # Destination application send error.
-        hlw._setMessage('Beklager, men det er for øyeblikket ' \
+        w = Message.MessageAck()
+        w.MxHead.Stat = 51       # Destination application send error.
+        w._setMessage('Beklager, men det er for øyeblikket ' \
                         'svært stor pågang på denne tjenesten. ' \
                         'Vennligst prøv igjen senere.')
-        
-        self.high_load_warning = hlw._generate()
+
+        self.high_load_warning = w._generate()
         
         # Initialize the base class.
         

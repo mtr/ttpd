@@ -20,7 +20,6 @@ import socket
 import sys
 import time
 import xml.sax
-#import copy
 
 __all__ = ['Message',
            'MessageAck',
@@ -245,24 +244,24 @@ class XML2Message(xml.sax.ContentHandler):
             self.set_current(None)
         self.stack.pop()
 
-
-def _recv(connection, buf_size, timeout = None):
+      
+def _recv(connection, buf_size, timeout=False):
     
     """ Read bufsize bytes or error on timeout. """
     
     started = time.time()
     buf = ''
     
-    while (buf_size - len(buf)) > 0 or \
-              (timeout and ((time.time() - started) > timeout)):
+    while ((buf_size - len(buf)) > 0) and \
+              (not timeout or ((time.time() - started) < timeout)):
         buf += connection.recv(buf_size - len(buf))
         
     return buf
 
-def build(data, parser = None):
+def build(data, parser=None):
     
     """ Build a Message object based on an input XML string. """
-
+    
     sinput = cStringIO.StringIO(data)
     inpsrc = xml.sax.InputSource()
     inpsrc.setByteStream(sinput)
@@ -278,20 +277,47 @@ def build(data, parser = None):
 
     return parser.getContentHandler().data
 
-def receive(connection, parser = None, timeout = False):
+def receive(connection, parser=None, timeout=False):
     
     """ Receive a message from a socket connection. """
 
+    w = MessageAck()
+    w.MxHead.Stat = 10 # Communication problems btw sender and switch.
+    
     preamble_len = 10
     len_data = _recv(connection, preamble_len, timeout)
+
+    try:
+        data_len = int(len_data)
+    except ValueError, info:
+        what = '%s: %s' % (sys.exc_info()[0], info)
+        
+        # Try to receive some more data, but not more than 4096 bytes.
+        
+        data = len_data + _recv(connection, 4096, 3)
+        
+        w._setMessage("Server: TTPD.  Error: Malformed input.")
+        send(connection, w)
+        
+        return None, '%s: all = "%s".\n' % (what, data)
     
-    data = _recv(connection, int(len_data), timeout)
-    
+    data = _recv(connection, data_len, timeout)
+
     m = msg_re.match(data)
     if m:
         head, body = m.groups()
+    else:
+        head, body = data, None
         
-    meta = build(head, parser)
+    try:
+        meta = build(head, parser)
+    except xml.sax.SAXParseException, info:
+        what = '%s: %s' % (sys.exc_info()[0], info)
+        
+        w._setMessage("Server: TTPD.  Error: %s." % what)
+        send(connection, w)
+        
+        return None, '%s, data = %s.' %  (what, (head, body))
     
     return meta, body
 

@@ -96,29 +96,38 @@ class Handler(BaseHandler):
                 'FREE': 0,
                 'VARSEL': 2,
                 'AVBEST': 2}
-    
-    whitespace_replace_re = re.compile('\s+', re.MULTILINE)
-    dangerous_removes_re = re.compile('[\\\´`\'"]', re.MULTILINE)
-    
+        
     sms_trans_id = 'LINGSMSOUT'
     
     service_name = 'TEAM'
-    service_re = re.compile('^(?P<service>%s) (?P<body>.*)$' % (service_name),
-                            re.IGNORECASE)
     
     cancel_command_info = 'Avbestill ved å sende ' \
                           '%s AVBEST %%s til 1939.' % (service_name)
     
     command = 'avbestill'
     command_misspellings = [command[:i + 1] for i in range(1,len(command))]
-    cancel_command_re = re.compile(#'^(?P<service>%s) ' \
-                                   '^(?P<command>%s) ' \
-                                   '(?P<ext_id>\S+)' %
-                                   '|'.join(command_misspellings),
-                                   re.IGNORECASE)
-    
-    def handle(self):
 
+    def setup(self):
+        
+        """ Setup some thread-specific resources before handling the
+        request. """
+
+        # Call the base class setup method first.
+        
+        BaseHandler.setup(self)
+        
+        self.whitespace_replace_re = re.compile('\s+', re.MULTILINE)
+        self.dangerous_removes_re = re.compile('[\\\´`\'"]', re.MULTILINE)
+        self.service_re = re.compile('^(?P<service>%s) (?P<body>.*)$' % \
+                                     (self.service_name), re.IGNORECASE)
+        self.cancel_command_re = \
+                               re.compile('^(?P<command>%s) ' \
+                                          '(?P<ext_id>\S+)' %
+                                          '|'.join(self.command_misspellings),
+                                          re.IGNORECASE)
+        
+    def handle(self):
+        
         """ Handles a query received by the socket server.
         
         The incoming data is available through self.rfile and feedback
@@ -136,9 +145,19 @@ class Handler(BaseHandler):
         # Retrieve incoming request.
         
         meta, body = Message.receive(self.connection, self.xml_parser)
-
+        
+        # If nothing was received, or there was an error, we skip
+        # further processing.
+        
+        if not meta:
+            if body:
+                self.server.log.warn('Did not receive complete request ' \
+                                     'from %s: %s', self.client_address, body)
+            self.request.close()
+            return
+        
         # Remove "dangerous" tokens from the request.
-
+        
         body = self.dangerous_removes_re.sub('', body)
         
         if meta.MxHead.TransID[:len(self.sms_trans_id)] == self.sms_trans_id:
@@ -177,7 +196,8 @@ class Handler(BaseHandler):
                 # Insert the alert into the TAD scheduler.
                 
                 id = self.server.tad.insert_alert(time.mktime(alert_date),
-                                                  answer, meta.MxHead.ORName)
+                                                  answer[:160],
+                                                  meta.MxHead.ORName)
                 ext_id = num_hash.num2alpha(id)
                 
                 answer = 'Du vil bli varslet %s. %s %s' % \
@@ -218,6 +238,18 @@ class Handler(BaseHandler):
         
         if is_sms_request:
             
+            # The maximum length of an SMS message is 160 tokens.
+            
+            if len(answer) > 160:
+                answer = answer[:160]
+                
+                # If the answer had to be cut down to 160 tokens, it
+                # should be free, unless it was an alert-related
+                # message.
+                
+                if cost != 'VARSEL':
+                    cost == 'FREE'
+                    
             ans._setMessage(answer)
             
             ans.MxHead.ORName = meta.MxHead.ORName
@@ -236,6 +268,9 @@ class Handler(BaseHandler):
                          'Det opprinnelige svaret var %s' % (answer)
                 cost = 'FREE'
         else:
+
+            # A Web-ish client.  Send the answer back to the same
+            # socket we received the request from.
             
             tuc_ans = Message.Message()
             
@@ -251,7 +286,7 @@ class Handler(BaseHandler):
         
         self.server.log.info('billing =%d\n%s %s\n"%s"\n"%s"\n-'
                              % (self.billings[cost], cost, ext_id, body,
-                                answer.replace('\n', ' ')))
+                                answer))
 
         # Close the socket.
         
@@ -311,12 +346,13 @@ class Handler(BaseHandler):
         
         """ Cancel the alert signified by ext_id. """
         
-        if self.server.tad.cancel_alert(num_hash.alpha2num(ext_id)):
+        if ext_id.isalnum() and \
+               self.server.tad.cancel_alert(num_hash.alpha2num(ext_id)):
             return ('AVBEST', None, 'Varsling med referanse ' \
                     '%s ble avbestilt.' % (ext_id), ext_id)
         else:
             return ('FREE', None,
-                    'Kunne ikke avbestille.  Fant ikke bestilling %s.'
+                    'Kunne ikke avbestille.  Fant ikke bestilling "%s".'
                     % (ext_id), ext_id)
         
     def tuc_query(self, data):
