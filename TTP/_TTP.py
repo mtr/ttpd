@@ -22,6 +22,12 @@ import sys
 import xml.sax
 import copy
 
+__all__ = ['Message',
+           'MessageAck',
+           'MessageRequest',
+           'MessageResult',
+           'XML2Message']
+
 class Hierarchy(object):
     
     """ Organizes hierarchical data as a tree. """
