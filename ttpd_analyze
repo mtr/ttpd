@@ -348,11 +348,11 @@ def parse_options():
         D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week - 1))
         options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
 
-        if not options.end:
+        if (not options.end) or (options.end == datetime.date.max):
             options.end = options.start + datetime.timedelta(days=6)
 
         #print options.start, options.end
-            
+        
     return options, args
 
 def transactions_from_files(options, args):
@@ -382,14 +382,13 @@ def transactions_from_files(options, args):
 
     t = datetime.datetime.combine(options.start, datetime.time())
 
-    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 59))
+    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 00))
 
     #print "Before"
     #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
     #                 for x in transactions])
                     
     while t < end:
-        #print t.isocalendar()[0:2]
         obj = {'date': t}
         
         for key in ['interface', 'host', 'trans_type']:
@@ -397,7 +396,7 @@ def transactions_from_files(options, args):
                 obj[key] = options.restrict_to[key]
             else:
                 obj[key] = None
-            
+                
         transactions.append(obj)
         t += resolutions[options.resolution][4]
         
