@@ -34,3 +34,8 @@ To install this package (and its scripts), the following should do:
 That should be all that's needed to install this package.  After this,
 the commands 'ttpd' and 'ttpc' should be available in the
 '<your-install-path>/bin/' directory.
+
+
+	 Martin Thorsen Ranang <mtr@ranang.org>, 2004-08-24.
+
+$Id$
