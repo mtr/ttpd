@@ -1,0 +1,59 @@
+Basic Usage Guide for the TUC Transfer Protocol Daemon
+=======================================================
+
+After you have installed the programs (as described in the file
+'INSTALL'), you may start to use the program.
+
+The easiest way to start and stop the TTPD is by using the program
+'ttpdctl'.
+
+The typical flags to pay attention to are:
+
+  -aADDRESS, --ip-address=ADDRESS
+                        the ADDRESS of the interface on which to listen for
+                        connections from clients; if ADDRESS is 0 (the default)
+                        the server will listen on all available network
+                        interfaces
+  -pPORT, --port=PORT   listen for connections from clients on PORT; the
+                        default is 2004
+  -AADDRESS, --remote-ip-address=ADDRESS
+                        the ADDRESS of the interface on which to send outgoing
+                        communication; default is 'localhost'
+  -PPORT, --remote-port=PORT
+                        the remote PORT; the default is 2005
+  -LLEVEL, --log-level=LEVEL
+                        the filter LEVEL used when logging; possible values are
+                        'debug' < 'info' < 'warning' < 'error' < 'critical';
+                        the default is info
+  -sCOMMAND, --path-to-tuc=COMMAND
+                        run COMMAND as TUC subprocess; the default is
+                        ./busestuc.sav
+
+
+A typical Web-installation would be started like:
+
+  ttpdctl --path-to-tuc=$HOME/buster/busestuc start
+
+possibly with the additional flag '--log-level=debug'.
+
+If you would like to communicate with eSolutions, the following flags
+must be used:
+
+  --port=8081 --remote-ip-address=easprod.esolutions.no --remote-port=8000
+
+
+To stop the daemon, type:
+
+  ttpdctl stop
+
+If you have changed the location of the log file, which is used for
+retrieveing the PID of the currently running process, add the flag
+'--old-log-file=<file>, where <file> denotes the new location.
+
+The actions 'restart' and 'store_alerts' may be used in the same way
+as 'stop'.
+
+
+
+Martin Thorsen Ranang
+

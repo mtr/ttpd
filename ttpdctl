@@ -56,7 +56,9 @@ def main():
     
     """ Module mainline (for standalone execution). """
     
-    parser = optparse.OptionParser(version = '%%prog version %s' %
+    parser = optparse.OptionParser(usage = '%prog [options] ' \
+                                   'start|stop|restart|store_alerts',
+                                   version = '%%prog version %s' %
                                    (__version__))
 
     option_list = TTP.Options.common_options + TTP.Options.ttpd_options
