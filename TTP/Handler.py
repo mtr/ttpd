@@ -14,10 +14,12 @@ import Queue
 import SocketServer
 import cStringIO
 import re
+import time
 import xml.sax
 
 import TTP.Message
 import EncapsulateTUC
+import num_hash
 
 
 class BaseHandler(SocketServer.StreamRequestHandler):

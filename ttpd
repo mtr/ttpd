@@ -24,6 +24,7 @@ import os
 import signal
 import sys
 
+import TTP.daemon
 import TTP.Server
 import TTP.Handler
 
@@ -172,7 +173,7 @@ def main():
         # started) in the background and will give back the controll
         # to the process that executed this script.
         
-        daemon.create_daemon()
+        TTP.daemon.create_daemon()
         
     # Run the server.
     

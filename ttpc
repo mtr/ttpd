@@ -142,7 +142,7 @@ def main():
 
     if options.test_mode:
 
-        if not os.access(options.tuc_command, os.R_OK):
+        if not os.access(options.input_file, os.R_OK):
             print "You have to supply a path to a readable " \
                   "test-input file.\n" \
                   "The current value, '%s', is not a readable file." \
