@@ -457,18 +457,18 @@ def main():
                         billing += 1
                     
             for i, field in enumerate(options.group_by):
-                if field in options.restrict_to and \
-                       options.restrict_to[field] != subunit[i]:
+                if (field in options.restrict_to) and \
+                       (options.restrict_to[field] != subunit[i]):
                     break
             else:
                 L.append((trans, unit, subunit, billing))
 
     if not transactions:
         return
-
+    
     print '# This analysis was generated %s.' % str(datetime.datetime.now())
-    print '# First entry %s, and last endtry %s.' % (transactions[0]['date'],
-                                                     transactions[-1]['date'])
+    print '# First entry %s, and last entry %s.' % (transactions[0]['date'],
+                                                    transactions[-1]['date'])
     
     if options.period:
         
