@@ -10,7 +10,7 @@ Copyright (C) 2004 by Martin Thorsen Ranang
 from distutils.core import setup
 
 setup(name = 'TTPD',
-      version = '0.9.0',
+      version = '0.9.1',
       description = 'TUC Transfer Protocol Daemon and TUC Alert Daemon',
       author = 'Martin Thorsen Ranang',
       author_email = 'mtr@ranang.org',
