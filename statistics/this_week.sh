@@ -14,7 +14,7 @@ WEEK=this
 FNAME=this_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
-    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+    --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
     --chart=$EXPORT/graphics/$FNAME.png \
@@ -24,7 +24,7 @@ RESOLUTION=hours
 FNAME=this_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
-    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+    --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
     --chart=$EXPORT/graphics/$FNAME.png \

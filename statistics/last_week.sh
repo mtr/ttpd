@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2004 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2006 by Martin Thorsen Ranang
 #
 
 CONFPATH=$HOME/statistics
@@ -16,7 +16,7 @@ WEEK=$year,$week
 FNAME=last_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
-    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+    --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
     --chart=$EXPORT/graphics/$FNAME.png \
@@ -26,7 +26,7 @@ RESOLUTION=hours
 FNAME=last_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
-    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+    --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
     --chart=$EXPORT/graphics/$FNAME.png \

@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2004 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2006 by Martin Thorsen Ranang
 #
 
 CONFPATH=$HOME/statistics
@@ -13,7 +13,7 @@ RESOLUTION=weeks
 year=$((`date +%Y` - 1))
 week=$((`date +%V` + 1))
 
-if [ $week -gt 53 ]; then
+if [ "$week" -gt "53" ]; then
     week=1;
     year=$(( $year + 1 ));
 fi
@@ -23,7 +23,7 @@ END=`date +%Y-%m-%d`
 FNAME=last_52_weeks_$RESOLUTION
 
 ttpd_analyze $LOGS \
-    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+    --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
     --to=$END \
