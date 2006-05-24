@@ -24,3 +24,5 @@ TRANS_TYPE="LINGSMSIN"
 
 #RESTRICTIONS="interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE"
 RESTRICTIONS="interface=$INTERFACE,trans_type=$TRANS_TYPE"
+
+echo "$(date +%Y%m%d-%H:%M:%S): $0: starting"
