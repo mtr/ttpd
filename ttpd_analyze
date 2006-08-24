@@ -146,6 +146,11 @@ ttpd_analyze_options = [
       'default': False,
       'action': 'store_true',
       'help': "only consider entries from the current week"}),
+    (['-u', '--unify-client-addresses-to'],
+     {'dest': 'unified_client_address',
+      'default': None,
+      'metavar': 'ADDRESS',
+      'help': "pretend all clients share the same ADDRESS"}),
     (['-g', '--group-by'],
      {'dest': 'group_by',
       'default': 'interface,host,trans_type',
@@ -162,9 +167,7 @@ ttpd_analyze_options = [
 
 
 def file_filter(options, filename):
-    
-    """ Parse a log file and return the necessary information. """
-    
+    """Parse a log file and return the necessary information."""
     file = open(filename, 'r')
     for line in file:
         m = billing_re.match(line)
@@ -173,8 +176,7 @@ def file_filter(options, filename):
 
     file.close()
 
-def format_trans(trans, reparsable = True):
-    
+def format_trans(trans, reparsable=True):
     if reparsable:
         return '%(date_str)s ttpd INFO [] billing=%(billing)d ' \
                '%(interface)s (%(host)s, ' \
@@ -184,14 +186,12 @@ def format_trans(trans, reparsable = True):
                '%(trans_type)s, %(what)s' % trans
 
 def convert_types(trans):
-
     trans['date_str'] = trans['date']
     tmp = time.strptime(trans['date'], '%Y-%m-%d %H:%M:%S')
     trans['date'] = datetime.datetime(*tmp[:6])
     trans['billing'] = int(trans['billing'])
 
 def group_by(extract_discriminators, set):
-    
     groups = {}
     
     for element in set:
@@ -204,7 +204,6 @@ def group_by(extract_discriminators, set):
     return groups
 
 def make_avg_chart(data, x_axis_title, filename):
-    
     theme.get_options()
     
     can = canvas.init(fname=filename)
@@ -231,7 +230,6 @@ def make_avg_chart(data, x_axis_title, filename):
     can.close()
 
 def make_chart(data, x_axis_title, filename, transform):
-    
     data = [(transform(d[1]), d[3]) for d in data]
     
     theme.get_options()
@@ -308,7 +306,6 @@ def make_chart(data, x_axis_title, filename, transform):
 
 
 def parse_options():
-        
     parser = optparse.OptionParser(usage = '%prog [options] [file] [file] ...',
                                    version = '%%prog version %s' %
                                    (__version__))
@@ -356,7 +353,6 @@ def parse_options():
     return options, args
 
 def transactions_from_files(options, args):
-    
     transactions = []
     
     for file in args:
@@ -365,8 +361,11 @@ def transactions_from_files(options, args):
         for trans in lines:
             convert_types(trans)
 
-            if trans['date'] < options.start or options.end < trans['date']:
+            if (trans['date'] < options.start) or (options.end < trans['date']):
                 continue
+
+            if options.unified_client_address != None:
+                trans['host'] = options.unified_client_address
             
             if options.filter_only:
                 print format_trans(trans)
@@ -377,9 +376,7 @@ def transactions_from_files(options, args):
     if options.filter_only:
         return
 
-
     # Insert temporal resolution place-holders.
-
     t = datetime.datetime.combine(options.start, datetime.time())
 
     end = datetime.datetime.combine(options.end, datetime.time(23, 59, 00))
@@ -387,7 +384,6 @@ def transactions_from_files(options, args):
     #print "Before"
     #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
     #                 for x in transactions])
-                    
     while t < end:
         obj = {'date': t}
         
@@ -405,21 +401,16 @@ def transactions_from_files(options, args):
     #print "After sort()"
     #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
     #                 for x in transactions])
-    
     return transactions
 
 def main():
-    
-    """ Module mainline (for standalone execution). """
-
+    """Module mainline (for standalone execution)."""
     options, args = parse_options()
     
     # Add the contents of each file to the list of transactions.
-
     transactions = transactions_from_files(options, args)
     
     # Create the temporal groups, dependent of options.resolution.
-    
     groups = group_by(lambda x:
                       resolutions[options.resolution][1](x['date']),
                       transactions)

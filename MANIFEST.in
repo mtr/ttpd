@@ -1,4 +1,9 @@
 include INSTALL USAGE
 recursive-include examples *.txt *.py
 include doc/ttpd_documentation.ps
+include statistics/general_config.sh
+include statistics/last_52_weeks.sh
+include statistics/last_week.sh
+include statistics/this_week.sh
+include statistics/today.sh
 prune examples/sample?/build

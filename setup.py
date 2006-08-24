@@ -4,13 +4,13 @@
 """ 
 $Id$
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2006 by Martin Thorsen Ranang
 """
 
 from distutils.core import setup
 
 setup(name = 'TTPD',
-      version = '0.9.1',
+      version = '0.9.2',
       description = 'TUC Transfer Protocol Daemon and TUC Alert Daemon',
       author = 'Martin Thorsen Ranang',
       author_email = 'mtr@ranang.org',
@@ -19,5 +19,10 @@ setup(name = 'TTPD',
                    'SunOS-5.9-sun4u-sparc-32bit-ELF'],
       packages = ['TTP'],
       scripts = ['ttpd', 'ttpc', 'ttpdctl', 'ttpd_analyze', 'log_filter'],
-      data_files = [('share/doc', ['doc/ttpd_documentation.ps'])]
-      )
+      data_files = [('share/doc', ['doc/ttpd_documentation.ps']),
+                    ('statistics', ['statistics/general_config.sh',
+                                    'statistics/last_52_weeks.sh',
+                                    'statistics/last_week.sh',
+                                    'statistics/this_week.sh',
+                                    'statistics/today.sh',]),
+                    ])
