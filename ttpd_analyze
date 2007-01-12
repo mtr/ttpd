@@ -463,7 +463,7 @@ def main():
         return
     
     print '# This analysis was generated %s' % str(datetime.datetime.now())
-    print '# by %s version %s.' % (os.path.basename(__file__), __revision__)
+    print '# by %s version %s.' % (os.path.basename(__file__), __version__)
     print '# First entry %s, and last entry %s.' % (transactions[0]['date'],
                                                     transactions[-1]['date'])
     
