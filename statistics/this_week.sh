@@ -15,6 +15,7 @@ RESOLUTION=days
 FNAME=this_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
+    --unify-client-addresses-to=$UNIFIED_CLIENT_ADDRESS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
@@ -25,6 +26,7 @@ RESOLUTION=hours
 FNAME=this_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
+    --unify-client-addresses-to=$UNIFIED_CLIENT_ADDRESS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \

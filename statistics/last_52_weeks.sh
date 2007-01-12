@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2004, 2006 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2006, 2007 by Martin Thorsen Ranang
 #
 
 CONFPATH=$HOME/statistics
@@ -23,6 +23,7 @@ END=`date +%Y-%m-%d`
 FNAME=last_52_weeks_$RESOLUTION
 
 ttpd_analyze $LOGS \
+    --unify-client-addresses-to=$UNIFIED_CLIENT_ADDRESS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \

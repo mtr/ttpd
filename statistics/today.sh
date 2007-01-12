@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2004, 2006 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2006, 2007 by Martin Thorsen Ranang
 #
 
 if [ -z "$CONFPATH" ]; then
@@ -17,6 +17,7 @@ END=`date +%Y-%m-%d`
 FNAME=today_$RESOLUTION
 
 ttpd_analyze $LOGS \
+    --unify-client-addresses-to=$UNIFIED_CLIENT_ADDRESS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --from=$START --to=$END \
@@ -26,6 +27,7 @@ RESOLUTION=hours
 FNAME=today_$RESOLUTION
 
 ttpd_analyze $LOGS \
+    --unify-client-addresses-to=$UNIFIED_CLIENT_ADDRESS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --from=$START --to=$END \
