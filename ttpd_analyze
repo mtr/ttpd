@@ -5,7 +5,7 @@
 A script meant to make the job of analyzing the TTPD log files easier.
 
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
