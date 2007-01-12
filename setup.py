@@ -4,13 +4,13 @@
 """ 
 $Id$
 
-Copyright (C) 2004, 2006 by Martin Thorsen Ranang
+Copyright (C) 2004, 2006, 2007 by Martin Thorsen Ranang
 """
 
 from distutils.core import setup
 
 setup(name = 'TTPD',
-      version = '0.9.2',
+      version = '0.9.3',
       description = 'TUC Transfer Protocol Daemon and TUC Alert Daemon',
       author = 'Martin Thorsen Ranang',
       author_email = 'mtr@ranang.org',

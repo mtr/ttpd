@@ -11,10 +11,11 @@ Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
+import datetime
 import optparse
+import os
 import re
 import time
-import datetime
 
 import TTP.Options
 import TTP.LogHandler
@@ -410,7 +411,7 @@ def transactions_from_files(options, args):
 def main():
     """Module mainline (for standalone execution)."""
     options, args = parse_options()
-    
+
     # Add the contents of each file to the list of transactions.
     transactions = transactions_from_files(options, args)
     
@@ -461,7 +462,8 @@ def main():
     if not transactions:
         return
     
-    print '# This analysis was generated %s.' % str(datetime.datetime.now())
+    print '# This analysis was generated %s' % str(datetime.datetime.now())
+    print '# by %s version %s.' % (os.path.basename(__file__), __revision__)
     print '# First entry %s, and last entry %s.' % (transactions[0]['date'],
                                                     transactions[-1]['date'])
     
