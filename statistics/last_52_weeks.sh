@@ -22,7 +22,7 @@ WEEK=$year,$week
 END=`date +%Y-%m-%d`
 FNAME=last_52_weeks_$RESOLUTION
 
-echo ttpd_analyze $LOGS \
+ttpd_analyze $LOGS \
     --restrict-to=$RESTRICTIONS \
     --resolution=$RESOLUTION \
     --week=$WEEK \
