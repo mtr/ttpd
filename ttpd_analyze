@@ -304,6 +304,14 @@ def make_chart(data, x_axis_title, filename, transform):
     
     can.close()
 
+def get_week_span(day):
+    """Returns the dates for the start and the end of the week that
+    DAY belongs to.
+    """
+    week_start = day - datetime.timedelta(days=day.weekday())
+    week_end = week_start + datetime.timedelta(days=6)
+    
+    return week_start, week_end
 
 def parse_options():
     parser = optparse.OptionParser(usage = '%prog [options] [file] [file] ...',
@@ -330,26 +338,22 @@ def parse_options():
         else:
             setattr(options, moment, default)
 
-    # This is not elegant, because strptime is not able to construct a
-    # corret date give the year and the week number:
-    
+    # Handle week resolution, if that is wanted.
     if options.week:
         if options.week == 'this':
-            year = int(datetime.date.today().year)
-            week = datetime.date.today().isocalendar()[1]
+            day = datetime.date.today()
         else:
-            year, week = [int(m) for m in options.week.split(',')]
-
-        #print 'year=%s, week=%s' % (year, week)
-
-        D, d = datetime.date(year, 1, 1), datetime.timedelta(weeks=(week))
-        options.start = (D + d) - datetime.timedelta(days=(D + d).weekday())
-
-        if (not options.end) or (options.end == datetime.date.max):
-            options.end = options.start + datetime.timedelta(days=6)
-
-        #print options.start, options.end
-        
+            # Use strptime(3) convert a string representation of time
+            # to a time tm structure.  Both week and weekday number is
+            # needed.
+            raw_date = time.strptime(options.week + ',1', '%Y,%W,%w')
+            day = datetime.date.fromtimestamp(time.mktime(raw_date))
+            
+        if (not options.end) or (options.end == datetime.date.max):            
+            options.start, options.end = get_week_span(day)
+        else:
+            options.start = get_week_span(day)[0]
+            
     return options, args
 
 def transactions_from_files(options, args):

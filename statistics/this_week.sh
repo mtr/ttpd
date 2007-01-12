@@ -2,15 +2,16 @@
 #
 # $Id$
 #
-# Copyright (C) 2004 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 #
 
 CONFPATH=$HOME/statistics
 
 . $CONFPATH/general_config.sh
 
-RESOLUTION=days
 WEEK=this
+
+RESOLUTION=days
 FNAME=this_week_$RESOLUTION
 
 ttpd_analyze $LOGS \
