@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2004, 2006 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2006, 2007 by Martin Thorsen Ranang
 #
 
 export PATH=$PATH:$HOME/bin
