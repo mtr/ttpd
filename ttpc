@@ -7,7 +7,7 @@ TUC Transfer Protocol Client (TTPC).
 The TTPC makes it easy to test the TTPD and to create interfaces that
 interacts with the TTPD.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
@@ -30,11 +30,9 @@ import locale
 
     
 def parse_command_line():
-    
-    """ Parse the command line options. """
-    
+    """Parse the command line options.
+    """
     #basename = os.path.basename(sys.argv[0])
-    
     parser = optparse.OptionParser(usage = '%prog [options] [request]',
                                    version = '%%prog %s' % (__version__))
 
@@ -48,33 +46,28 @@ def parse_command_line():
         parser.add_option(*option, **description)
         
     # Parse the command line.
-    
     options, args = parser.parse_args()
 
     if options.web:
         options.trans_id = 'WEB'
         
     # Expand the any paths and make them absolute.
-    
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
 
     # Convert the textual representation of debug level into an
     # integer.
-    
     options.log_level = TTP.LogHandler.log_levels[options.log_level]
     
     return options, args
 
 
 def run_listening_server(options):
-    
     import signal
     
     import TTP.Handler
     import TTP.Server
     
     # Create a server which will use a TUC Transfer Protocol Handler.
-    
     server = TTP.Server.BaseThreadingTCPServer((options.ip_address,
                                                 options.port),
                                                TTP.Handler.BaseHandler,
@@ -87,11 +80,9 @@ def run_listening_server(options):
     # always go to the main thread.
     #
     # Register a signal handler for the hang-up signal.
-    
     signal.signal(signal.SIGHUP, server.hangup)
     
     # Register signal handlers for terminating signals.
-
     signal.signal(signal.SIGINT, server.shutdown)
     signal.signal(signal.SIGTERM, server.shutdown)
 
@@ -99,7 +90,6 @@ def run_listening_server(options):
     
 
 def run_single_test(m, options, parser):
-    
     try:
         meta, body = TTP.Message.communicate(m, (options.remote_ip_address,
                                                  options.remote_port), parser)
@@ -108,7 +98,6 @@ def run_single_test(m, options, parser):
         return meta, body
     
     if options.web:
-
         b = TTP.Message.build(body, parser)
 
         if options.show_technical:
@@ -117,17 +106,15 @@ def run_single_test(m, options, parser):
             body = '<pre>%s</pre><hr><pre>%s</pre><hr>' \
                    % (eval(b.TUCAns.Technical)[0], b.TUCAns.NaturalLanguage)
         else:
-            body = b.TUCAns.NaturalLanguage
+            body = '<pre>%s</pre>' % b.TUCAns.NaturalLanguage
             
     return meta, body.encode('latin-1')
 
 
 def run_test_mode(m, options, parser, pre_msg):
-    
-    f = open(options.input_file, 'r')
+    stream = open(options.input_file, 'r')
 
-    for i, line in enumerate(f):
-
+    for i, line in enumerate(stream):
         m.MxHead.MsgId = i
         m._setMessage('%s%s' % (pre_msg, line))
 
@@ -136,13 +123,12 @@ def run_test_mode(m, options, parser, pre_msg):
         
         time.sleep(3)
 
-    f.close()
+    stream.close()
 
         
 def main():
-    
-    """ Module mainline (for standalone execution) """
-    
+    """Module mainline (for standalone execution).
+    """
     options, args = parse_command_line()
     
     if options.listen_mode:
