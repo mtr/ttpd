@@ -201,7 +201,7 @@ class XML2Message(xml.sax.ContentHandler):
         for node in self.element_stack[:-1]:
             obj = getattr(obj, node)
             
-        if not self.element_stack[-1] in obj._d:
+        if self.element_stack[-1] not in obj._d:
             setattr(obj, self.element_stack[-1], value)
 
     def characters(self, content):
