@@ -7,7 +7,7 @@ An implementation of the TUC Transfer Protocol.
 This module contains a TTP message class and an XML parser that
 transforms XML into a TTP message.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
@@ -31,20 +31,17 @@ msg_re = re.compile('^(?P<head><\?xml .*</MxHead>)(?P<body>.*)$',
                     re.MULTILINE | re.DOTALL | re.IGNORECASE)
 
 class Hierarchy(object):
-    
-    """ Organizes hierarchical data as a tree. """
-    
+    """Organizes hierarchical data as a tree.
+    """
+
     def __init__(self):
-
-        """ Initialize member variables. """
-        
-        # self._d stores subtrees.
-
+        """Initialize member variables.
+        """
         self._class = Hierarchy
+        # self._d stores subtrees.
         self._d = {}
 
     def __getattr__(self, name):
-        
         # Only attributes not starting with "_" are organinzed in the
         # tree.
 
@@ -55,17 +52,13 @@ class Hierarchy(object):
         raise AttributeError("Object %r has no attribute %s." % (self, name))
     
     def _attributes(self):
-        
         # Return 'leaves' of the data tree.
-        
         return [(s, getattr(self, s))
                 for s in dir(self) if not s.startswith("_")]
     
     def _get_leaves(self, prefix = ""):
-        
         # _get_leaves tree, starting with self prefix stores name of
         # tree node above.
-        
         prefix = prefix and prefix + "."
         rv = {}
         atl = self._d.keys()
@@ -79,24 +72,19 @@ class Hierarchy(object):
         return rv
 
     def __getstate__(self):
-        
         # For pickling.
-        
         return self._d, self._attributes()
     
     def __setstate__(self, tp):
-        
         # For unpickling.
-        
         d, l = tp
         self._d = d
         for name, obj in l[:]:
             setattr(self, name, obj)
 
     def __str__(self):
-        
-        """ Easy to read string representation of data. """
-        
+        """Easy to read string representation of data.
+        """
         rl = [] 
         for k,v in self._get_leaves().items():
             rl.append('%s = %s' %  (k,v))
@@ -104,12 +92,11 @@ class Hierarchy(object):
 
 
 class Message(Hierarchy):
+    """A class for representing and handling hierarchally structured
+    TTP messages.
+    """
     
-    """ A class for representing and handling hierarchally structured
-    TTP messages. """
-    
-    def __init__(self, meta = None):
-        
+    def __init__(self, meta=None):
         Hierarchy.__init__(self)
         
         self._class = Message
@@ -118,11 +105,10 @@ class Message(Hierarchy):
         if meta:
             self.__setstate__(meta.__getstate__())
                             
-    def _xmlify(self, prefix = ""):
-
-        """ Return a string that represents the hierarchy as XML
-        elements. """
-        
+    def _xmlify(self, prefix=""):
+        """Return a string that represents the hierarchy as XML
+        elements.
+        """
         str = ''
         atl = self._d.keys()
         for at in atl:
@@ -130,22 +116,20 @@ class Message(Hierarchy):
             str += '<%s>%s</%s>' % (at, obj._xmlify(), at)
         for at, obj in self._attributes():
             if obj == None:
-                obj = ''                # None attributes becomes ''
+                obj = ''                # None attributes becomes ''.
             str += '<%s>%s</%s>' % (at, obj, at)
         return str
 
     def _setMessage(self, message):
-
-        """ Set the textual data of this Message."""
-        
+        """Set the textual data of this Message.
+        """
         self._message = message
         
-    def _generate(self, data = ''):
-        
-        """ Generate a string ready to be sent over a network
+    def _generate(self, data=''):
+        """Generate a string ready to be sent over a network
         connection, accroding to the protocol specifications by
-        eSolutions. """
-
+        eSolutions.
+        """
         if not data:
             data = self._message
             
@@ -156,10 +140,9 @@ class Message(Hierarchy):
         return '%010d%s' % (len(tmp), tmp)
 
 class MessageAck(Message):
-
-    """ A Message with some parameters set according to 'ACK'
-    messages of the protocol. """
-
+    """A Message with some parameters set according to 'ACK' messages
+    of the protocol.
+    """
     def __init__(self):
         
         Message.__init__(self)
@@ -186,22 +169,18 @@ class MessageAck(Message):
 
 
 class MessageRequest(MessageAck):
-
-    """ A Message pre-fit for sending requests. """
-    
+    """A Message pre-fit for sending requests.
+    """
     def __init__(self):
-
         MessageAck.__init__(self)
 
         del self.MxHead.Stat
 
         
 class MessageResult(MessageAck):
-
-    """ A Message pre-fit for providing results. """
-    
+    """A Message pre-fit for providing results.
+    """
     def __init__(self):
-
         MessageAck.__init__(self)
         
         self.MxHead.Aux.Billing = 0
@@ -210,16 +189,13 @@ class MessageResult(MessageAck):
 
 
 class XML2Message(xml.sax.ContentHandler):
-    
     all_whitespace_re = re.compile('^\s+$')
     
     def startDocument(self):
-
         self.stack = []
         self.data = Message()
         
     def set_current(self, value):
-
         obj = self.data
         for node in self.stack[:-1]:
             obj = getattr(obj, node)
@@ -228,27 +204,23 @@ class XML2Message(xml.sax.ContentHandler):
             setattr(obj, self.stack[-1], value)
 
     def characters(self, content):
-        
         if not self.all_whitespace_re.match(content):
             self.set_current(content)
             self.set = True
 
     def startElement(self, name, attrs):
-        
         self.stack.append(name)
         self.set = False
         
     def endElement(self, name):
-        
         if self.set == False:
             self.set_current(None)
         self.stack.pop()
 
       
 def _recv(connection, buf_size, timeout=False):
-    
-    """ Read bufsize bytes or error on timeout. """
-    
+    """Read bufsize bytes or error on timeout.
+    """
     started = time.time()
     buf = ''
     
@@ -259,9 +231,8 @@ def _recv(connection, buf_size, timeout=False):
     return buf
 
 def build(data, parser=None):
-    
-    """ Build a Message object based on an input XML string. """
-    
+    """Build a Message object based on an input XML string.
+    """
     sinput = cStringIO.StringIO(data)
     inpsrc = xml.sax.InputSource()
     inpsrc.setByteStream(sinput)
@@ -278,9 +249,8 @@ def build(data, parser=None):
     return parser.getContentHandler().data
 
 def receive(connection, parser=None, timeout=False):
-    
-    """ Receive a message from a socket connection. """
-
+    """Receive a message from a socket connection.
+    """
     w = MessageAck()
     w.MxHead.Stat = 10 # Communication problems btw sender and switch.
     
@@ -293,7 +263,6 @@ def receive(connection, parser=None, timeout=False):
         what = '%s: %s' % (sys.exc_info()[0], info)
         
         # Try to receive some more data, but not more than 4096 bytes.
-        
         data = len_data + _recv(connection, 4096, 3)
         
         w._setMessage("Server: TTPD.  Error: Malformed input.")
@@ -323,25 +292,22 @@ def receive(connection, parser=None, timeout=False):
 
 
 def send(connection, message):
-    
-    """ Send a message to the remote address. """
-    
+    """Send a message to the remote address.
+    """
     connection.send(message._generate())
 
     
 def connect(remote_address):
-
-    """ Connect to the remote_address. """
-    
+    """Connect to the remote_address.
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(remote_address)
     return s
 
 
 def communicate(message, remote_address, parser = None, timeout = False):
-    
-    """ Communicate message and return with the reply. """
-    
+    """Communicate message and return with the reply.
+    """
     connection = connect(remote_address)
     send(connection, message)
     reply = receive(connection, parser, timeout)
@@ -350,9 +316,8 @@ def communicate(message, remote_address, parser = None, timeout = False):
     return reply
 
 def main():
-    
-    """ Module mainline (for standalone execution). """
-
+    """Module mainline (for standalone execution).
+    """
     return
 
 

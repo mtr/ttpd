@@ -8,13 +8,13 @@ This is a socket server responsible for dispatching requests from Web
 pages and SMS messages to TUC and for providing the clients with the
 corresponding output.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
 
-__version__ = "0.8.0"
+__version__ = "0.9.5"
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 # A diversity of imports.
-
 import locale
 import logging
 import optparse
@@ -31,14 +31,11 @@ import TTP.daemon
 #locale.setlocale(locale.LC_ALL, 'no_NO')
 
 def run(options):
-    
-    """ Setup the server and start the encapsulated-TUC thread
-    pool. """
-
+    """Setup the server and start the encapsulated-TUC thread pool.
+    """
     log_level = TTP.LogHandler.log_levels[options.log_level]
     
     # Create a server which will use a TUC Transfer Protocol Handler.
-    
     server = TTP.Server.ThreadingTCPServer((options.ip_address,
                                             options.port),
                                            TTP.Handler.Handler,
@@ -56,17 +53,14 @@ def run(options):
     # always go to the main thread.
     #
     # Register a signal handler for the hang-up signal.
-    
     signal.signal(signal.SIGHUP, server.hangup)
     
     # If the TAD is running, register a signal handler for storing the
     # current scheduler information.
-    
     if options.run_tad:
         signal.signal(signal.SIGUSR1, server.store_tad_state)
         
     # Register signal handlers for terminating signals.
-    
     signal.signal(signal.SIGINT, server.shutdown)
     signal.signal(signal.SIGTERM, server.shutdown)
     
@@ -74,18 +68,15 @@ def run(options):
 
     
 def main():
-
-    """ Module mainline (for standalone execution).  Define and parse
-    the various options that may be specified at the command line. """
-    
+    """Module mainline (for standalone execution).  Define and parse
+    the various options that may be specified at the command line.
+    """
     basename = os.path.basename(sys.argv[0])
     
     # Define the parser options.
-    
-    parser = optparse.OptionParser(version = '%%prog %s' % (__version__))
+    parser = optparse.OptionParser(version='%%prog %s' % (__version__))
 
     # Merge the common (for both TTPD and TTPC) options.
-    
     options = TTP.Options.common_options + TTP.Options.ttpd_options
     
     for option, description in options:
@@ -93,11 +84,9 @@ def main():
         parser.add_option(*option, **description)
     
     # Parse the command line.
-    
     options, args = parser.parse_args()
     
     # Expand the any paths and make them absolute.
-    
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
     
     options.tuc_command = \
@@ -109,18 +98,15 @@ def main():
         sys.exit(1)
     
     if options.daemon:
-        
         # Daemonize the server.  This will put the server (to be
         # started) in the background and will give back the controll
         # to the process that executed this script.
-        
         TTP.daemon.create_daemon()
         
     # Run the server.
-    
     run(options)
     
     return
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main ()

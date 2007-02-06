@@ -110,9 +110,9 @@ def run_single_test(m, options, parser):
     if options.web:
 
         b = TTP.Message.build(body, parser)
-        
+
         if options.show_technical:
-            body = '<tt>%s</tt><hr>%s<hr>' % (b.TUCAns.Technical,
+            body = '<pre>%s</pre><hr>%s<hr>' % (eval(b.TUCAns.Technical)[0],
                                                 b.TUCAns.NaturalLanguage)
         else:
             body = b.TUCAns.NaturalLanguage
