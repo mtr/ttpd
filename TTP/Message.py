@@ -248,7 +248,7 @@ def build(data, parser=None):
     parser.parse(inpsrc)
     
     sinput.close()
-    print 'NL=', parser.getContentHandler().data.TUCAns.NaturalLanguage
+    
     return parser.getContentHandler().data
 
 def receive(connection, parser=None, timeout=False):
