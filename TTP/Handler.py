@@ -387,8 +387,10 @@ class Handler(BaseHandler):
             pre, cost, alert_date, answer = (None, self.prices['-'],
                                              None,
                                              data.rstrip('\nno\n').strip())
-            
-        answer = self.whitespace_replace_re.sub(' ', answer)
+
+        #self.server.log.info("I have '%s'", answer)
+        
+        #answer = self.whitespace_replace_re.sub(' ', answer)
         
         if cost == 'VARSEL':
             alert_date = time.strptime(meta[2:], '%Y%m%d%H%M%S')
@@ -451,6 +453,7 @@ class Handler(BaseHandler):
             pre, cost, alert_date, answer = None, 'FREE', \
                                             None, 'Beklager, ' \
                                             'det oppstod en feil.'
+
         return cost, pre, answer, alert_date
         
     def preprocess(self, request, is_sms_request=False):

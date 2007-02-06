@@ -96,7 +96,7 @@ def run_single_test(m, options, parser):
     except:
         meta, body = None, 'An error occured. Service currently not available.'
         return meta, body
-    
+
     if options.web:
         b = TTP.Message.build(body, parser)
 

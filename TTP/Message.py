@@ -192,30 +192,33 @@ class XML2Message(xml.sax.ContentHandler):
     all_whitespace_re = re.compile('^\s+$')
     
     def startDocument(self):
-        self.stack = []
+        self.element_stack = []
+        self.buffer_stack = []
         self.data = Message()
         
     def set_current(self, value):
         obj = self.data
-        for node in self.stack[:-1]:
+        for node in self.element_stack[:-1]:
             obj = getattr(obj, node)
             
-        if not self.stack[-1] in obj._d:
-            setattr(obj, self.stack[-1], value)
+        if not self.element_stack[-1] in obj._d:
+            setattr(obj, self.element_stack[-1], value)
 
     def characters(self, content):
-        if not self.all_whitespace_re.match(content):
-            self.set_current(content)
-            self.set = True
+        self.buffer_stack[-1].append(content)
 
     def startElement(self, name, attrs):
-        self.stack.append(name)
-        self.set = False
+        self.element_stack.append(name)
+        self.buffer_stack.append([])
         
     def endElement(self, name):
-        if self.set == False:
+        if len(self.buffer_stack[-1]):
+            self.set_current(''.join(self.buffer_stack[-1]))
+        else:
             self.set_current(None)
-        self.stack.pop()
+
+        self.buffer_stack.pop()            
+        self.element_stack.pop()
 
       
 def _recv(connection, buf_size, timeout=False):
@@ -245,7 +248,7 @@ def build(data, parser=None):
     parser.parse(inpsrc)
     
     sinput.close()
-
+    print 'NL=', parser.getContentHandler().data.TUCAns.NaturalLanguage
     return parser.getContentHandler().data
 
 def receive(connection, parser=None, timeout=False):
