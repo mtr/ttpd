@@ -366,7 +366,7 @@ class Handler(BaseHandler):
             # separators".
             pre, main, post = data.split(self.result_separator)
 
-            main, post = (block.strip() for block in (main, post))
+            main, post = [block.strip() for block in (main, post)]
             
             # The first line of the main block should contain billing
             # and timing information.
