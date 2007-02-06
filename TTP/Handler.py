@@ -260,13 +260,12 @@ class Handler(BaseHandler):
             Message.send(self.connection, ack)
             
         else:
-            
             is_sms_request = False
             
         # The preprocessing returns a method and some arguments.  The
         # method should be applied on the arguments.
         method, args = self.preprocess(body, is_sms_request)
-        
+
         self.server.log.debug('[%0x] "%s"', self.transaction, body)
         
         # Apply method to args.
@@ -432,8 +431,7 @@ class Handler(BaseHandler):
         # Because only the thread that picks up _this_task_ will know
         # about this particular result_queue, we don't need to supply
         # any id with the task.
-        self.server.tuc_pool.queue_task((EncapsulateTUC.TYPE_NORMAL, data),
-                                        result_queue)
+        self.server.tuc_pool.queue_task(data, result_queue)
 
         # Possibly wait some time and retrieve the result from the
         # result_queue.
@@ -455,9 +453,14 @@ class Handler(BaseHandler):
                                             'det oppstod en feil.'
         return cost, pre, answer, alert_date
         
-    def preprocess(self, request, is_sms_request = False):
+    def preprocess(self, request, is_sms_request=False):
         """Perform pre-processing of the request.
         """
+        if is_sms_request:
+            kind = EncapsulateTUC.QUERY_TYPE_SMS
+        else:
+            kind = EncapsulateTUC.QUERY_TYPE_WEB
+            
         # Check for (and handle) "TEAM ..." in start of message.
         m = self.service_re.match(request)
         if m:
@@ -476,9 +479,9 @@ class Handler(BaseHandler):
                 return (lambda x: ('AVBEST', None, None)), None
             
             else:
-                return self.tuc_query, body
+                return self.tuc_query, (kind, body)
         else:
-            return self.tuc_query, request
+            return self.tuc_query, (kind, request)
         
 def main():
     """Module mainline (for standalone execution).

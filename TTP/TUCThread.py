@@ -25,15 +25,14 @@ class TUCThreadPool(ThreadPool.ThreadPool):
     """
 
     def __init__(self, num_threads, command='./busestuc.sav',
-                 thread_class=ThreadPool.ThreadPoolThread,
-                 log = None):
+                 thread_class=ThreadPool.ThreadPoolThread, log=None):
         """Intialize a new class instance.
         """
         self.log = log
         self.command = command
 
         ThreadPool.ThreadPool.__init__(self, num_threads, thread_class)
-               
+        
 
 class TUCThread(ThreadPool.ThreadPoolThread):
     """A pooled thread class to process TUC queries.
@@ -70,15 +69,12 @@ class TUCThread(ThreadPool.ThreadPoolThread):
             # Encapsulate a new TUC process.
             self.encapsulate()
 
-    def process(self, task):
+    def process(self, ((kind, query), callback)):
         # Process the incoming task and place the result in the
         # callback queue.
-        data, callback = task
-        type, query = data
+        callback.put(self.__ep.process((kind, query)))
         
-        callback.put(self.__ep.process(data))
-        
-        if type == EncapsulateTUC.TYPE_SHUTDOWN:
+        if kind == EncapsulateTUC.QUERY_TYPE_SHUTDOWN:
             # A shutdown command was recieved.
             self.go_away()
             

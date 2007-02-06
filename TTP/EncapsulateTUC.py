@@ -17,8 +17,11 @@ import select
 import sys
 import time
 
-TYPE_NORMAL = 0
-TYPE_SHUTDOWN = 1
+QUERY_TYPE_NONE     = 0
+QUERY_TYPE_SMS      = 1
+QUERY_TYPE_WEB      = 2
+QUERY_TYPE_NORMAL   = QUERY_TYPE_SMS | QUERY_TYPE_WEB
+QUERY_TYPE_SHUTDOWN = 4
 
 class EncapsulateProcess:
     """A class that encapsulates a generic command and establishes a
@@ -78,8 +81,8 @@ class EncapsulateProcess:
             if timeout and ((time.time() - started) > timeout):
                 return (1, data) # Timeout -> may be more data.
 
-    def write(self, str, *args):
-        self.subprocess.tochild.write(str % args)
+    def write(self, string, *args):
+        self.subprocess.tochild.write(string % args)
         
     def flush(self):
         self.subprocess.tochild.flush()
@@ -168,18 +171,23 @@ class EncapsulateTUC(EncapsulateProcess):
                 done = True
                 
         return data
-        
-    def process(self, (type, query)):
-        if type == TYPE_NORMAL:
+
+    __predicate = {
+        QUERY_TYPE_WEB: 'mtrprocessweb',
+        QUERY_TYPE_SMS: 'mtrprocess',
+        }
+    
+    def process(self, (kind, query)):
+        if kind & QUERY_TYPE_NORMAL:
             # Normal processing requested.
-            self.write('mtrprocess("%s"). write(\'%s \'), flush_output.\n',
-                       query, self.magic)
+            self.write('%s("%s"). write(\'%s \'), flush_output.\n',
+                       self.__predicate[kind], query, self.magic)
             
             self.flush()
             
             return self.read()
         
-        elif type == TYPE_SHUTDOWN:
+        elif kind == QUERY_TYPE_SHUTDOWN:
             # Shutdown requested.
             self.write('%s\n', query) # Usually a 'halt.' Prolog query.
             self.flush()
@@ -211,9 +219,9 @@ def main ():
     ep.run()
     
     for l in L:
-        print ep.process((TYPE_NORMAL, l))
+        print ep.process((QUERY_TYPE_NORMAL, l))
 
-    ep.process((TYPE_SHUTDOWN, 'halt.'))
+    ep.process((QUERY_TYPE_SHUTDOWN, 'halt.'))
     
     return
 
