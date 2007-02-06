@@ -30,31 +30,28 @@ import TTP.LogHandler
 
 # The following values are only defaults and may be overridden in the
 # constructor call to TUCAlertDaemon.
-
 LOG_FILENAME = 'tttp_tad.log'
 LOG_CHANNEL = 'ttpd.tad'
 
 
 class PriorityQueue(Queue.Queue):
-
-    """ A simple priority queue implementation. """
-    
+    """A simple priority queue implementation.
+    """
     def _put(self, item):
         bisect.insort(self.queue, item)
         
 
 class GeneralThreadingScheduler(threading.Thread):
-    
-    """ A thread-safe general purpose scheduler.  At the moment, it
+    """A thread-safe general purpose scheduler.  At the moment, it
     doesn't seem that the standard sched module in Python is
     thread-safe.  Hence, I wrote this class.  The sheduler thread is
-    started with <instance>.start(). """
+    started with <instance>.start().
+    """
     
     def __init__(self, log=None, time_func=time.time, delay_func=time.sleep,
                  delay=0.01):
-        
-        """ Initialize the thread and remember timing options. """
-        
+        """Initialize the thread and remember timing options.
+        """
         self.__queue = []
         self.__queue_lock = threading.Condition(threading.Lock())
         self.__shutdown = False
@@ -69,13 +66,12 @@ class GeneralThreadingScheduler(threading.Thread):
         self.delay = delay
         
     def abs_enter(self, event):
-        
-        """ Enter a new event with an absolute time reference into the
+        """Enter a new event with an absolute time reference into the
         priority queue.
         
         The event should argument should be a tuple of the form (time,
-        priority, action, argument). """
-        
+        priority, action, argument).
+        """
         self.__queue_lock.acquire()
         try:
             #print 'entering:', event
@@ -88,9 +84,8 @@ class GeneralThreadingScheduler(threading.Thread):
             self.__queue_lock.release()
             
     def cancel(self, event):
-        
-        """ Remove an event from the queue. """
-
+        """Remove an event from the queue.
+        """
         self.__queue_lock.acquire()
         try:
             self.__queue.remove(event)
@@ -99,10 +94,9 @@ class GeneralThreadingScheduler(threading.Thread):
             self.__queue_lock.release()
 
     def empty(self):
-
-        """ Return a boolean indicating whether the queue is empty or
-        not. """
-        
+        """Return a boolean indicating whether the queue is empty or
+        not.
+        """
         self.__queue_lock.acquire()
         try:
             print 'len =', len(self.__queue)
@@ -111,10 +105,9 @@ class GeneralThreadingScheduler(threading.Thread):
             self.__queue_lock.release()
 
     def __contains__(self, id):
-
-        """ A membership test operator.  This enables the caller to
-        perform a 'x in object' test. """
-        
+        """A membership test operator.  This enables the caller to
+        perform a 'x in object' test.
+        """
         self.__queue_lock.acquire()
         try:
             return id in self.__queue
@@ -123,9 +116,8 @@ class GeneralThreadingScheduler(threading.Thread):
 
     
     def shutdown(self):
-
-        """ Tell the scheduling thread to shutdown. """
-        
+        """Tell the scheduling thread to shutdown.
+        """
         self.__shutdown_lock.acquire()
         try:
             self.__shutdown = True
@@ -133,38 +125,29 @@ class GeneralThreadingScheduler(threading.Thread):
             self.__shutdown_lock.release()
             
     def run(self):
-        
-        """ Start scheduling. """
-        
+        """Start scheduling.
+        """
         while not self.__shutdown:
-            
             # The first pending event will always be the first moment
             # in time.
-            
             self.__queue_lock.acquire()
             try:
                 if self.__queue != [] and \
                        self.__queue[0][0] <= self.time_func():
-                    
                     # If the moment of the most pending task has
                     # arrived (or passed, possibly self.delay time
                     # units ago), then remove it from the queue.
-                    
                     event = self.__queue.pop(0)
                 else:
-
                     # If not, continue with a non-existing event.
-                    
                     event = None
                     
             finally:
                 self.__queue_lock.release()
                 
             if event:               # The queue might have been empty.
-                
                 # Perform the scheduled action with the supplied
                 # arguments.
-                
                 moment, priority, action, arguments = event
 
                 try:
@@ -173,7 +156,6 @@ class GeneralThreadingScheduler(threading.Thread):
                     
                     # Delay somewhere between 30 seconds and 3
                     # minutes.
-                
                     delay = random.randint(30, 3 * 60)
                     
                     self.__queue_lock.acquire()
@@ -192,32 +174,26 @@ class GeneralThreadingScheduler(threading.Thread):
                     
             # Wait some time while releasing the processor for other
             # threads.
-            
             self.delay_func(self.delay)
 
     def hold(self):
-
-        """ Pause the scheduler until the release() method is
-        called. """
-        
+        """Pause the scheduler until the release() method is called.
+        """
         self.__queue_lock.acquire()
 
     def release(self):
-
-        """ Release the scheduler after a hold() call. """
-        
+        """Release the scheduler after a hold() call.
+        """
         self.__queue_lock.release()
         
     def join(self):
-        
-        """ Stop the scheduler and wait for its thread to join. """
-        
+        """Stop the scheduler and wait for its thread to join.
+        """
         self.shutdown()
         threading.Thread.join(self)
         
 
 class TUCAlertDaemon(object):
-    
     log_line_re = re.compile('%s ' \
                              '%s CRITICAL ' \
                              '(?P<command>\S+) ' \
@@ -230,34 +206,28 @@ class TUCAlertDaemon(object):
     #
     # Used by the INSERTED command.  Must contain this info in order
     # to restore the scheduler based on the last log.
-    
     log_format = '%s (%d, %f, %s, "%s")'
     
     # Short format: 'COMMAND (id)'.
     #
     # Used for ALERTED and CANCELED commands.
-    
     short_log_format = '%s (%d)'
     
     def __init__(self, remote_server_address, log_channel=LOG_CHANNEL,
                  log_filename=None, log_level=logging.DEBUG):
-        
-        """ Initialize the daemon. """
-        
+        """Initialize the daemon.
+        """
         # Setup a reentrant lock in order to ensure thread safety.
-        
         self.__lock = threading.Condition(threading.RLock())
         
         self.__lock.acquire()
         try:
-
             # Remember the address of the remote to which we will send
             # our alerts.
-            
             self.remote_server_address = remote_server_address
 
-            # First, initialize the logging facilities and start logging.
-
+            # First, initialize the logging facilities and start
+            # logging.
             self.log_channel = log_channel
             self.__log_filename = log_filename
             
@@ -266,7 +236,6 @@ class TUCAlertDaemon(object):
             # A map from the ids of events to the events themselves.
             # The map is used to lookup the events given an id; needed
             # by e.g. cancel_alert.
-            
             self.__events = {}
             
             self.scheduler = GeneralThreadingScheduler()
@@ -276,16 +245,15 @@ class TUCAlertDaemon(object):
 
             # Then restore the state of the scheduler based on the
             # very same (current) logs.
-            
             self.restore()
             
         finally:
             self.__lock.release()
             
     def log_init(self, log_level = logging.DEBUG):
-        
-        """ Intialize logging facilities and log some useful startup
-        information. """
+        """Intialize logging facilities and log some useful startup
+        information.
+        """
         
         self.__lock.acquire()
         try:
@@ -294,9 +262,8 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def handle_restore_item(self, item, now):
-        
-        """ Handle a single restore item. """
-
+        """Handle a single restore item.
+        """
         self.__lock.acquire()
         try:
             date, command, id, moment, ext_id, message = item
@@ -328,10 +295,9 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def restore(self):
-        
-        """ Restore the state of the scheduler after a startup, based
-        on an existing log file (if there is one). """
-
+        """Restore the state of the scheduler after a startup, based
+        on an existing log file (if there is one).
+        """
         self.__lock.acquire()
         try:
             if not os.access(self.__log_filename, os.F_OK | os.R_OK):
@@ -386,13 +352,11 @@ class TUCAlertDaemon(object):
             self.__lock.release()
 
     def store(self):
-
-        """ Store all the current contents of the sceduler to a file.
-        This ensures a scheduler state memory after log rotations. """
-
+        """Store all the current contents of the sceduler to a file.
+        This ensures a scheduler state memory after log rotations.
+        """
         self.__lock.acquire()
         try:
-
             self.log.info('Storing the current scheduler state...')
             
             self.scheduler.hold()
@@ -414,9 +378,8 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def shutdown(self, signum, frame):
-
-        """ Shutdown the daemon gracefully. """
-        
+        """Shutdown the daemon gracefully.
+        """
         self.__lock.acquire()
         try:
             
@@ -430,9 +393,8 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def run(self):
-        
-        """ Start the scheduler (thread). """
-
+        """Start the scheduler (thread).
+        """
         self.__lock.acquire()
         try:
             
@@ -442,8 +404,7 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def handle_alert(self, data):
-
-        """ A thread-safe alert handler.
+        """A thread-safe alert handler.
         
         @param data: A variable that holds the necessary information
         to perform a meaningful alert.
@@ -471,9 +432,8 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def next_id(self):
-
-        """ Return the next (internal) id. """
-
+        """Return the next (internal) id.
+        """
         self.__lock.acquire()
         try:
         
@@ -484,12 +444,11 @@ class TUCAlertDaemon(object):
             self.__lock.release()
             
     def _insert_alert(self, moment, message, id, ext_id):
-
-        """ The core functionality of insert_alert().
+        """The core functionality of insert_alert().
 
         Called both by outside objects (through insert_alarm()) and
-        from the inside (through the restore() method)."""
-        
+        from the inside (through the restore() method).
+        """
         self.__lock.acquire()
         try:
             event = (moment, 1, self.handle_alert, (id, ext_id, message))
@@ -498,8 +457,7 @@ class TUCAlertDaemon(object):
             self.__lock.release()
         
     def insert_alert(self, moment, message, ext_id):
-        
-        """ Insert an alert into the TAD scheduler.
+        """Insert an alert into the TAD scheduler.
         
         @param moment: The time at which the alert should take place.
 
@@ -507,7 +465,6 @@ class TUCAlertDaemon(object):
 
         @param ext_id: The ID of the entity to be alerted.
         """
-        
         self.__lock.acquire()
         try:
             id = self.next_id()
@@ -520,15 +477,13 @@ class TUCAlertDaemon(object):
         finally:
             self.__lock.release()
             
-    def cancel_alert(self, id, command = 'CANCELED'):
-
-        """ Cancel an alert from the scheduler.
+    def cancel_alert(self, id, command='CANCELED'):
+        """Cancel an alert from the scheduler.
 
         @param id: The id of the alert to be canceled.
         
         @param command: The command word to write in the log file
         (used for later restore operations).
-        
         """
         self.__lock.acquire()
         try:
@@ -552,9 +507,7 @@ class TUCAlertDaemon(object):
         
         
 def main ():
-    """
-    main ()
-    Module mainline (for standalone execution)
+    """Module mainline (for standalone execution).
     """
     
     d = TUCAlertDaemon()
@@ -577,7 +530,6 @@ def main ():
     d.store()
     
     return
-
 
 if __name__ == "__main__":
     main ()
