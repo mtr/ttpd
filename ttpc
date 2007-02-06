@@ -112,8 +112,10 @@ def run_single_test(m, options, parser):
         b = TTP.Message.build(body, parser)
 
         if options.show_technical:
-            body = '<pre>%s</pre><hr>%s<hr>' % (eval(b.TUCAns.Technical)[0],
-                                                b.TUCAns.NaturalLanguage)
+            # Note: b.TUCAns.Technical evaluates to a tuple; hence,
+            # the indexing.
+            body = '<pre>%s</pre><hr><pre>%s</pre><hr>' \
+                   % (eval(b.TUCAns.Technical)[0], b.TUCAns.NaturalLanguage)
         else:
             body = b.TUCAns.NaturalLanguage
             
