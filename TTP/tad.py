@@ -7,7 +7,7 @@ The TUC Alert Daemon.
 A daemon responsible for handling alerts according to the TUC Alert
 service.  This module is designed to work in co-existence with TTPD.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
