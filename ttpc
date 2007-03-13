@@ -103,10 +103,12 @@ def run_single_test(m, options, parser):
         if options.show_technical:
             # Note: b.TUCAns.Technical evaluates to a tuple; hence,
             # the indexing.
-            body = '<pre>%s</pre><hr><pre>%s</pre><hr>' \
-                   % (eval(b.TUCAns.Technical)[0], b.TUCAns.NaturalLanguage)
+            body = '%s<hr>%s<hr>' \
+                   % (eval(b.TUCAns.Technical)[0].replace('\n', '<br>'),
+                      b.TUCAns.NaturalLanguage.replace('\n', '<br>'))
         else:
-            body = '<pre>%s</pre>' % b.TUCAns.NaturalLanguage
+            body = '%s' % \
+                   b.TUCAns.NaturalLanguage.replace('\n', '<br>')
             
     return meta, body.encode('latin-1')
 

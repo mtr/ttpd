@@ -47,10 +47,14 @@ def create_daemon():
             # Give the child complete control over permissions.
             os.umask(0)
         else:
+            # Why _exit()?  It behaves much like exit(), but it does
+            # not call any functions registered with atexit().
             os._exit(0)             # Exit parent of the second child.
     else:
         os._exit(0)                  # Exit parent of the first child.
 
+    # Only the second-stage child will get this far.
+    
     # Close all open files.
     maxfd = os.sysconf("SC_OPEN_MAX")
     if maxfd == -1:
