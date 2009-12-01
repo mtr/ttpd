@@ -14,5 +14,5 @@ __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
 from CoreMessage import (Message, MessageAck, MessageRequest,
-                         MessageResult, XML2Message, communicate,
-                         send, receive)
+                         MessageResult, XML2Message, build,
+                         communicate, send, receive)

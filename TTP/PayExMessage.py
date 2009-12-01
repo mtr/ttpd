@@ -26,7 +26,8 @@ import xml.sax
 from contextlib import contextmanager
 
 from CoreMessage import (Message, MessageAck, MessageRequest,
-                         MessageResult, XML2Message, send, receive)
+                         MessageResult, XML2Message, build, send,
+                         receive)
 
 from CorePayExMessage import PayExMessage
 
