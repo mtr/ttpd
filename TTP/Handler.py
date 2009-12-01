@@ -15,6 +15,7 @@ import Queue
 import SocketServer
 import cStringIO
 import htmlentitydefs
+#import logging
 import random
 import re
 import socket
@@ -26,8 +27,12 @@ import LogHandler
 import Message
 import num_hash
 
+import ESolutionsMessage
+import PayExMessage
 
 class BaseHandler(SocketServer.StreamRequestHandler):
+    MessageModule = None
+
     def setup(self):
         """Create an XML parser for this handler instance.
         
@@ -38,7 +43,7 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         
         # Initialize the XML parser.  We keep one parser per thread,
         # in an attempt to avoid any shared resource problems.
-        self.xml_handler = Message.XML2Message()
+        self.xml_handler = self.Message.XML2Message()
         
         self.xml_error_handler = xml.sax.ErrorHandler()
         
@@ -50,15 +55,15 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         self.transaction = self.server.get_next_transaction_id()
         
     def handle(self):
-        meta, body = Message.receive(self.connection, self.xml_parser)
+        meta, body = self.Message.receive(self.connection, self.xml_parser)
         
         self.server.log.log(LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
                             self.transaction, meta, body)
         
-        ack = Message.MessageAck()
+        ack = self.Message.MessageAck()
         ack.MxHead.TransId = 'LINGSMSOUT'
         
-        Message.send(self.connection, ack)
+        self.Message.send(self.connection, ack)
         
     def escape(self, data):
         """Replace special characters with escaped equivalents.
@@ -154,7 +159,7 @@ class Handler(BaseHandler):
         while not sent and (resend_delay < self.resend_timeout):
             try:
                 meta, body = \
-                      Message.communicate(ans,
+                      self.Message.communicate(ans,
                                           self.server.remote_server_address,
                                           self.xml_parser)
                 
@@ -204,7 +209,7 @@ class Handler(BaseHandler):
     def reply_web(self, ans, pre_answer, answer):
         # A Web-ish client.  Send the answer back to the same socket
         # we received the request from.
-        tuc_ans = Message.Message()
+        tuc_ans = self.Message.Message()
 
         tuc_ans.TUCAns.Technical = pre_answer, # Becomes a tuple.
         tuc_ans.TUCAns.NaturalLanguage = answer
@@ -212,7 +217,7 @@ class Handler(BaseHandler):
         ans._setMessage('<?xml version="1.0" encoding="iso-8859-1"?>' \
                         '%s' % (tuc_ans._xmlify()))
 
-        Message.send(self.connection, ans)
+        self.Message.send(self.connection, ans)
         
     def handle(self):
         """Handles a query received by the socket server.
@@ -231,7 +236,7 @@ class Handler(BaseHandler):
                              self.client_address[1])
         
         # Retrieve incoming request.
-        meta, body = Message.receive(self.connection, self.xml_parser)
+        meta, body = self.Message.receive(self.connection, self.xml_parser)
         
         # If nothing was received, or there was an error, we skip
         # further processing.
@@ -255,9 +260,9 @@ class Handler(BaseHandler):
             is_sms_request = True
             
             # Since it is a SMS request, send an ACK.
-            ack = Message.MessageAck()
+            ack = self.Message.MessageAck()
             ack.MxHead.TransId = meta.MxHead.TransId
-            Message.send(self.connection, ack)
+            self.Message.send(self.connection, ack)
             
         else:
             is_sms_request = False
@@ -319,7 +324,7 @@ class Handler(BaseHandler):
             answer = 'Forespørselen ble avbrutt. Vennligst prøv igjen senere.'
             
         # Send the answer to the client.
-        ans = Message.MessageResult()
+        ans = self.Message.MessageResult()
         ans.MxHead.TransId = 'LINGSMSOUT'
         
         # Again, if it is an SMS request we're handling, take special
@@ -485,7 +490,37 @@ class Handler(BaseHandler):
                 return self.tuc_query, (kind, body)
         else:
             return self.tuc_query, (kind, request)
+
+class ESolutionsHandler(Handler):
+    Message = ESolutionsMessage
+    
+    def __init__(self, request, client_address, server):
+        server.log.info('Will use the eSolutions SMS gateway.')
         
+        Handler.__init__(self, request, client_address, server)
+
+    @classmethod
+    def initialize(C, options):
+        pass
+        
+class PayExHandler(Handler):
+    Message = PayExMessage
+
+    def __init__(self, request, client_address, server):
+        server.log.info('Will use the PayEx SMS gateway.')
+        
+        Handler.__init__(self, request, client_address, server)
+
+    @classmethod
+    def initialize(C, options):
+        C.Message.setup_module(options)
+        
+sms_gateway_handlers = {
+    'esolutions' : ESolutionsHandler,
+    'payex': PayExHandler,
+    }
+
+
 def main():
     """Module mainline (for standalone execution).
     """

@@ -58,11 +58,13 @@ class TUCThread(ThreadPool.ThreadPoolThread):
         
     def watchdog(self):
         dead = self.__ep.subprocess.poll()
-        
-        if dead != -1:
+
+        if dead:
             self.log.error("TUC process with PID = %d died " \
                            "unexpectedly with exit status '%d'.",
                            self.__ep.subprocess.pid, dead)
+            self.log.error("Last words: '%s'",
+                           self.__ep.subprocess.stdout.read())
             
             del self.__ep
             

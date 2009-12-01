@@ -11,9 +11,10 @@ __version__ = "$Rev$"
 
 import fcntl
 import os
-import popen2
+#import popen2
 import re
 import select
+import subprocess
 import sys
 import time
 
@@ -49,9 +50,15 @@ class EncapsulateProcess:
 
         Also, check that the command is available in the current path.
         """
-        self.subprocess = popen2.Popen4(self.command)
-
-        self.set_nonblocking(self.subprocess.fromchild)
+        #self.subprocess = popen2.Popen4(self.command)
+        self.subprocess = subprocess.Popen(self.command,
+                                           stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT,
+                                           close_fds=True)
+        
+        self.set_nonblocking(self.subprocess.stdout)
+        #self.set_nonblocking(self.subprocess.fromchild)
                     
     def get_pid(self):
         """Returns the PID of the subprocess.
@@ -66,13 +73,13 @@ class EncapsulateProcess:
         data = ''
         
         while True:
-            ready = select.select([self.subprocess.fromchild], [], [],
+            ready = select.select([self.subprocess.stdout], [], [],
                                   timeout)
             
             if len(ready[0]) == 0:      # No data -> timeout.
                 return (1, data)
             
-            delta = self.subprocess.fromchild.read()
+            delta = self.subprocess.stdout.read()
             if delta == '':
                 return (0, data)
 
@@ -82,13 +89,13 @@ class EncapsulateProcess:
                 return (1, data) # Timeout -> may be more data.
 
     def write(self, string, *args):
-        self.subprocess.tochild.write(string % args)
+        self.subprocess.stdin.write(string % args)
         
     def flush(self):
-        self.subprocess.tochild.flush()
+        self.subprocess.stdin.flush()
         
     def readline(self):
-        return self.subprocess.fromchild.readline()
+        return self.subprocess.stdout.readline()
     
 
 class EncapsulateTUC(EncapsulateProcess):
@@ -126,9 +133,9 @@ class EncapsulateTUC(EncapsulateProcess):
         ante-processing cleanups.
         """
         self.log.debug('Trying to encapsulate TUC process...')
-        
+
         EncapsulateProcess.run(self)
-        
+
         self.log.debug('... OK (PID = %d)... Cleaning up...',
                        self.subprocess.pid)
         
@@ -192,8 +199,8 @@ class EncapsulateTUC(EncapsulateProcess):
             self.write('%s\n', query) # Usually a 'halt.' Prolog query.
             self.flush()
             
-            self.subprocess.fromchild.close()
-            self.subprocess.tochild.close()
+            self.subprocess.stdout.close()
+            self.subprocess.stdin.close()
             
             # Wait for the dead child process.
             self.subprocess.wait()

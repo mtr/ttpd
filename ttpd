@@ -16,7 +16,6 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 # A diversity of imports.
 import locale
-import logging
 import optparse
 import os
 import signal
@@ -28,17 +27,19 @@ import TTP.Options
 import TTP.Server
 import TTP.daemon
 
-#locale.setlocale(locale.LC_ALL, 'no_NO')
 
 def run(options):
     """Setup the server and start the encapsulated-TUC thread pool.
     """
     log_level = TTP.LogHandler.log_levels[options.log_level]
     
+    Handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
+    Handler.initialize(options)
+    
     # Create a server which will use a TUC Transfer Protocol Handler.
     server = TTP.Server.ThreadingTCPServer((options.ip_address,
                                             options.port),
-                                           TTP.Handler.Handler,
+                                           Handler,
                                            options.log_file,
                                            log_level,
                                            options.high_load_limit,
@@ -72,7 +73,7 @@ def main():
     the various options that may be specified at the command line.
     """
     basename = os.path.basename(sys.argv[0])
-    
+
     # Define the parser options.
     parser = optparse.OptionParser(version='%%prog %s' % (__version__))
 
@@ -82,11 +83,19 @@ def main():
     for option, description in options:
         TTP.Options.update_help(description)
         parser.add_option(*option, **description)
-    
-    # Parse the command line.
+
+    # Parse the command line, to get the CONFIG_FILE value.
     options, args = parser.parse_args()
     
-    # Expand the any paths and make them absolute.
+    # Update the default values of PARSER, so that the values in the
+    # CONFIG_FILE takes presendence over the programmed defaults, and
+    # the command-line supplied options gets the highest precedence.
+    TTP.Options.parse_configuration(options.config_file, parser)
+
+    # Reparse the command line to get the rest of the values.
+    options, args = parser.parse_args()
+    
+    # Expand any paths and make them absolute.
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
     
     options.tuc_command = \

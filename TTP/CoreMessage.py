@@ -308,7 +308,7 @@ def connect(remote_address):
     return s
 
 
-def communicate(message, remote_address, parser=None, timeout=False):
+def communicate(message, remote_address, parser = None, timeout = False):
     """Communicate message and return with the reply.
     """
     connection = connect(remote_address)
