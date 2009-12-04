@@ -52,9 +52,8 @@ def get_pid(log_file):
 
 
 def main():
-    
-    """ Module mainline (for standalone execution). """
-    
+    """Module mainline (for standalone execution).
+    """
     parser = optparse.OptionParser(usage = '%prog [options] ' \
                                    'start|stop|restart|store_alerts',
                                    version = '%%prog version %s' %
@@ -62,17 +61,21 @@ def main():
 
     option_list = TTP.Options.common_options + TTP.Options.ttpd_options
     
-    TTP.Options.set_default(option_list,
-                            '--log-file', './ttpd.log')
-    TTP.Options.set_default(option_list,
-                            '--path-to-tuc', 'ttpd')
-
     for option, description in option_list + TTP.Options.ttpdctl_options:
         TTP.Options.update_help(description)
         parser.add_option(*option, **description)
         
+    # Parse the command line, to get the CONFIG_FILE value.
     options, args = parser.parse_args()
     
+    # Update the default values of PARSER, so that the values in the
+    # CONFIG_FILE takes presendence over the programmed defaults, and
+    # the command-line supplied options gets the highest precedence.
+    TTP.Options.parse_configuration(options.config_file, parser)
+    
+    # Reparse the command line to get the rest of the values.
+    options, args = parser.parse_args()
+
     commands = ['start', 'stop', 'restart', 'store_alerts']
     
     actions = [x for x in args if x in commands]
@@ -84,7 +87,6 @@ def main():
         action = actions[0]
     
     # Expand the any paths and make them absolute.
-    
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
     
     if not options.old_log_file:
@@ -116,7 +118,6 @@ def main():
     if action == 'start':
         
         # Find out which executable we should run.
-        
         exec_file = None
         
         path, executable = os.path.split(options.executable)

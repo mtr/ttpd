@@ -1,0 +1,9 @@
+[bdist_rpm]
+packager = Martin Thorsen Ranang <mtr@ranang.org>
+doc_files = ChangeLog
+            README
+            doc/ttpd_documentation.pdf
+
+[install]
+prefix = @prefix@
+install_purelib = @pythondir@

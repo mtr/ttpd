@@ -41,9 +41,10 @@ def create_daemon():
             return((e.errno, e.strerror))
         
         if (pid == 0):                  # The second child.
-            # Don't keep any non-root directory in use.
+            # Don't keep any non-root directory in use.  Avoid umount
+            # troubles.
             os.chdir("/")
-
+            
             # Give the child complete control over permissions.
             os.umask(0)
         else:
@@ -73,6 +74,22 @@ def create_daemon():
     
     return 0
 
+# import pwd, grp
+
+# def get_uid_gid(username, groupname):
+#     return pwd.getpwnam(username)[2], grp.getgrnam(groupname)[2]
+
+# def get_username_groupname(uid, gid):
+#     return pwd.getpwuid(uid)[0], grp.getgrgid(gid)[0]
+
+def drop_root_privileges(target_uid, target_gid, permanently=True):
+    '''Change the real and effective user and group ID, possibly
+    permanently.
+    '''
+    os.setgid(target_gid)
+    os.setuid(target_uid)
+
+        
 def main():
     """Module mainline (for standalone execution).
     """

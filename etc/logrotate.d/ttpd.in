@@ -1,0 +1,16 @@
+# Log rotation file for the ttpd logs.
+@pkglogdir@/*.log {
+        weekly
+        missingok
+        rotate 52
+        compress
+        delaycompress
+        notifempty
+        create 644 @tuc_user@ @tuc_group@
+        sharedscripts
+        postrotate
+                if [ -f @pkgrundir@/@PACKAGE_TARNAME@.pid ]; then
+                        @pkginitdir@/@PACKAGE_TARNAME@ restart > /dev/null
+                fi
+        endscript
+}

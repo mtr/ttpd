@@ -1,0 +1,26 @@
+#! /bin/sh
+#
+# $Id: pre-uninstall.sh.in 271 2007-06-06 12:34:42Z mtr $
+#
+# Copyright (C) 2007, 2009 by Martin Thorsen Ranang
+#
+
+init_dir=@initdir@
+main_init_script=$init_dir/@PACKAGE_TARNAME@
+
+# Only on uninstall, not on upgrades.
+# RPM:    $1 = 0        iff uninstall
+# Debian: $1 = "remove" iff uninstall
+#
+if [ "$1" = 0 -o "$1" = "remove" ]; then
+    $main_init_script stop > /dev/null 2>&1
+    if [ -x /usr/sbin/update-rc.d ]; then
+	/usr/sbin/update-rc.d -f @PACKAGE_TARNAME@ remove
+    elif [ -x /usr/lib/lsb/remove_initd ]; then
+	/usr/lib/lsb/remove_initd $main_init_script
+    elif [ -x /sbin/chkconfig ]; then
+	/sbin/chkconfig --del @PACKAGE_TARNAME@
+    else
+	rm -f /etc/rc.d/rc?.d/???@PACKAGE_TARNAME@
+    fi
+fi

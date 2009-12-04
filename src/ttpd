@@ -15,9 +15,11 @@ __version__ = "1.0.2"
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 # A diversity of imports.
+import grp
 import locale
 import optparse
 import os
+import pwd
 import signal
 import sys
 
@@ -31,6 +33,7 @@ import TTP.daemon
 def run(options):
     """Setup the server and start the encapsulated-TUC thread pool.
     """
+    
     log_level = TTP.LogHandler.log_levels[options.log_level]
     
     Handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
@@ -48,7 +51,8 @@ def run(options):
                                            options.tuc_command,
                                            options.run_tad,
                                            (options.remote_ip_address,
-                                            options.remote_port))
+                                            options.remote_port),
+                                           options.ttpd_pid_filename)
     
     # In Python, when the `signal' module is available, interrupts
     # always go to the main thread.
@@ -67,7 +71,12 @@ def run(options):
     
     server.serve_forever()
 
-    
+def get_uid_gid(username, groupname):
+    return pwd.getpwnam(username)[2], grp.getgrnam(groupname)[2]
+
+def get_username_groupname(uid, gid):
+    return pwd.getpwuid(uid)[0], grp.getgrgid(gid)[0]
+
 def main():
     """Module mainline (for standalone execution).  Define and parse
     the various options that may be specified at the command line.
@@ -105,12 +114,31 @@ def main():
               "The current value, '%s', is not an executable." \
               % (options.tuc_command)
         sys.exit(1)
+
+    # Check if it will be possible to change the effective user ID of
+    # this process.
+    drop_root_privileges = True         # Assume it is possible.
+    
+    (options.uid, options.gid) = get_uid_gid(options.run_as_user,
+                                             options.run_as_group)
+    
+    euid, egid = os.geteuid(), os.getegid()
+    eusername, egroupname = get_username_groupname(euid, egid)
+    
+    if euid != 0 and euid != options.uid:
+        print >>sys.stderr, \
+              "Warning: only root can change the effective user id."
+        drop_root_privileges = False    # Face the truth.
     
     if options.daemon:
         # Daemonize the server.  This will put the server (to be
         # started) in the background and will give back the controll
         # to the process that executed this script.
         TTP.daemon.create_daemon()
+
+    # Drop root privileges.
+    if drop_root_privileges:
+        TTP.daemon.drop_root_privileges(options.uid, options.gid)
         
     # Run the server.
     run(options)

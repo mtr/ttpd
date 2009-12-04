@@ -14,6 +14,7 @@ import os
 #import popen2
 import re
 import select
+import signal
 import subprocess
 import sys
 import time
@@ -51,12 +52,19 @@ class EncapsulateProcess:
         Also, check that the command is available in the current path.
         """
         #self.subprocess = popen2.Popen4(self.command)
-        self.subprocess = subprocess.Popen(self.command,
-                                           stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT,
-                                           close_fds=True)
-        
+        try:
+            self.subprocess = subprocess.Popen(self.command,
+                                               stdin=subprocess.PIPE,
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.STDOUT,
+                                               close_fds=True)
+        except OSError, e:
+            self.log.error('Unable to run and encapsulate "%s".  %s.  ' \
+                           'Shutting down...',
+                           self.command, e)
+
+            os.kill(os.getpid(), signal.SIGTERM)
+            
         self.set_nonblocking(self.subprocess.stdout)
         #self.set_nonblocking(self.subprocess.fromchild)
                     

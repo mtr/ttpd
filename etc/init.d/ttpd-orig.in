@@ -1,15 +1,23 @@
 #! /bin/sh
-#
-# ttpd		startup/shutdown script for the TTPD server.
-#
+### BEGIN INIT INFO
+# Provides:          @PACKAGE_NAME@
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Init script for the TTPD server
+# Description:       This init.d script is used to start @PACKAGE_NAME@.
+#                    It basically just calls @PACKAGE_NAME@ctl.
+### END INIT INFO
+
 # Author:	Martin Thorsen Ranang <mtr@ranang.org>.
-#
 
 PATH=$HOME/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=ttpd
-NAME=ttpd
+DAEMON=@PACKAGE_NAME@
+DAEMON_CONTROLLER=@PACKAGE_NAME@ctl
+NAME=@PACKAGE_NAME@
 DESC="the TUC Transfer Protocol Daemon (TTPD)"
-LOG=/var/log/ttpd.log
+LOG=/var/log/@PACKAGE_NAME@/@PACKAGE_NAME@.log
 
 # Gracefully exit if the package has been removed.
 #test -x $DAEMON || exit 0
@@ -21,50 +29,49 @@ set -e
 
 FLAGS="-Ldebug --tuc-threads=1"
 
-function get_ttpd_pid()
+get_@PACKAGE_NAME@_pid()
 {
-    PID=`grep "ttpd INFO PID =" $LOG |tail -1 |cut -f 2 -d '=' |cut -f 1 -d ','`;
+    PID=`grep "@PACKAGE_NAME@ INFO PID =" $LOG |tail -1 |cut -f 2 -d '=' |cut -f 1 -d ','`;
     return
 }
 
 case "$1" in
   start)
 	echo -n "Starting $DESC: $NAME"
-	$DAEMON $FLAGS #start
+	$DAEMON #$FLAGS #start
 	echo "."
 	;;
   no-daemon)
 	echo -n "Starting $DESC: $NAME"
-	$DAEMON $FLAGS --no-daemon &
+	$DAEMON #$FLAGS --no-daemon &
 	echo "."
 	;;
   stop)
 	echo -n "Stopping $DESC: $NAME"
-	get_ttpd_pid
+	get_@PACKAGE_NAME@_pid
 	kill $PID
 	echo "."
 	;;
   force-stop)
 	echo -n "Force-stopping $DESC: $NAME"
-	get_ttpd_pid
+	get_@PACKAGE_NAME@_pid
 	kill -9 $PID
 	echo "."
 	;;
   restart)
 	echo -n "Restarting $DESC configuration..."
-	get_ttpd_pid
+	get_@PACKAGE_NAME@_pid
 	kill -HUP $PID
 	echo "done."
 	;;
   store-state)
 	echo -n "Storing scheduler state in $DESC: $NAME"
-	get_ttpd_pid
+	get_@PACKAGE_NAME@_pid
 	kill -USR1 $PID
 	echo "."
 	;;
   *)
 	N=/etc/init.d/$NAME
-	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
 	echo "Usage: $N {start|stop|restart|store-state}" >&2
 	exit 1
 	;;

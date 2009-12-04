@@ -13,14 +13,16 @@ Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
+import grp
+import Queue
 import SocketServer
 import logging
 import os
-import Queue
+import pwd
 import signal
 import sys
-import time
 import threading
+import time
 import xml.sax
 
 import EncapsulateTUC                   # For request-type constants.
@@ -47,7 +49,8 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
 
     def __init__(self, server_address, RequestHandlerClass,
                  log_filename, log_level=logging.DEBUG,
-                 high_load_limit=5, request_queue_size=5):
+                 high_load_limit=5, request_queue_size=5,
+                 pid_filename=None):
         # This is the limit on the number of threads (number of
         # transactions) concurrently handled.  This is related to the
         # number of open files per process.
@@ -61,6 +64,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         
         self.log_filename = log_filename
         self.log_level = log_level
+        self.pid_filename = pid_filename
         
         # Prepare the high load warning/excuse message.
         w = Message.MessageAck()
@@ -134,6 +138,29 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
                        logging.getLevelName(self.log.getEffectiveLevel()),
                        self.high_load_limit))
         
+        euid = os.geteuid()
+        egid = os.getegid()
+        
+        self.log.info('running_as_user = "%s" (%d), ' \
+                      'running_as_group = "%s" (%d).' %
+                      (pwd.getpwuid(euid)[0], euid,
+                       grp.getgrgid(egid)[0], egid))
+
+        # Write the PID to PID_FILENAME.
+        if self.pid_filename is None:
+            self.log.warn("No filename for storing the server " \
+                          "process' PID was provided.  Please consider " \
+                          "using the --pid-file option.")
+        else:
+            try:
+                with open(self.pid_filename, 'w') as stream:
+                    print >>stream, "%d" % (os.getpid())
+                self.log.info("Wrote PID to '%s'.", self.pid_filename)
+                
+            except IOError, e:
+                self.log.error("Unable to write this process' PID to '%s'.",
+                               self.pid_filename)
+                
     def log_init(self):
         """Intialize logging facilities and log some useful startup
         information.
@@ -199,16 +226,17 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
     
     def __init__(self, server_address, RequestHandlerClass,
                  log_filename, log_level, high_load_limit,
-                 request_queue_size,
-                 tuc_pool_size, tuc_command, run_tad,
-                 remote_server_address):
+                 request_queue_size, tuc_pool_size, tuc_command,
+                 run_tad, remote_server_address,
+                 pid_filename=None):
         
         # Initialize base class.
         BaseThreadingTCPServer.__init__(self, server_address,
                                         RequestHandlerClass,
                                         log_filename, log_level,
                                         high_load_limit,
-                                        request_queue_size)
+                                        request_queue_size,
+                                        pid_filename)
         
         # Store the remote server address.
         self.remote_server_address = remote_server_address

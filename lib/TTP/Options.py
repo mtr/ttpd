@@ -126,12 +126,33 @@ ttpd_options = [
       'action': 'store_false',
       'help': 'don\'t run as a daemon process'}),
 
+    (['--pid-file'],
+     {'dest': 'ttpd_pid_filename',
+      'default': '/var/run/ttpd/ttpd.pid',
+      'metavar': 'FILENAME',
+      'help': 'store the pid of the server process in FILENAME; ' \
+      'the default is %(default)s'}),
+    
     (['-g', '--sms-gateway'],
      {'dest': 'sms_gateway',
       'default': 'payex',
       'metavar': 'PROVIDER',
       'help': "the PROVIDER to use when sending SMS; possible values are " \
       "'esolutions' and 'payex'.  " \
+      "The default is '%(default)s'."}),
+
+    (['-U', '--user'],
+     {'dest': 'run_as_user',
+      'default': 'ttpd',
+      'metavar': 'USERNAME',
+      'help': "the USERNAME that the daemon process will run as.  " \
+      "The default is '%(default)s'."}),
+
+    (['-G', '--group'],
+     {'dest': 'run_as_group',
+      'default': 'ttpd',
+      'metavar': 'GROUPNAME',
+      'help': "the GROUPNAME that the daemon process will run as.  " \
       "The default is '%(default)s'."}),
 
     (['--originating-address'],

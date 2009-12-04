@@ -1,9 +1,32 @@
-include INSTALL USAGE
-recursive-include examples *.txt *.py
-include doc/ttpd_documentation.ps
+include AUTHORS
+include ChangeLog
+include COPYING
+include INSTALL
+include NEWS
+include README
+include doc/ttpd_documentation.pdf
+include etc/apache2/sites-available/busstuc.lingit.no
+include etc/default/ttpd
+include etc/init.d/ttpd
+include etc/logrotate.d/ttpd
+include src/ttpc
+include src/ttpd
+include src/ttpd_analyze
+include src/ttpdctl
+include src/ttpd_log_filter
 include statistics/general_config.sh
 include statistics/last_52_weeks.sh
 include statistics/last_week.sh
 include statistics/this_week.sh
 include statistics/today.sh
-prune examples/sample?/build
+include www/busstuc.lingit.no/body_style.inc
+include www/busstuc.lingit.no/bot.php
+include www/busstuc.lingit.no/bust.php
+include www/busstuc.lingit.no/egenskaper.php
+include www/busstuc.lingit.no/index.php
+include www/busstuc.lingit.no/instruksjoner.php
+include www/busstuc.lingit.no/ombustuc.php
+include www/busstuc.lingit.no/tuc.inc
+include www/busstuc.lingit.no/tucq.inc
+include www/busstuc.lingit.no/tucq_top.inc
+include www/busstuc.lingit.no/tucsms.php

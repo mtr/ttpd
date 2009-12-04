@@ -2,11 +2,16 @@
 #
 # $Id$
 #
-# Copyright (C) 2004 by Martin Thorsen Ranang
+# Copyright (C) 2004, 2009 by Martin Thorsen Ranang
 #
+
+. ../bin/config.sh
 
 PROGRAMS="ttpd ttpc ttpdctl"
 
+PYTHONPATH="$top_srcdir/lib"
+echo "PYTHONPATH="$PYTHONPATH
+
 for prog in $PROGRAMS; do
-    ../$prog --help > "usage_$prog.txt";
+    PYTHONPATH="$top_srcdir/lib" ../src/$prog --help > "usage_$prog.txt";
 done

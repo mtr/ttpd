@@ -1,0 +1,111 @@
+#! /usr/bin/python
+# -*- coding: latin-1 -*-
+# $Id: setup.py.in 297 2007-06-13 09:51:25Z mtr $
+"""
+Copyright (C) 2009 by Martin Thorsen Ranang
+"""
+__author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
+__revision__ = "$Rev: 297 $"
+__version__ = "@PACKAGE_VERSION@"
+
+
+from distutils.core import setup
+import os
+
+LONG_DESCRIPTION = """\
+This package contains the implementation of TTPD and TAD.  The main
+purpose of TTPD is to work as a mediator for requests between external
+programs and TUC.  In addition, if used with the TAD it will also
+handle `alert' requests when used in conjunction with the SMS
+interface.
+"""
+
+
+def isPackage(filename):
+    return (os.path.isdir(filename) and
+            os.path.isfile(os.path.join(filename, '__init__.py')))
+
+def packagesFor(filename, basePackage=""):
+    """Find all packages in filename.
+    """
+    set_of_packages = {}
+    
+    for item in os.listdir(filename):
+        directory = os.path.join(filename, item)
+        if isPackage(directory):
+            if basePackage:
+                moduleName = '%s.%s' % (basePackage, item)
+            else:
+                moduleName = item
+                
+            set_of_packages[moduleName] = directory
+            set_of_packages.update(packagesFor(directory, moduleName))
+            
+    return set_of_packages
+
+def main():
+    """Module mainline (for standalone execution).
+    """
+    packages = packagesFor('lib')
+
+    author_name = __author__.split(' <')[0]
+    author_email = __author__.rsplit(' ')[-1]
+
+    if True:
+        setup(
+            name='@PACKAGE_NAME@',
+            version='@PACKAGE_VERSION@',
+            description='TUC Transfer Protocol Daemon (TTPD) and ' \
+            'TUC Alert Daemon (TAD)',
+            long_description=LONG_DESCRIPTION,
+            author=author_name,
+            author_email=author_email,
+            url='http://www.ranang.org/projects/@PACKAGE_NAME@/',
+            package_dir=packages,
+            packages=packages.keys(),
+            scripts=[
+                'src/ttpc',
+                'src/ttpd_analyze',
+                'src/ttpdctl',
+                'src/ttpd_log_filter',
+                ],
+            data_files=[
+                # Server:
+                ('@sbindir@', ['src/@PACKAGE_TARNAME@']),
+                # Init script:
+                ('@pkginitdir@', ['etc/init.d/@PACKAGE_TARNAME@']),
+                # Configuration file:
+                ('/etc/default', ['etc/default/@PACKAGE_TARNAME@']),
+                # Log rotation scripts:
+                ('/etc/logrotate.d', ['etc/logrotate.d/@PACKAGE_TARNAME@']),
+                # Statistics generation scripts:
+                ('@pkglibdir@/statistics', [
+                    'statistics/general_config.sh',
+                    'statistics/last_52_weeks.sh',
+                    'statistics/last_week.sh',
+                    'statistics/this_week.sh',
+                    'statistics/today.sh',
+                    ]),
+                # Web site:
+                ('/etc/apache2/sites-available', [
+                    'etc/apache2/sites-available/busstuc.lingit.no',
+                    ]),
+                ('@www_document_root@', [
+                    'www/busstuc.lingit.no/body_style.inc',
+                    'www/busstuc.lingit.no/bot.php',
+                    'www/busstuc.lingit.no/bust.php',
+                    'www/busstuc.lingit.no/egenskaper.php',
+                    'www/busstuc.lingit.no/index.php',
+                    'www/busstuc.lingit.no/instruksjoner.php',
+                    'www/busstuc.lingit.no/ombustuc.php',
+                    'www/busstuc.lingit.no/tuc.inc',
+                    'www/busstuc.lingit.no/tucq.inc',
+                    'www/busstuc.lingit.no/tucq_top.inc',
+                    'www/busstuc.lingit.no/tucsms.php',
+                    ]),
+                ],
+            )
+
+
+if __name__ == "__main__":
+    main()

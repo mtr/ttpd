@@ -1,0 +1,97 @@
+#! /bin/sh
+#
+# $Id: post-install.sh.in 271 2007-06-06 12:34:42Z mtr $
+#
+# Copyright (C) 2007, 2009 by Martin Thorsen Ranang
+#
+
+lock_dir=@pkglockdir@
+log_dir=@pkglogdir@
+run_dir=@pkgrundir@
+
+main_init_script=@initdir@/@PACKAGE_TARNAME@
+ttpd_log_file=@pkglogdir@/@PACKAGE_TARNAME@.log
+
+ttpd_user=ttpd
+ttpd_group=ttpd
+
+makedir() {
+    if [ ! -d $1 ]; then
+	mkdir $1
+    fi
+    chown $2 $1 && chmod $3 $1
+}
+
+# Make sure that the ttpd user exists.  Simplest portable way to check
+# is to chown something, so we'll create the directories that we need
+# here.
+makedir $log_dir         root:root 755
+chgrp $ttpd_group $log_dir 2>/dev/null \
+    || addgroup --system $ttpd_group
+chown $ttpd_user $log_dir 2>/dev/null \
+    || adduser --system --no-create-home \
+       --disabled-password --ingroup $ttpd_group $ttpd_user
+
+# Need to have ttpd in the right group, but old revs do it wrong.
+if [ "$(id -gn $ttpd_user)" != "$ttpd_group" ]; then
+    usermod -g $ttpd_user $ttpd_group
+fi
+
+chown $ttpd_user:adm $log_dir
+
+makedir $run_dir         $ttpd_user:root 755
+makedir $lock_dir        $ttpd_user:root 755
+
+# Make sure the init script is executable.
+chmod 755 $main_init_script
+
+# Make sure the files have the right ownership and permissions.
+for file in $ttpd_log_file; do
+    touch $file
+    chown $ttpd_user:adm $file
+    chmod 664 $file
+done
+
+if [ -x /usr/sbin/update-rc.d ]; then
+    /usr/sbin/update-rc.d @PACKAGE_TARNAME@ defaults
+elif [ -x /usr/lib/lsb/install_initd ]; then
+    /usr/lib/lsb/install_initd $main_init_script
+elif [ -x /sbin/chkconfig ]; then
+    /sbin/chkconfig --add @PACKAGE_TARNAME@
+else
+    for i in 2 3 4 5; do
+	ln -sf $main_init_script /etc/rc.d/rc${i}.d/S90@PACKAGE_TARNAME@
+    done
+    for i in 1 6; do
+        ln -sf $main_init_script /etc/rc.d/rc${i}.d/K10@PACKAGE_TARNAME@
+    done
+fi
+
+# Restart TTPD daemon.
+INIT_VERBOSE=yes $main_init_script restart
+
+# Install (new default) Web site.
+# ===============================
+
+# Get Apache 'run as' user and group names.
+. /etc/apache2/envvars
+
+if [ -z "$APACHE_RUN_USER" ]; then
+    APACHE_RUN_USER=www-data	# Default assumption.
+fi
+
+if [ -z "$APACHE_RUN_GROUP" ]; then
+    APACHE_RUN_GROUP=www-data	# Default assumption.
+fi
+
+for file in @www_document_root@/*; do
+    chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
+    chmod 664 $file
+done
+
+a2dissite default		# Disable the default Web site.
+a2ensite @lingit_web_site@	# Enable TTPD's Web site.
+
+a2enmod php5	       # Make sure the php5 module is already enabled.
+
+/etc/init.d/apache2 reload	# Reload Apache2 configuration.
