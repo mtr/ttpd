@@ -213,8 +213,9 @@ class PayExMessage(object):
         self._check_request = None
         self._la_request = None
 
-        self.log.debug("PxSmsSoap_address = '%s'",
-                       self._locator.PxSmsSoap_address)
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("PxSmsSoap_address = '%s'",
+                           self._locator.PxSmsSoap_address)
 
     def __del__(self):
         if self._trace_stream is not None:
@@ -266,8 +267,9 @@ class PayExMessage(object):
         'Sms_WaitingForDeliveryNotification'. 
         """
         res = self._pxsmssoap.SendCpa(self._cpa_request)
-        
-        self.log.debug("_SendCpaResult = '%s'", res._SendCpaResult)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("_SendCpaResult = '%s'", res._SendCpaResult)
         
         tref, cpa_code, cpa_desc = self._parseSendCpaResult(res._SendCpaResult)
 
@@ -277,8 +279,9 @@ class PayExMessage(object):
                   "self._cpa_request.__dict__= '%s'\n" \
                   % (cpa_code, cpa_desc, res._SendCpaResult, 
                      repr(self._cpa_request.__dict__))
-            
-            self.log.debug(msg)
+
+            if self.log.isEnabledFor(logging.DEBUG):
+                self.log.debug(msg)
             
             raise RuntimeError, msg
         
@@ -288,18 +291,20 @@ class PayExMessage(object):
             self._populateCheckRequest(tref)
             
             while wait < CHECK_TIMEOUT_SECONDS:
-                self.log.debug("Sending check request...")
+                if self.log.isEnabledFor(logging.DEBUG):
+                    self.log.debug("Sending check request...")
                 
                 cres = self._pxsmssoap.Check(self._check_request)
                 code, desc, tstatus, tnumber \
                       = self._parseCheckResult(cres._CheckResult)
                 
                 if code != CODE_WAITING_FOR_DELIVERY:
-                    self.log.debug('PxSms.Check:\n code: %s\n' \
-                                   'description: %s\n' \
-                                   'transaction_status: %s\n' \
-                                   'transaction_number: %s',
-                                   code, desc, tstatus, tnumber)
+                    if self.log.isEnabledFor(logging.DEBUG):
+                        self.log.debug('PxSms.Check:\n code: %s\n' \
+                                       'description: %s\n' \
+                                       'transaction_status: %s\n' \
+                                       'transaction_number: %s',
+                                       code, desc, tstatus, tnumber)
                     
                     if ((code == CODE_SUCCESS) and 
                         (desc == DESCRIPTION_SUCCESS) and 
@@ -310,20 +315,26 @@ class PayExMessage(object):
                         break
                 else:
                     wait = wait + CHECK_INTERVAL_SECONDS
-                    
-                    self.log.debug("%s: Skal sove i %s sekunder.",
-                                   strftime("%Y-%b-%d %H:%M:%S", gmtime()),
-                                   CHECK_INTERVAL_SECONDS)
+
+                    if self.log.isEnabledFor(logging.DEBUG):
+                        self.log.debug("%s: Skal sove i %s sekunder.",
+                                       strftime("%Y-%b-%d %H:%M:%S", gmtime()),
+                                       CHECK_INTERVAL_SECONDS)
+                        
                     sleep(CHECK_INTERVAL_SECONDS)
-                    self.log.debug("%s: Ferdig å sove.",
-                                   strftime("%Y-%b-%d %H:%M:%S", gmtime()))
+                    
+                    if self.log.isEnabledFor(logging.DEBUG):
+                        self.log.debug("%s: Ferdig å sove.",
+                                       strftime("%Y-%b-%d %H:%M:%S", gmtime()))
 
             
             msg = "TIMEOUT PxSms.Check. code: %s, description: %s, " + \
                     "transaction_status: %s, transaction_number: %s" \
                     % (code, desc, tstatus, tnumber)
-            
-            self.log.debug(msg)
+
+            if self.log.isEnabledFor(logging.DEBUG):
+                self.log.debug(msg)
+                
             raise RuntimeError, msg
 
     def _sendLaRequest(self):
@@ -370,29 +381,34 @@ class PayExMessage(object):
         status på LA-meldinger. De er jo gratis...
         """
         res = self._pxsmssoap.SendLa(self._la_request)
-        
-        self.log.debug("_SendLaResult = '%s'\n", res._SendLaResult)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("_SendLaResult = '%s'\n", res._SendLaResult)
         
         code, desc = self._parseSendLaResult(res._SendLaResult)
 
         if (code != LA_CODE_SUCCESS):
             msg = "SendLa failed. Code: %s, Description: %s" % (code, desc)
 
-            self.log.debug(msg)
+            if self.log.isEnabledFor(logging.DEBUG):
+                self.log.debug(msg)
+                
             raise RuntimeError, msg
         
         return code, desc
     
     def _get_md5_hash(self, string):
         string = string.encode(HASH_ENCODING)
-        
-        self.log.debug("encryption_key = '%s'\n" \
-                       "string = '%s'", self.encryption_key, string)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("encryption_key = '%s'\n" \
+                           "string = '%s'", self.encryption_key, string)
         
         string = string + self.encryption_key.encode(HASH_ENCODING)
         hashed = hashlib.md5(string).hexdigest().upper()
-        
-        self.log.debug("hash = '%s'", hashed)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("hash = '%s'", hashed)
         
         return hashed
 
@@ -414,9 +430,10 @@ class PayExMessage(object):
                       obj._dcs, obj._validityTime, 
                       obj._deliveryTime])
 
-        
-        self.log.debug("Hashing CPA request...")
-        self.log.debug("account_number = '%s'", obj._accountNumber)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("Hashing CPA request...")
+            self.log.debug("account_number = '%s'", obj._accountNumber)
         
         return self._get_md5_hash(s)
 
@@ -431,10 +448,11 @@ class PayExMessage(object):
         """
         s = u"".join([unicode(x)
                       for x in (obj._accountNumber, obj._transactionRef)])
-        
-        self.log.debug("Hashing Check request...")
-        self.log.debug("account_number = '%s', transactionRef = '%s'",
-                       obj._accountNumber, obj._transactionRef)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("Hashing Check request...")
+            self.log.debug("account_number = '%s', transactionRef = '%s'",
+                           obj._accountNumber, obj._transactionRef)
         
         return self._get_md5_hash(s)
 
@@ -457,9 +475,10 @@ class PayExMessage(object):
                       obj._userData, obj._dataHeader,  
                       obj._dcs, obj._validityTime, 
                       obj._deliveryTime])
- 
-        self.log.debug("Hashing LA request...")
-        self.log.debug("account_number = '%s'", obj._accountNumber)
+
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug("Hashing LA request...")
+            self.log.debug("account_number = '%s'", obj._accountNumber)
         
         return self._get_md5_hash(s)
     
@@ -528,9 +547,21 @@ class PayExMessage(object):
             self._populateLaRequest(destination, user_data, order_id, enc)
             code, description = self._sendLaRequest()
         else:
-            self._populateCpaRequest(destination, user_data, price, order_id, enc)
-            code, description, transactionStatus, transactionNumber = self._sendCpaRequest()
+            try:
+                self._populateCpaRequest(destination, user_data, price,
+                                         order_id, enc)
+            except UnicodeDecodeError, e:
+                self.log.exception("Could not populate CPA request " \
+                                   "(destination = '%s', user_data = '%s', " \
+                                   "price = '%s', " \
+                                   "order_id = '%s', enc = '%s').  " \
+                                   "[%s]",
+                                   destination, user_data, price,
+                                   order_id, enc, e)
                 
+            (code, description, transactionStatus, transactionNumber) \
+                   = self._sendCpaRequest()
+            
         return code, description, price, destination
 
 def __test():

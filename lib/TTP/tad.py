@@ -30,7 +30,7 @@ import TTP.LogHandler
 
 # The following values are only defaults and may be overridden in the
 # constructor call to TUCAlertDaemon.
-LOG_FILENAME = 'tttp_tad.log'
+#LOG_FILENAME = 'tttp_tad.log'
 LOG_CHANNEL = 'ttpd.tad'
 
 
@@ -160,7 +160,9 @@ class GeneralThreadingScheduler(threading.Thread):
                     
                     self.__queue_lock.acquire()
                     try:
-                        bisect.insort(self.__queue, (moment + delay, priority, action, arguments))
+                        bisect.insort(self.__queue,
+                                      (moment + delay, priority, action,
+                                       arguments))
                         
                         self.delay_func(1)
                     finally:
@@ -273,7 +275,7 @@ class TUCAlertDaemon(object):
             self.__highest_id = max([self.__highest_id, id])
         
             # print item
-        
+            
             if command == 'INSERTED':
                 if id in self.__pre_inserted:
                     del self.__pre_inserted[id]
@@ -301,7 +303,7 @@ class TUCAlertDaemon(object):
         self.__lock.acquire()
         try:
             if not os.access(self.__log_filename, os.F_OK | os.R_OK):
-                self.log.warn("Scheduler state not restored.  Couldn' open " \
+                self.log.warn("Scheduler state not restored.  Couldn't open " \
                               "'%s'." % self.__log_filename)
                 return
             
@@ -315,20 +317,16 @@ class TUCAlertDaemon(object):
                 try:
                     m = self.log_line_re.match(line)
                     if m:
-
                         # Act upon the read "command line".  The
                         # handle_restore_item() has the side-effect that
                         # self.__pre_inserted and self.__highest_number
                         # are changed according to its input.
-
                         self.handle_restore_item(m.groups(), now)
                 except:
-
                     # CRITICAL: If this exception is reached, we will most
                     # probably try to restore the scheduler state
                     # indefinitely because we read from the file we are
                     # logging to (and it's growing).
-
                     self.log.exception('An exception occurred.')
 
             log.close()

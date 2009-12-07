@@ -10,14 +10,15 @@ Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 
 import fcntl
+import logging
 import os
-#import popen2
 import re
 import select
 import signal
 import subprocess
 import sys
 import time
+
 
 QUERY_TYPE_NONE     = 0
 QUERY_TYPE_SMS      = 1
@@ -30,10 +31,11 @@ class EncapsulateProcess:
     two-way communication (through pipes) with the forked process.
     """
     
-    def __init__(self, command):
+    def __init__(self, command, environment=None):
         """Initialize class instance."""
         self.command = command
-
+        self.environment = environment
+        
     def set_nonblocking(self, fd):
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
         try:
@@ -51,22 +53,21 @@ class EncapsulateProcess:
 
         Also, check that the command is available in the current path.
         """
-        #self.subprocess = popen2.Popen4(self.command)
         try:
             self.subprocess = subprocess.Popen(self.command,
                                                stdin=subprocess.PIPE,
                                                stdout=subprocess.PIPE,
                                                stderr=subprocess.STDOUT,
-                                               close_fds=True)
+                                               close_fds=True,
+                                               env=self.environment)
         except OSError, e:
             self.log.error('Unable to run and encapsulate "%s".  %s.  ' \
                            'Shutting down...',
                            self.command, e)
 
             os.kill(os.getpid(), signal.SIGTERM)
-            
+
         self.set_nonblocking(self.subprocess.stdout)
-        #self.set_nonblocking(self.subprocess.fromchild)
                     
     def get_pid(self):
         """Returns the PID of the subprocess.
@@ -89,11 +90,17 @@ class EncapsulateProcess:
             
             delta = self.subprocess.stdout.read()
             if delta == '':
+                if __debug__:  # Optimized away with Python's -O flag.
+                    self.log.debug("Read data = '%s'.", data)
+                    
                 return (0, data)
-
+            
             data += delta
-
+            
             if timeout and ((time.time() - started) > timeout):
+                if __debug__: # Optimized away with Python's -O flag.
+                    self.log.debug("Timed out.  Read data = '%s'.", data)
+                    
                 return (1, data) # Timeout -> may be more data.
 
     def write(self, string, *args):
@@ -109,7 +116,7 @@ class EncapsulateProcess:
 class EncapsulateTUC(EncapsulateProcess):
     """A class that encapsulates a TUC process.
     """
-    def __init__(self, command, eos_magic, log=None):
+    def __init__(self, command, eos_magic, log=None, environment=None):
         self.magic = eos_magic
         
         # In SICStus 3.8.7 self.eos_magic should look like:
@@ -129,12 +136,13 @@ class EncapsulateTUC(EncapsulateProcess):
                 def info(self, *args): pass
                 debug = info
                 error = info
+                warn = info
                 exception = info
                 
             self.log = __ZeroLogger()
             
         # Call the parent's class constructor.
-        EncapsulateProcess.__init__(self, command)
+        EncapsulateProcess.__init__(self, command, environment)
 
     def run(self):
         """Start the encapsulated process and perform necessary
@@ -144,8 +152,9 @@ class EncapsulateTUC(EncapsulateProcess):
 
         EncapsulateProcess.run(self)
 
-        self.log.debug('... OK (PID = %d)... Cleaning up...',
-                       self.subprocess.pid)
+        if self.log.isEnabledFor(logging.DEBUG):
+            self.log.debug('... OK (PID = %d)... Cleaning up...',
+                           self.subprocess.pid)
         
         # Remove "garbage" (licensing info) from SICStus.
         self.write('write(\'%s \'), flush_output.\n', self.magic)

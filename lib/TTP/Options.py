@@ -20,6 +20,13 @@ import Definitions
 
 basename = os.path.basename(sys.argv[0])
 
+tuc_external_encodings = {
+    'utf-8': 'utf8',
+    'iso-8859-1': 'iso_8859_1',
+    'latin-1': 'iso_8859_1',
+    'euc': 'euc',
+    }
+
 common_options = [
     (['-c', '--config-file'],
      {'dest': 'config_file',
@@ -119,6 +126,14 @@ ttpd_options = [
       'default': './busestuc.sav',
       'metavar': 'COMMAND',
       'help': 'run COMMAND as TUC subprocess; the default is %(default)s'}),
+
+    (['-E', '--tuc-external-encoding'],
+     {'dest': 'tuc_encoding',
+      'default': None,
+      'metavar': 'ENCODING',
+      'help': 'tell SICStus Prolog that it runs in an ENCODING environment.  ' \
+      'If "None", TTPD tries to set it according to its stdin encoding.  ' \
+      'The default is %(default)s'}),
     
     (['-d', '--no-daemon'],
      {'dest': 'daemon',

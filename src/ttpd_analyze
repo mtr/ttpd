@@ -169,14 +169,12 @@ ttpd_analyze_options = [
 
 def file_filter(options, filename):
     """Parse a log file and return the necessary information."""
-    file = open(filename, 'r')
-    for line in file:
-        m = billing_re.match(line)
-        if m:
-            yield m.groupdict() #m.groups()
-
-    file.close()
-
+    with open(filename, 'r') as stream:
+        for line in stream:
+            m = billing_re.match(line)
+            if m:
+                yield m.groupdict() #m.groups()
+                
 def format_trans(trans, reparsable=True):
     if reparsable:
         return '%(date_str)s ttpd INFO [] billing=%(billing)d ' \

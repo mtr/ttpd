@@ -8,10 +8,10 @@ This is a socket server responsible for dispatching requests from Web
 pages and SMS messages to TUC and for providing the clients with the
 corresponding output.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007, 2009 by Martin Thorsen Ranang
 """
 
-__version__ = "1.0.2"
+__version__ = "2.1.0"
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 # A diversity of imports.
@@ -38,6 +38,12 @@ def run(options):
     
     Handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
     Handler.initialize(options)
+
+    # Note that if OPTIONS.TUC_ENCODING is None, it is set to the
+    # value of SYS.STDIN.ENCODING.
+    tuc_encoding = TTP.Options.tuc_external_encodings[options.tuc_encoding]
+
+    tuc_environment = {'SP_CTYPE': tuc_encoding}
     
     # Create a server which will use a TUC Transfer Protocol Handler.
     server = TTP.Server.ThreadingTCPServer((options.ip_address,
@@ -49,6 +55,7 @@ def run(options):
                                            options.socket_queue_size,
                                            options.tuc_pool_size,
                                            options.tuc_command,
+                                           tuc_environment,
                                            options.run_tad,
                                            (options.remote_ip_address,
                                             options.remote_port),
@@ -129,6 +136,11 @@ def main():
         print >>sys.stderr, \
               "Warning: only root can change the effective user id."
         drop_root_privileges = False    # Face the truth.
+
+    # Try to automatically infer the appropriate value to be used as
+    # the SICStus Prolog environment variable SP_CTYPE.
+    if options.tuc_encoding is None:
+        options.tuc_encoding = sys.stdin.encoding.lower()
     
     if options.daemon:
         # Daemonize the server.  This will put the server (to be

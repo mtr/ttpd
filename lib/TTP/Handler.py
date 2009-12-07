@@ -56,9 +56,10 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         
     def handle(self):
         meta, body = self.Message.receive(self.connection, self.xml_parser)
-        
-        self.server.log.log(LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
-                            self.transaction, meta, body)
+
+        if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
+            self.server.log.log(LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
+                                self.transaction, meta, body)
         
         ack = self.Message.MessageAck()
         ack.MxHead.TransId = 'LINGSMSOUT'
@@ -175,13 +176,14 @@ class Handler(BaseHandler):
                 time.sleep(delta)
 
                 retries += 1
-                
-                self.server.log.debug('[%0x] Could not connect to ' \
-                                      'remote server %s: reason: %s. ' \
-                                      'Will retry in %d seconds',
-                                      self.transaction,
-                                      self.server.remote_server_address,
-                                      desc, delta)
+
+                if self.server.log.isEnabledFor(LogHandler.DEBUG):
+                    self.server.log.debug('[%0x] Could not connect to ' \
+                                          'remote server %s: reason: %s. ' \
+                                          'Will retry in %d seconds',
+                                          self.transaction,
+                                          self.server.remote_server_address,
+                                          desc, delta)
                 
             else:
                 sent = True
@@ -266,12 +268,14 @@ class Handler(BaseHandler):
             
         else:
             is_sms_request = False
-            
+
+        if self.server.log.isEnabledFor(LogHandler.DEBUG):
+            self.server.log.debug('[%0x] Input body: "%s".',
+                                  self.transaction, body)
+        
         # The preprocessing returns a method and some arguments.  The
         # method should be applied on the arguments.
         method, args = self.preprocess(body, is_sms_request)
-
-        self.server.log.debug('[%0x] "%s"', self.transaction, body)
         
         # Apply method to args.
         cost, pre_answer, answer, extra = method(args)
@@ -384,10 +388,11 @@ class Handler(BaseHandler):
                 cost, answer = self.prices['-'], main
         else:
             # If no block separators where found, consider the answer
-            # from TUC as a "simple answer" or an error message (like
+            # from TUC as a "simple answer", or an error message (like
             # "% Execution aborted").
-            self.server.log.debug('[%0x] Found no separator.',
-                                  self.transaction)
+            if self.server.log.isEnabledFor(LogHandler.DEBUG):
+                self.server.log.debug("[%0x] Found no block separator in " \
+                                      "TUC's output.", self.transaction)
             
             pre, cost, alert_date, answer = (None, self.prices['-'],
                                              None,
@@ -435,11 +440,15 @@ class Handler(BaseHandler):
         # TUC process (in a thread-safe manner).
         result_queue = Queue.Queue(1)
         
+        if self.server.log.isEnabledFor(LogHandler.DEBUG):        
+            self.server.log.debug('[%0x] TUC query input: "%s"',
+                                  self.transaction, data)
+
         # Because only the thread that picks up _this_task_ will know
         # about this particular result_queue, we don't need to supply
         # any id with the task.
         self.server.tuc_pool.queue_task(data, result_queue)
-
+        
         # Possibly wait some time and retrieve the result from the
         # result_queue.
         result = result_queue.get()

@@ -227,7 +227,7 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
     def __init__(self, server_address, RequestHandlerClass,
                  log_filename, log_level, high_load_limit,
                  request_queue_size, tuc_pool_size, tuc_command,
-                 run_tad, remote_server_address,
+                 tuc_environment, run_tad, remote_server_address,
                  pid_filename=None):
         
         # Initialize base class.
@@ -249,10 +249,12 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
         # in the background.
         self.tuc_pool_size = tuc_pool_size
         self.tuc_command = tuc_command
+        self.tuc_environment = tuc_environment
         
         logger = logging.getLogger('%s.etp' % self.log_channel)
         self.tuc_pool = TUCThread.TUCThreadPool(self.tuc_pool_size,
                                                 self.tuc_command,
+                                                self.tuc_environment,
                                                 TUCThread.TUCThread,
                                                 logger)
         

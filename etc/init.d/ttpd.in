@@ -98,9 +98,9 @@ do_reload() {
 }
 
 #
-# Function that sends a SIGHUP to the daemon/service
+# Function that sends a USR1 to the daemon/service
 #
-do_reload() {
+do_store_state() {
 	#
 	# If the daemon can reload its configuration without
 	# restarting (for example, when it is sent a SIGHUP),

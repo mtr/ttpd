@@ -8,6 +8,7 @@ initdir = /etc/init.d
 statedir = /var
 
 tuc_command = /home/tore/export/buster/busestuc.sav
+tuc_encoding = None
 tuc_user = ttpd
 tuc_group = ttpd
 originating_phone_number = 1939
@@ -48,6 +49,7 @@ edit = sed \
         -e 's|@sbindir[@]|$(sbindir)|g' \
         -e 's|@trans_id[@]|$(trans_id)|g' \
         -e 's|@tuc_command[@]|$(tuc_command)|g' \
+        -e 's|@tuc_encoding[@]|$(tuc_encoding)|g' \
         -e 's|@tuc_group[@]|$(tuc_group)|g' \
         -e 's|@tuc_user[@]|$(tuc_user)|g' \
         -e 's|@www_document_root[@]|$(www_document_root)|g'

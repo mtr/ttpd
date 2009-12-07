@@ -24,13 +24,15 @@ class TUCThreadPool(ThreadPool.ThreadPool):
     variable.
     """
 
-    def __init__(self, num_threads, command='./busestuc.sav',
+    def __init__(self, num_threads, command='./busestuc.sav', environment=None,
                  thread_class=ThreadPool.ThreadPoolThread, log=None):
+        
         """Intialize a new class instance.
         """
         self.log = log
         self.command = command
-
+        self.environment = environment
+        
         ThreadPool.ThreadPool.__init__(self, num_threads, thread_class)
         
 
@@ -51,7 +53,9 @@ class TUCThread(ThreadPool.ThreadPoolThread):
         """Perform a TUC subprocess encapsulation.
         """
         self.__ep = EncapsulateTUC.EncapsulateTUC(self.pool.command,
-                                                  self.MAGIC, self.log)
+                                                  self.MAGIC,
+                                                  self.log,
+                                                  self.pool.environment)
         
         # Run the encapsulated process.
         self.__ep.run()

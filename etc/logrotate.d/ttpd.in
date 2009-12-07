@@ -6,11 +6,11 @@
         compress
         delaycompress
         notifempty
-        create 644 @tuc_user@ @tuc_group@
+        create 644 @tuc_user@ adm
         sharedscripts
         postrotate
                 if [ -f @pkgrundir@/@PACKAGE_TARNAME@.pid ]; then
-                        @pkginitdir@/@PACKAGE_TARNAME@ restart > /dev/null
+                        @pkginitdir@/@PACKAGE_TARNAME@ reload > /dev/null
                 fi
         endscript
 }
