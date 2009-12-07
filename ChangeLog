@@ -1,3 +1,14 @@
+2009-12-07  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, etc/default/ttpd.in, etc/init.d/ttpd.in,
+	  etc/logrotate.d/ttpd.in, extradefs.mk,
+	  lib/TTP/CorePayExMessage.py, lib/TTP/EncapsulateTUC.py,
+	  lib/TTP/Handler.py, lib/TTP/Options.py, lib/TTP/Server.py,
+	  lib/TTP/TUCThread.py, lib/TTP/setup.py, lib/TTP/tad.py,
+	  setup.cfg.in, src/ttpd, src/ttpd_analyze:
+	  Fixed SICStus Prolog external font encoding problem. Handled
+	  problem with .pyo getting lost during packaging.
+
 2009-12-06  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* lib/TTP/payex_prod-old, lib/TTP/payex_test-old:
