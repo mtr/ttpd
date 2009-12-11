@@ -7,32 +7,32 @@ Socket server handler implementation for the TUC Transfer Protocol
 
 Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
-
-__version__ = "$Rev$"
-__author__ = "Martin Thorsen Ranang"
-
 import Queue
 import SocketServer
-import cStringIO
-import htmlentitydefs
-#import logging
 import random
 import re
 import socket
 import time
 import xml.sax
 
-import EncapsulateTUC
-import LogHandler
-import Message
-import num_hash
+import TTP.ESolutionsMessage
+import TTP.EncapsulateTUC
+import TTP.LogHandler
+import TTP.PayExMessage
+import TTP.num_hash
 
-import ESolutionsMessage
-import PayExMessage
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+#import logging
+
+
 
 class BaseHandler(SocketServer.StreamRequestHandler):
     MessageModule = None
-
+    Message = None     # Overridden by e.g. {ESolutions,PayEx}Handler.
+    
     def setup(self):
         """Create an XML parser for this handler instance.
         
@@ -57,23 +57,27 @@ class BaseHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         meta, body = self.Message.receive(self.connection, self.xml_parser)
 
-        if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
-            self.server.log.log(LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
+        if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
+            self.server.log.log(TTP.LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
                                 self.transaction, meta, body)
         
         ack = self.Message.MessageAck()
         ack.MxHead.TransId = 'LINGSMSOUT'
         
         self.Message.send(self.connection, ack)
-        
-    def escape(self, data):
+
+    #def escape(self, data):
+    @staticmethod
+    def escape(data):
         """Replace special characters with escaped equivalents.
         """
         data = data.replace('"', '\\"')
 
         return data
-    
-    def unescape(self, data):
+
+    #def unescape(self, data):
+    @staticmethod
+    def unescape(data):
         """Replace escaped special characters with unescaped
         equivalents.
         """
@@ -144,7 +148,7 @@ class Handler(BaseHandler):
             # If the answer had to be cut down to 160 tokens, it
             # should be free, unless it was an alert-related message.
             if cost != 'VARSEL':
-                cost == 'FREE'
+                cost = 'FREE'
                 
         ans._setMessage(answer)
 
@@ -177,7 +181,7 @@ class Handler(BaseHandler):
 
                 retries += 1
 
-                if self.server.log.isEnabledFor(LogHandler.DEBUG):
+                if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
                     self.server.log.debug('[%0x] Could not connect to ' \
                                           'remote server %s: reason: %s. ' \
                                           'Will retry in %d seconds',
@@ -189,8 +193,8 @@ class Handler(BaseHandler):
                 sent = True
                 
         if sent:
-            if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
-                self.server.log.log(LogHandler.PROTOCOL,
+            if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
+                self.server.log.log(TTP.LogHandler.PROTOCOL,
                                     '[%0x] Recieved ACK:\n%s\n%s',
                                     self.transaction,
                                     meta, body)
@@ -250,8 +254,8 @@ class Handler(BaseHandler):
             self.request.close()
             return
 
-        if self.server.log.isEnabledFor(LogHandler.PROTOCOL):
-            self.server.log.log(LogHandler.PROTOCOL,
+        if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
+            self.server.log.log(TTP.LogHandler.PROTOCOL,
                                 '[%0x] Received package:\n%s\n%s',
                                 self.transaction, meta, body)
         
@@ -269,7 +273,7 @@ class Handler(BaseHandler):
         else:
             is_sms_request = False
 
-        if self.server.log.isEnabledFor(LogHandler.DEBUG):
+        if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
             self.server.log.debug('[%0x] Input body: "%s".',
                                   self.transaction, body)
         
@@ -295,7 +299,7 @@ class Handler(BaseHandler):
                 id = (id * 97) + 1003
                 
                 # Convert the decimal ID into a base 36.
-                ext_id = num_hash.num2alpha(id)
+                ext_id = TTP.num_hash.num2alpha(id)
                 
                 answer = 'Du vil bli varslet %s. %s %s' % \
                          (time.strftime('%H:%M:%S, %d.%m.%y', alert_date),
@@ -390,7 +394,7 @@ class Handler(BaseHandler):
             # If no block separators where found, consider the answer
             # from TUC as a "simple answer", or an error message (like
             # "% Execution aborted").
-            if self.server.log.isEnabledFor(LogHandler.DEBUG):
+            if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
                 self.server.log.debug("[%0x] Found no block separator in " \
                                       "TUC's output.", self.transaction)
             
@@ -413,7 +417,7 @@ class Handler(BaseHandler):
     def cancel_alert(self, ext_id):
         """Cancel the alert signified by ext_id.
         """
-        num_id = num_hash.alpha2num(ext_id)
+        num_id = TTP.num_hash.alpha2num(ext_id)
         
         if ((num_id - 1003) % 97):
             self.server.log.warn('[%0x] Received non-valid alert ID = "%s"',
@@ -440,7 +444,7 @@ class Handler(BaseHandler):
         # TUC process (in a thread-safe manner).
         result_queue = Queue.Queue(1)
         
-        if self.server.log.isEnabledFor(LogHandler.DEBUG):        
+        if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):        
             self.server.log.debug('[%0x] TUC query input: "%s"',
                                   self.transaction, data)
 
@@ -474,9 +478,9 @@ class Handler(BaseHandler):
         """Perform pre-processing of the request.
         """
         if is_sms_request:
-            kind = EncapsulateTUC.QUERY_TYPE_SMS
+            kind = TTP.EncapsulateTUC.QUERY_TYPE_SMS
         else:
-            kind = EncapsulateTUC.QUERY_TYPE_WEB
+            kind = TTP.EncapsulateTUC.QUERY_TYPE_WEB
             
         # Check for (and handle) "TEAM ..." in start of message.
         m = self.service_re.match(request)
@@ -501,7 +505,7 @@ class Handler(BaseHandler):
             return self.tuc_query, (kind, request)
 
 class ESolutionsHandler(Handler):
-    Message = ESolutionsMessage
+    Message = TTP.ESolutionsMessage
     
     def __init__(self, request, client_address, server):
         server.log.info('Will use the eSolutions SMS gateway.')
@@ -513,8 +517,8 @@ class ESolutionsHandler(Handler):
         pass
         
 class PayExHandler(Handler):
-    Message = PayExMessage
-
+    Message = TTP.PayExMessage
+    
     def __init__(self, request, client_address, server):
         server.log.info('Will use the PayEx SMS gateway.')
         
