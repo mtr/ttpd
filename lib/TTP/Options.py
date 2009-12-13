@@ -18,7 +18,7 @@ import os
 import LogHandler
 import Definitions
 
-basename = os.path.basename(sys.argv[0])
+BASENAME = os.path.basename(sys.argv[0])
 
 tuc_external_encodings = {
     'utf-8': 'utf8',
@@ -93,7 +93,7 @@ common_options = [
     
     (['-f', '--log-file'],
      {'dest': 'log_file',
-      'default': '%s.log' % basename,
+      'default': '%s.log' % BASENAME,
       'metavar': 'FILE',
       'help': 'store the log in FILE; the default is \'%(default)s\''}),
 

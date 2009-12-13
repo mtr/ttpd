@@ -168,7 +168,8 @@ ttpd_analyze_options = [
 
 
 def file_filter(options, filename):
-    """Parse a log file and return the necessary information."""
+    """Parse a log file and return the necessary information.
+    """
     with open(filename, 'r') as stream:
         for line in stream:
             m = billing_re.match(line)

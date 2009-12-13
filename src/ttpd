@@ -16,7 +16,6 @@ __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 
 # A diversity of imports.
 import grp
-import locale
 import optparse
 import os
 import pwd
@@ -36,8 +35,8 @@ def run(options):
     
     log_level = TTP.LogHandler.log_levels[options.log_level]
     
-    Handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
-    Handler.initialize(options)
+    handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
+    handler.initialize(options)
 
     # Note that if OPTIONS.TUC_ENCODING is None, it is set to the
     # value of SYS.STDIN.ENCODING.
@@ -45,10 +44,10 @@ def run(options):
 
     tuc_environment = {'SP_CTYPE': tuc_encoding}
     
-    # Create a server which will use a TUC Transfer Protocol Handler.
+    # Create a server which will use a TUC Transfer Protocol handler.
     server = TTP.Server.ThreadingTCPServer((options.ip_address,
                                             options.port),
-                                           Handler,
+                                           handler,
                                            options.log_file,
                                            log_level,
                                            options.high_load_limit,
@@ -79,16 +78,22 @@ def run(options):
     server.serve_forever()
 
 def get_uid_gid(username, groupname):
+    """Return the user id and group id corresponding to the USERNAME
+    and GROUPNAME).
+    """
     return pwd.getpwnam(username)[2], grp.getgrnam(groupname)[2]
 
 def get_username_groupname(uid, gid):
+    """Return the username and groupname corresponding to the UID and
+    GID.
+    """
     return pwd.getpwuid(uid)[0], grp.getgrgid(gid)[0]
 
 def main():
     """Module mainline (for standalone execution).  Define and parse
     the various options that may be specified at the command line.
     """
-    basename = os.path.basename(sys.argv[0])
+    #basename = os.path.basename(sys.argv[0])
 
     # Define the parser options.
     parser = optparse.OptionParser(version='%%prog %s' % (__version__))
@@ -101,7 +106,7 @@ def main():
         parser.add_option(*option, **description)
 
     # Parse the command line, to get the CONFIG_FILE value.
-    options, args = parser.parse_args()
+    options, _args = parser.parse_args()
     
     # Update the default values of PARSER, so that the values in the
     # CONFIG_FILE takes presendence over the programmed defaults, and
@@ -109,7 +114,7 @@ def main():
     TTP.Options.parse_configuration(options.config_file, parser)
 
     # Reparse the command line to get the rest of the values.
-    options, args = parser.parse_args()
+    options, _args = parser.parse_args()
     
     # Expand any paths and make them absolute.
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
@@ -129,11 +134,10 @@ def main():
     (options.uid, options.gid) = get_uid_gid(options.run_as_user,
                                              options.run_as_group)
     
-    euid, egid = os.geteuid(), os.getegid()
-    eusername, egroupname = get_username_groupname(euid, egid)
+    euid, _egid = os.geteuid(), os.getegid()
     
     if euid != 0 and euid != options.uid:
-        print >>sys.stderr, \
+        print >> sys.stderr, \
               "Warning: only root can change the effective user id."
         drop_root_privileges = False    # Face the truth.
 

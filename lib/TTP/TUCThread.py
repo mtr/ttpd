@@ -11,13 +11,13 @@ Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-import EncapsulateTUC
-import ThreadPool
 import Queue
 import time
+import TTP.EncapsulateTUC
+import TTP.ThreadPool
 
 
-class TUCThreadPool(ThreadPool.ThreadPool):
+class TUCThreadPool(TTP.ThreadPool.ThreadPool):
     """A thread pool class tailored to the needs of TTPD.
 
     One of the additional features of this class is the log member
@@ -25,7 +25,7 @@ class TUCThreadPool(ThreadPool.ThreadPool):
     """
 
     def __init__(self, num_threads, command='./busestuc.sav', environment=None,
-                 thread_class=ThreadPool.ThreadPoolThread, log=None):
+                 thread_class=TTP.ThreadPool.ThreadPoolThread, log=None):
         
         """Intialize a new class instance.
         """
@@ -33,10 +33,10 @@ class TUCThreadPool(ThreadPool.ThreadPool):
         self.command = command
         self.environment = environment
         
-        ThreadPool.ThreadPool.__init__(self, num_threads, thread_class)
+        TTP.ThreadPool.ThreadPool.__init__(self, num_threads, thread_class)
         
 
-class TUCThread(ThreadPool.ThreadPoolThread):
+class TUCThread(TTP.ThreadPool.ThreadPoolThread):
     """A pooled thread class to process TUC queries.
     """
     MAGIC = '!#%!MTR!%#!'
@@ -45,17 +45,19 @@ class TUCThread(ThreadPool.ThreadPoolThread):
         """Initialize thread instance and logging facilities.
         """
         self.log = pool.log
+
+        self.__ep = None
         
         # Perform superclass initialization.
-        ThreadPool.ThreadPoolThread.__init__(self, pool)
+        TTP.ThreadPool.ThreadPoolThread.__init__(self, pool)
         
     def encapsulate(self):
         """Perform a TUC subprocess encapsulation.
         """
-        self.__ep = EncapsulateTUC.EncapsulateTUC(self.pool.command,
-                                                  self.MAGIC,
-                                                  self.log,
-                                                  self.pool.environment)
+        self.__ep = TTP.EncapsulateTUC.EncapsulateTUC(self.pool.command,
+                                                      self.MAGIC,
+                                                      self.log,
+                                                      self.pool.environment)
         
         # Run the encapsulated process.
         self.__ep.run()
@@ -80,7 +82,7 @@ class TUCThread(ThreadPool.ThreadPoolThread):
         # callback queue.
         callback.put(self.__ep.process((kind, query)))
         
-        if kind == EncapsulateTUC.QUERY_TYPE_SHUTDOWN:
+        if kind == TTP.EncapsulateTUC.QUERY_TYPE_SHUTDOWN:
             # A shutdown command was recieved.
             self.go_away()
             
@@ -106,18 +108,18 @@ class TUCThread(ThreadPool.ThreadPoolThread):
 def main():
     """Module mainline (for standalone execution).
     """
-    pool = ThreadPool.ThreadPool(3, TUCThread)
+    pool = TTP.ThreadPool.ThreadPool(3, TUCThread)
     result = Queue.Queue(1)
     
     # Insert tasks into the queue and let them run.
-    #L = ['Når går bussen fra nardo til byen?', 'Hva er klokka?'] * 10
-    L = ['Hva er klokka?']
+    #queries = ['Når går bussen fra nardo til byen?', 'Hva er klokka?'] * 10
+    queries = ['Hva er klokka?']
 
     print 'waiting...'
     time.sleep(10)
 
     print 'starting...'
-    pool.queue_task(L[0], result)
+    pool.queue_task(queries[0], result)
     
     print result.get()
 

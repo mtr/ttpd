@@ -1,5 +1,7 @@
 2009-12-07  Martin Thorsen Ranang <mtr@ranang.org>
 
+	* ChangeLog, setup.cfg.in:
+	  Tried to supply package requirements. No luck so far.
 	* ChangeLog, etc/default/ttpd.in, etc/init.d/ttpd.in,
 	  etc/logrotate.d/ttpd.in, extradefs.mk,
 	  lib/TTP/CorePayExMessage.py, lib/TTP/EncapsulateTUC.py,
