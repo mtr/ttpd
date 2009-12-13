@@ -1,3 +1,15 @@
+2009-12-13  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, doc/include_src.tex, lib/TTP/Options.py,
+	  lib/TTP/TUCThread.py, src/ttpd, src/ttpd_analyze:
+	  Miscellaneous code cleanup.
+
+2009-12-11  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* lib/TTP/Handler.py:
+	  Cleaning up code. Fixed a bug where cost of a message longer than
+	  160 characters got shortened was not set to 'FREE'.
+
 2009-12-07  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* ChangeLog, setup.cfg.in:

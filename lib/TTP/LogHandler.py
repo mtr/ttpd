@@ -16,7 +16,10 @@ log_line_re_date = '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
 
 # Define a new logging level.
 
+NOTSET = logging.NOTSET
 PROTOCOL = (logging.NOTSET + logging.DEBUG) / 2
+DEBUG = logging.DEBUG
+INFO = logging.INFO
 
 logging.addLevelName(PROTOCOL, 'PROTOCOL')
 

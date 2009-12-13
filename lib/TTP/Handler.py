@@ -508,7 +508,7 @@ class ESolutionsHandler(Handler):
     Message = TTP.ESolutionsMessage
     
     def __init__(self, request, client_address, server):
-        server.log.info('Will use the eSolutions SMS gateway.')
+        server.log.debug('Will use the eSolutions SMS gateway.')
         
         Handler.__init__(self, request, client_address, server)
 
@@ -520,10 +520,10 @@ class PayExHandler(Handler):
     Message = TTP.PayExMessage
     
     def __init__(self, request, client_address, server):
-        server.log.info('Will use the PayEx SMS gateway.')
+        server.log.debug('Will use the PayEx SMS gateway.')
         
         Handler.__init__(self, request, client_address, server)
-
+        
     @classmethod
     def initialize(C, options):
         C.Message.setup_module(options)
