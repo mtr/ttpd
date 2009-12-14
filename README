@@ -7,7 +7,7 @@
 
 
 
-This software is Copyright (C) 2004 by Martin Thorsen Ranang.
+This software is Copyright (C) 2004, 2009 by Martin Thorsen Ranang.
 
 This package contains the implementation of TTPD and TAD.  The package
 is written in Python (and was tested with Python 2.3.4 [on Linux] and

@@ -27,6 +27,21 @@ tuc_external_encodings = {
     'euc': 'euc',
     }
 
+db_options = [
+    (['--db-address'],
+     {'dest': 'db_address',
+      'default': 'sqlite:///:memory:',
+      'metavar': 'DRIVER://USERNAME:PASSWORD@HOST:PORT/DATABASE',
+      'help': 'store the billing data in DATABASE accessible with ' \
+      'a DRIVER, for USERNAME with PASSWORD at HOST and PORT; ' \
+      'the default is \'%(default)s\''}),
+    (['--db-debug'],
+     {'dest': 'db_debug',
+      'default': False,
+      'action': 'store_true',
+      'help': 'Include all communication with database in the log.'}),
+    ]
+
 common_options = [
     (['-c', '--config-file'],
      {'dest': 'config_file',
@@ -100,7 +115,7 @@ common_options = [
     ]
 
 ttpd_options = [
-    
+ 
     (['-t', '--without-tad'],
      {'dest': 'run_tad',
       'default': True,
@@ -222,7 +237,7 @@ ttpd_options = [
       'help': "the ACCOUNT_NUMBER to use when sending SMS via PayEx " \
       "test interface.  " \
       "The default is '%(default)s'."}),
-    
+   
     ]
 
 ttpdctl_options = [

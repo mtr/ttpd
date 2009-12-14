@@ -95,23 +95,25 @@ def _convert_reply(TransId, ORName, Billing):
 def communicate(message, remote_address, parser = None, timeout = False):
     """Communicate message and return with the reply.
     
-    ENDRINGER
+    ENDRINGER (i hovedsak av Kristian Skarbø)
     
-    Arbeidshypotesen her er at når message.MxHead.TransId = "LINGSMSOUT",
-    så skal det sendes en utgående SMS.
+    Arbeidshypotesen her er at når message.MxHead.TransId =
+    'LINGSMSOUT', så skal det sendes en utgående SMS.
     
-    Det som forsøksvis da gjøres er å late som om alt er som før, mens vi
-    egentlig sniker SMS-en ut via det nye "forbedrede" PxSms-grensesnittet.
-    Forhåpentligvis vil da systemet tikke og gå inntil vi får opphavsmannen
-    til å foreta en ordentlig omstrukturering.
-    
+    Det som forsøksvis da gjøres er å late som om alt er som før, mens
+    vi egentlig sniker SMS-en ut via det nye 'forbedrede'
+    PxSms-grensesnittet.  Forhåpentligvis vil da systemet tikke og gå
+    inntil vi får opphavsmannen til å foreta en ordentlig
+    omstrukturering.
     """
-    try:
-        TransId = message.MxHead.TransId
-    except:
-        TransId = ""
-        
-    payex_log.warn('TransId = "%s"', TransId)
+    #try:
+    #    TransId = message.MxHead.TransId
+    #except:
+    #    TransId = ""
+    
+    TransId = message.MxHead.TransId
+    
+    payex_log.debug('TransId = "%s"', TransId)
     
     if TransId == "LINGSMSOUT":
         #Forsøker å sende via PxSMS

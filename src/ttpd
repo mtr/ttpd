@@ -22,6 +22,7 @@ import pwd
 import signal
 import sys
 
+import TTP.Billing
 import TTP.Handler
 import TTP.LogHandler
 import TTP.Options
@@ -34,14 +35,17 @@ def run(options):
     """
     
     log_level = TTP.LogHandler.log_levels[options.log_level]
-    
-    handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
-    handler.initialize(options)
 
+    handler = TTP.Handler.sms_gateway_handlers[options.sms_gateway]
+    #try:
+    handler.initialize(options)
+    #except OperationalError, e:
+    
+    
     # Note that if OPTIONS.TUC_ENCODING is None, it is set to the
     # value of SYS.STDIN.ENCODING.
     tuc_encoding = TTP.Options.tuc_external_encodings[options.tuc_encoding]
-
+    
     tuc_environment = {'SP_CTYPE': tuc_encoding}
     
     # Create a server which will use a TUC Transfer Protocol handler.
@@ -58,7 +62,9 @@ def run(options):
                                            options.run_tad,
                                            (options.remote_ip_address,
                                             options.remote_port),
-                                           options.ttpd_pid_filename)
+                                           options.ttpd_pid_filename,
+                                           TTP.Billing,
+                                           options.db_address)
     
     # In Python, when the `signal' module is available, interrupts
     # always go to the main thread.
@@ -99,7 +105,9 @@ def main():
     parser = optparse.OptionParser(version='%%prog %s' % (__version__))
 
     # Merge the common (for both TTPD and TTPC) options.
-    options = TTP.Options.common_options + TTP.Options.ttpd_options
+    options = TTP.Options.common_options \
+              + TTP.Options.ttpd_options \
+              + TTP.Options.db_options
     
     for option, description in options:
         TTP.Options.update_help(description)

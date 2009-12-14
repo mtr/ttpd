@@ -104,13 +104,13 @@ class GeneralThreadingScheduler(threading.Thread):
         finally:
             self.__queue_lock.release()
 
-    def __contains__(self, id):
+    def __contains__(self, identity):
         """A membership test operator.  This enables the caller to
         perform a 'x in object' test.
         """
         self.__queue_lock.acquire()
         try:
-            return id in self.__queue
+            return identity in self.__queue
         finally:
             self.__queue_lock.release()
 
@@ -268,30 +268,30 @@ class TUCAlertDaemon(object):
         """
         self.__lock.acquire()
         try:
-            date, command, id, moment, ext_id, message = item
+            date, command, identity, moment, ext_id, message = item
         
-            id = int(id)
+            identity = int(identity)
         
-            self.__highest_id = max([self.__highest_id, id])
+            self.__highest_id = max([self.__highest_id, identity])
         
             # print item
             
             if command == 'INSERTED':
-                if id in self.__pre_inserted:
-                    del self.__pre_inserted[id]
+                if identity in self.__pre_inserted:
+                    del self.__pre_inserted[identity]
                     
-                self.__pre_inserted[id] = item
+                self.__pre_inserted[identity] = item
                 
                 # Because the INSERTED has to have appeared earlier
-                # than ALERTED and CANCELED (for a specific id), there
-                # should be no need to check for existence of the
-                # alert.  However, we might be reading from a
+                # than ALERTED and CANCELED (for a specific identity),
+                # there should be no need to check for existence of
+                # the alert.  However, we might be reading from a
                 # broken-time-line/rotated log.
                 
             elif command in ['ALERTED', 'CANCELED']:
                 
-                if id in self.__pre_inserted:
-                    del self.__pre_inserted[id]
+                if identity in self.__pre_inserted:
+                    del self.__pre_inserted[identity]
                     
         finally:
             self.__lock.release()
@@ -336,13 +336,13 @@ class TUCAlertDaemon(object):
 
             #print self.__pre_inserted
 
-            for id, item in self.__pre_inserted.items():
+            for identity, item in self.__pre_inserted.items():
                 date, command, s_id, s_moment, ext_id, message = item
 
                 # Convert the moment _string_ to a timestamp-float.
                 moment = float(s_moment)
                 
-                self._insert_alert(moment, message, id, ext_id)
+                self._insert_alert(moment, message, identity, ext_id)
                 
             del self.__pre_inserted
         
@@ -362,11 +362,11 @@ class TUCAlertDaemon(object):
             ids = self.__events.keys()
             ids.sort()
             
-            for id in ids:
-                moment, priority, handler, data = self.__events[id]
+            for identity in ids:
+                moment, priority, handler, data = self.__events[identity]
                 ignore_id, ext_id, message = data
                 
-                self.log.critical(self.log_format, 'INSERTED', id,
+                self.log.critical(self.log_format, 'INSERTED', identity,
                                   moment, ext_id, message)
                 
             self.scheduler.release()
@@ -410,7 +410,7 @@ class TUCAlertDaemon(object):
         self.__lock.acquire()
         try:
             
-            id, ext_id, message = data
+            identity, ext_id, message = data
             
             ans = TTP.Message.MessageAck()
             ans.MxHead.TransId = 'LINGSMSOUT'
@@ -422,9 +422,9 @@ class TUCAlertDaemon(object):
             
             TTP.Message.communicate(ans, self.remote_server_address)
             
-            self.log.critical(self.short_log_format, 'ALERTED', id)
+            self.log.critical(self.short_log_format, 'ALERTED', identity)
             
-            del self.__events[id]
+            del self.__events[identity]
             
         finally:
             self.__lock.release()
@@ -441,7 +441,7 @@ class TUCAlertDaemon(object):
         finally:
             self.__lock.release()
             
-    def _insert_alert(self, moment, message, id, ext_id):
+    def _insert_alert(self, moment, message, identity, ext_id):
         """The core functionality of insert_alert().
 
         Called both by outside objects (through insert_alarm()) and
@@ -449,8 +449,8 @@ class TUCAlertDaemon(object):
         """
         self.__lock.acquire()
         try:
-            event = (moment, 1, self.handle_alert, (id, ext_id, message))
-            self.__events[id] = self.scheduler.abs_enter(event)
+            event = (moment, 1, self.handle_alert, (identity, ext_id, message))
+            self.__events[identity] = self.scheduler.abs_enter(event)
         finally:
             self.__lock.release()
         
@@ -465,38 +465,39 @@ class TUCAlertDaemon(object):
         """
         self.__lock.acquire()
         try:
-            id = self.next_id()
-            self._insert_alert(moment, message, id, ext_id)
+            identity = self.next_id()
+            self._insert_alert(moment, message, identity, ext_id)
             
-            self.log.critical(self.log_format, 'INSERTED', id, moment,
+            self.log.critical(self.log_format, 'INSERTED', identity, moment,
                               ext_id, message)
             
-            return id
+            return identity
         finally:
             self.__lock.release()
             
-    def cancel_alert(self, id, command='CANCELED'):
+    def cancel_alert(self, identity, command='CANCELED'):
         """Cancel an alert from the scheduler.
 
-        @param id: The id of the alert to be canceled.
+        @param identity: The identity of the alert to be canceled.
         
         @param command: The command word to write in the log file
         (used for later restore operations).
         """
         self.__lock.acquire()
         try:
-            if id not in self.__events:
+            if identity not in self.__events:
                 return False
             
-            event = self.__events[id]
+            event = self.__events[identity]
             
-            (moment, priority, handle_alert, (id, ext_id, message)) = event
+            (moment, priority, handle_alert,
+             (identity, ext_id, message)) = event
             
-            self.log.critical(self.short_log_format % (command, id))
+            self.log.critical(self.short_log_format % (command, identity))
             
             self.scheduler.cancel(event)
             
-            del self.__events[id]
+            del self.__events[identity]
 
             return True
             

@@ -17,6 +17,7 @@ import os
 import re
 import time
 
+import TTP.Billing
 import TTP.Options
 import TTP.LogHandler
 
@@ -25,9 +26,9 @@ from pychart import *
 option_list = []
 
 billing_re = re.compile('^%s ttpd INFO \[[0-9a-f]*\] ' \
-                        'billing=(?P<billing>\d+) (?P<interface>\S+) ' \
-                        '\((?P<host>[^,]+), (?P<trans_type>\w+)\) ' \
-                        '(?P<what>\w+)$'
+                        'billing=(?P<amount>\d+) (?P<interface>\S+) ' \
+                        '\((?P<host>[^,]+), (?P<transaction_type>\w+)\) ' \
+                        '(?P<description>\w+)$'
                         % (TTP.LogHandler.log_line_re_date))
 
 resolutions = {
@@ -100,7 +101,7 @@ ttpd_analyze_options = [
       'action': 'store_true',
       'help': 'if this flag is given, the program will only return a ' \
       'filtered list of "billing lines"'}),
-    (['-c', '--cost'],
+    (['--cost'],
      {'dest': 'cost',
       'default': False,
       'action': 'store_true',
@@ -127,12 +128,12 @@ ttpd_analyze_options = [
       'help': "duration of TIME_UNITS for each temporal grouping; " \
       "available values are %s; the default is '%%(default)s'" %
       (', '.join(["'%s'" % x for x in resolutions]))}),
-    (['-f', '--from'],
+    (['--from'],
      {'dest': 'start',
       'default': False,
       'metavar': 'DATE',
       'help': "only consider entries including and later than DATE"}),
-    (['-t', '--to'],
+    (['--to'],
      {'dest': 'end',
       'default': False,
       'metavar': 'DATE',
@@ -154,7 +155,7 @@ ttpd_analyze_options = [
       'help': "pretend all clients share the same ADDRESS"}),
     (['-g', '--group-by'],
      {'dest': 'group_by',
-      'default': 'interface,host,trans_type',
+      'default': 'interface,host,transaction_type',
       'metavar': 'FIELD,FIELD,...',
       'help': "the FIELDS used to discriminate between groups used; " \
       "available values are %s; the default is %%(default)s" %
@@ -164,33 +165,35 @@ ttpd_analyze_options = [
       'default': {},
       'metavar': 'FIELD=VALUE,FIELD=VALUE,...',
       'help': "the FIELD and value pairs used to restrict the output; " \
-      "only groups fulfilling the criteria are output"})]
+      "only groups fulfilling the criteria are output"}),
+    ]
 
-
-def file_filter(options, filename):
-    """Parse a log file and return the necessary information.
-    """
-    with open(filename, 'r') as stream:
-        for line in stream:
-            m = billing_re.match(line)
-            if m:
-                yield m.groupdict() #m.groups()
+# def file_filter(options, filename):
+#     """Parse a log file and return the necessary information.
+#     """
+#     with open(filename, 'r') as stream:
+#         for line in stream:
+#             m = billing_re.match(line)
+#             if m:
+#                 yield m.groupdict() #m.groups()
                 
 def format_trans(trans, reparsable=True):
     if reparsable:
-        return '%(date_str)s ttpd INFO [] billing=%(billing)d ' \
+        return '%(date_str)s ttpd INFO [] billing=%(amount)d ' \
                '%(interface)s (%(host)s, ' \
-               '%(trans_type)s) %(what)s' % trans
+               '%(transaction_type)s) %(description)s' % trans
     else:
-        return '%(date_str)s, %(billing)d, %(interface)s, %(host)s, ' \
-               '%(trans_type)s, %(what)s' % trans
+        return '%(date_str)s, %(amount)d, %(interface)s, %(host)s, ' \
+               '%(transaction_type)s, %(description)s' % trans
 
 def convert_types(trans):
-    trans['date_str'] = trans['date']
-    tmp = time.strptime(trans['date'], '%Y-%m-%d %H:%M:%S')
-    trans['date'] = datetime.datetime(*tmp[:6])
-    trans['billing'] = int(trans['billing'])
-
+    trans['date_str'] = str(trans['timestamp'])
+    #tmp = time.strptime(trans['timestamp'], '%Y-%m-%d %H:%M:%S')
+    #trans['timestamp'] = datetime.datetime(*tmp[:6])
+    #trans['amount'] = int(trans['amount'])
+    
+    return trans
+    
 def group_by(extract_discriminators, set):
     groups = {}
     
@@ -237,7 +240,7 @@ def make_chart(data, x_axis_title, filename, transform):
     can = canvas.init(fname=filename)
 
     chart_setup = {
-        'default': {                           # Hours per day.
+        'default': {                    # Hours per day.
         'tic_interval': 3,
         'minor_tic_interval': 1,
         'chart_size_x': 500,
@@ -318,10 +321,24 @@ def parse_options():
                                    version = '%%prog version %s' %
                                    (__version__))
     
-    for option, description in ttpd_analyze_options:
+    for option, description in \
+            TTP.Options.common_options \
+            + ttpd_analyze_options \
+            + TTP.Options.db_options:
         TTP.Options.update_help(description)
         parser.add_option(*option, **description)
         
+    #options, args = parser.parse_args()
+
+    # Parse the command line, to get the CONFIG_FILE value.
+    options, args = parser.parse_args()
+
+    # Update the default values of PARSER, so that the values in the
+    # CONFIG_FILE takes presendence over the programmed defaults, and
+    # the command-line supplied options gets the highest precedence.
+    TTP.Options.parse_configuration(options.config_file, parser)
+    
+    # Reparse the command line to get the rest of the values.
     options, args = parser.parse_args()
     
     options.group_by = options.group_by.split(',')
@@ -356,69 +373,148 @@ def parse_options():
             
     return options, args
 
-def transactions_from_files(options, args):
-    transactions = []
+# def transactions_from_files(options, args):
+#     transactions = []
     
-    for file in args:
-        lines = file_filter(options, file)
+#     for file in args:
+#         lines = file_filter(options, file)
         
-        for trans in lines:
-            convert_types(trans)
-
-            if (trans['date'] < options.start) or (options.end < trans['date']):
-                continue
-
-            if options.unified_client_address != None:
-                trans['host'] = options.unified_client_address
+#         for trans in lines:
+#             convert_types(trans)
             
-            if options.filter_only:
-                print format_trans(trans)
-                continue
+#             if (trans['timestamp'] < options.start) or (options.end < trans['timestamp']):
+#                 continue
+
+#             if options.unified_client_address != None:
+#                 trans['host'] = options.unified_client_address
+            
+#             if options.filter_only:
+#                 print format_trans(trans)
+#                 continue
                 
-            transactions.append(trans)
+#             transactions.append(trans)
             
+#     if options.filter_only:
+#         return
+
+#     # Insert temporal resolution place-holders.
+#     t = datetime.datetime.combine(options.start, datetime.time(00, 00, 00))
+    
+#     end = datetime.datetime.combine(options.end, datetime.time(23, 59, 59))
+    
+#     #print "Before"
+#     #print '\n'.join(['%s' % str(x['timestamp'].isocalendar()[0:2])
+#     #                 for x in transactions])
+    
+#     while t < end:
+#         obj = {'timestamp': t}
+        
+#         for key in ['interface', 'host', 'transaction_type']:
+#             if key in options.restrict_to:
+#                 obj[key] = options.restrict_to[key]
+#             else:
+#                 obj[key] = None
+                
+#         transactions.append(obj)
+#         t += resolutions[options.resolution][4]
+        
+#     transactions.sort()
+    
+#     #print "After sort()"
+#     #print '\n'.join(['%s' % str(x['timestamp'].isocalendar()[0:2])
+#     #                 for x in transactions])
+#     return transactions
+
+def get_transactions(billing, options):
+    """Returns a list of dictionary object representing the
+    information retrieved from the billing database.
+    """
+    #options.start = datetime.datetime(2009, 12, 10, 13, 45, 06)
+    #options.end = datetime.datetime(2009, 12, 14, 13, 45, 13)
+    #options.end = datetime.datetime.now()
+    
+    #print options.start
+    #print options.end
+    
+    bills = billing.Bill.query\
+            .filter(billing.Bill.timestamp >= options.start)\
+            .filter(billing.Bill.timestamp <= options.end)\
+            .all()
+
+    # Convert each entity to dictionaries.  Both for backwards
+    # compatibility and for being enable to change attribute values
+    # without affecting the database.
+    bills = [convert_types(bill.to_dict()) for bill in bills]
+    
+    for bill in bills:
+        if not options.unified_client_address is None:
+            trans['host'] = options.unified_client_address
+            
+        if options.filter_only:
+            print format_trans(bill)
+            continue
+
     if options.filter_only:
         return
 
     # Insert temporal resolution place-holders.
-    t = datetime.datetime.combine(options.start, datetime.time())
-
-    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 00))
-
+    t = datetime.datetime.combine(options.start, datetime.time(00, 00, 00))
+    
+    end = datetime.datetime.combine(options.end, datetime.time(23, 59, 59))
+    
     #print "Before"
-    #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
-    #                 for x in transactions])
+    #print '\n'.join(['%s' % str(x['timestamp'].isocalendar()[0:2])
+    #                 for x in bills])
+
+    # Add "empty" placeholders for days where no billing information
+    # was registered.
+    placeholder = dict()
+
+    for key in ['interface', 'host', 'transaction_type']:
+        if key in options.restrict_to:
+            placeholder[key] = options.restrict_to[key]
+        else:
+            placeholder[key] = None
+            
     while t < end:
-        obj = {'date': t}
+        obj = placeholder.copy()
+        obj['timestamp'] = t
         
-        for key in ['interface', 'host', 'trans_type']:
-            if key in options.restrict_to:
-                obj[key] = options.restrict_to[key]
-            else:
-                obj[key] = None
-                
-        transactions.append(obj)
+        bills.append(obj)
+        
         t += resolutions[options.resolution][4]
         
-    transactions.sort()
-
+    bills.sort()
+    
     #print "After sort()"
-    #print '\n'.join(['%s' % str(x['date'].isocalendar()[0:2])
-    #                 for x in transactions])
-    return transactions
+    #print '\n'.join(['%s' % str(x['timestamp'].isocalendar()[0:2])
+    #                 for x in bills])
+
+    return bills
 
 def main():
-    """Module mainline (for standalone execution)."""
+    """Module mainline (for standalone execution).
+    """
     options, args = parse_options()
 
+    # Setup connection and mappings for the billing database.
+    billing = TTP.Billing
+    billing.initialize(options.db_address, db_echo=options.db_debug)
+    
+    if options.end >= datetime.datetime.now().date():
+        options.end = datetime.datetime.now()
+        
     # Add the contents of each file to the list of transactions.
-    transactions = transactions_from_files(options, args)
+    #transactions = transactions_from_files(options, args)
+    transactions = get_transactions(billing, options)
+    
+    #print transactions
     
     # Create the temporal groups, dependent of options.resolution.
     groups = group_by(lambda x:
-                      resolutions[options.resolution][1](x['date']),
+                      resolutions[options.resolution][1](x['timestamp']),
                       transactions)
-
+    
     #print "After 1st group_by()"
     #print '\n'.join(['%s' % str(x) for x in groups])
     
@@ -440,36 +536,35 @@ def main():
         subunits.sort()
 
         for subunit in subunits:
-
-            billing = 0
+            amount = 0
             
             for trans in subgroups[subunit]:
                 #print format_trans(trans)
                 if options.cost:
-                    billing += trans['billing']
+                    amount += trans['amount']
                 else:
-                    if 'billing' in trans: # Place-holder trick
-                        billing += 1
+                    if 'amount' in trans: # Place-holder trick
+                        amount += 1
                     
             for i, field in enumerate(options.group_by):
                 if (field in options.restrict_to) and \
                        (options.restrict_to[field] != subunit[i]):
                     break
             else:
-                L.append((trans, unit, subunit, billing))
+                L.append((trans, unit, subunit, amount))
 
     if not transactions:
         return
     
     print '# This analysis was generated %s' % str(datetime.datetime.now())
     print '# by %s version %s.' % (os.path.basename(__file__), __version__)
-    print '# First entry %s, and last entry %s.' % (transactions[0]['date'],
-                                                    transactions[-1]['date'])
+    print '# First entry %s, and last entry %s.' \
+          % (transactions[0]['timestamp'], transactions[-1]['timestamp'])
     
     if options.period:
         
         stats = group_by(lambda x:
-                         periods[options.period][1](x[0]['date']),
+                         periods[options.period][1](x[0]['timestamp']),
                          L)
 
         print '# %12s:%12s%12s%12s' % \

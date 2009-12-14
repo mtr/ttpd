@@ -9,27 +9,28 @@ the Handler module) supplied as an argument to the constructor.
 
 Copyright (C) 2004, 2007 by Martin Thorsen Ranang
 """
-
-__version__ = "$Rev$"
-__author__ = "Martin Thorsen Ranang"
-
-import grp
 import Queue
 import SocketServer
+import grp
 import logging
 import os
 import pwd
 import signal
+import sqlalchemy.exc
 import sys
 import threading
-import time
-import xml.sax
 
 import EncapsulateTUC                   # For request-type constants.
 import LogHandler
 import Message
 import TUCThread
 import tad
+
+
+__version__ = "$Rev$"
+__author__ = "Martin Thorsen Ranang"
+
+
 
 
 class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
@@ -65,7 +66,7 @@ class BaseThreadingTCPServer(SocketServer.ThreadingTCPServer):
         self.log_filename = log_filename
         self.log_level = log_level
         self.pid_filename = pid_filename
-        
+
         # Prepare the high load warning/excuse message.
         w = Message.MessageAck()
         w.MxHead.Stat = 51       # Destination application send error.
@@ -228,7 +229,8 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
                  log_filename, log_level, high_load_limit,
                  request_queue_size, tuc_pool_size, tuc_command,
                  tuc_environment, run_tad, remote_server_address,
-                 pid_filename=None):
+                 pid_filename=None, billing=None, db_address=None,
+                 db_debug=True):
         
         # Initialize base class.
         BaseThreadingTCPServer.__init__(self, server_address,
@@ -237,6 +239,22 @@ class ThreadingTCPServer(BaseThreadingTCPServer):
                                         high_load_limit,
                                         request_queue_size,
                                         pid_filename)
+
+        # Initialize the billing database.
+        self.billing = billing
+
+        try:
+            logger = logging.getLogger('%s.db' % self.log_channel)
+
+            self.billing.initialize(db_address, logger=logger,
+                                    db_echo=db_debug)
+            
+        except sqlalchemy.exc.OperationalError, e:
+            self.log.error('Could not initialize billing database; exiting.  ' \
+                           '[%s]', e)
+            sys.exit(1)
+            
+        self.log.info('Initialized billing database successfully.')
         
         # Store the remote server address.
         self.remote_server_address = remote_server_address

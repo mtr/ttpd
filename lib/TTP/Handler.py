@@ -25,9 +25,6 @@ import TTP.num_hash
 __version__ = "$Rev$"
 __author__ = "Martin Thorsen Ranang"
 
-#import logging
-
-
 
 class BaseHandler(SocketServer.StreamRequestHandler):
     MessageModule = None
@@ -66,7 +63,6 @@ class BaseHandler(SocketServer.StreamRequestHandler):
         
         self.Message.send(self.connection, ack)
 
-    #def escape(self, data):
     @staticmethod
     def escape(data):
         """Replace special characters with escaped equivalents.
@@ -75,7 +71,6 @@ class BaseHandler(SocketServer.StreamRequestHandler):
 
         return data
 
-    #def unescape(self, data):
     @staticmethod
     def unescape(data):
         """Replace escaped special characters with unescaped
@@ -181,13 +176,13 @@ class Handler(BaseHandler):
 
                 retries += 1
 
-                if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
-                    self.server.log.debug('[%0x] Could not connect to ' \
-                                          'remote server %s: reason: %s. ' \
-                                          'Will retry in %d seconds',
-                                          self.transaction,
-                                          self.server.remote_server_address,
-                                          desc, delta)
+                #if self.server.log.isEnabledFor(TTP.LogHandler.WARN):
+                self.server.log.warn('[%0x] Could not connect to ' \
+                                     'remote server %s: reason: %s. ' \
+                                     'Will retry in %d seconds',
+                                     self.transaction,
+                                     self.server.remote_server_address,
+                                     desc, delta)
                 
             else:
                 sent = True
@@ -224,7 +219,7 @@ class Handler(BaseHandler):
                         '%s' % (tuc_ans._xmlify()))
 
         self.Message.send(self.connection, ans)
-        
+
     def handle(self):
         """Handles a query received by the socket server.
         
@@ -355,18 +350,24 @@ class Handler(BaseHandler):
                              '\n%s %s %s\n' \
                              '"%s"' \
                              '\n"%s"\n-',
-                             self.transaction,
+                             self.transaction, # Serial number (hex).
                              self.billings[cost],
-                             log_id,
-                             self.client_address[0],
-                             str(meta.MxHead.TransId),
-                             cost,
-                             log_id,
-                             cost,
+                             log_id,    # Eg. 'SMS' or 'WEB'.
+                             self.client_address[0],   # Hostname.
+                             str(meta.MxHead.TransId), # 'LINGSMSIN'.
+                             cost,      # BILLING/VARSEL/AVBEST.
+                             log_id,               # See above.
+                             cost,                 # See above.
                              ext_id,
-                             body,
-                             answer)
+                             body,      # Query (to TUC).
+                             answer,    # Answer (from TUC).
+                             )
 
+        # Store billing info in a DB too.
+        self.server.billing.log(self.billings[cost], unicode(log_id),
+                                unicode(self.client_address[0]),
+                                unicode(meta.MxHead.TransId), unicode(cost))
+        
         # Close the socket.
         self.request.close()
    

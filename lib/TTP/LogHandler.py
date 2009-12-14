@@ -12,7 +12,7 @@ __version__ = "$Rev$"
 import logging
 import types
 
-log_line_re_date = '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'
+log_line_re_date = '(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})'
 
 # Define a new logging level.
 
@@ -62,8 +62,9 @@ class LogHandler(DaemonFileHandler):
         self.setFormatter(logging.Formatter('%(asctime)s %(name)s ' \
                                             '%(levelname)s ' \
                                             '%(message)s',
-                                            '%Y-%m-%d %H:%M:%S'))
-        
+                                            #'%Y-%m-%d %H:%M:%S.%N'
+                                            ))
+
 def main ():
     """Module mainline (for standalone execution).
     """
