@@ -50,7 +50,7 @@ deb_sign: deb
 	pushd $(DISTDIR) && dpkg-sig --sign builder $(PACKAGE)_$(VERSION)-$(RELEASE)_all.deb && popd
 
 deb: rpm
-	pushd $(DISTDIR) && EMAIL="mtr@ranang.org" fakeroot alien --to-deb --keep-version --scripts $(PACKAGE)-$(VERSION)-$(RELEASE).noarch.rpm && popd
+	pushd $(DISTDIR) && EMAIL="mtr@ranang.org" fakeroot alien --veryverbose --to-deb --keep-version --scripts $(PACKAGE)-$(VERSION)-$(RELEASE).noarch.rpm && popd
 
 tests:
 	PYTHONPATH=$(top_srcdir)/lib pytest test

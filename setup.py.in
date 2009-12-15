@@ -60,6 +60,7 @@ def main():
             long_description=LONG_DESCRIPTION,
             author=author_name,
             author_email=author_email,
+            license='GPL',
             url='http://www.ranang.org/projects/@PACKAGE_NAME@/',
             package_dir=packages,
             packages=packages.keys(),

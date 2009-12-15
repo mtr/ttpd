@@ -9,17 +9,72 @@ lock_dir=@pkglockdir@
 log_dir=@pkglogdir@
 run_dir=@pkgrundir@
 
-main_init_script=@initdir@/@PACKAGE_TARNAME@
+main_init_script=@pkginitdir@/@PACKAGE_TARNAME@
 ttpd_log_file=@pkglogdir@/@PACKAGE_TARNAME@.log
 
 ttpd_user=ttpd
 ttpd_group=ttpd
+
+mysql_debian_cfg=/etc/mysql/debian.cnf
+mysql_init_script=@initdir@/mysql
+mysql="@bindir@/mysql --defaults-file=$mysql_debian_cfg"
 
 makedir() {
     if [ ! -d $1 ]; then
 	mkdir $1
     fi
     chown $2 $1 && chmod $3 $1
+}
+
+setup_mysql() {
+    # Setup necessary MySQL account.
+    if $mysql_init_script status ; then
+            # MySQL is running.
+        mysql_address=$(cat /etc/default/ttpd |grep 'db_address' -)
+        
+        mysql_user=$(echo $mysql_address \
+    	    |sed 's/.*\/\/\([^:]*\):.*/\1/g' -)
+        mysql_password=$(echo $mysql_address \
+    	    |sed 's/.*\/\/[^:]*:\([^@]*\)@.*/\1/g' -)
+        mysql_host=$(echo $mysql_address \
+    	    |sed 's/.*\/\/[^@]*@\([^/]*\).*/\1/g' -)
+        mysql_db=$(echo $mysql_address \
+    	    |sed 's/.*\/\/[^/]*\/\(\w*\).*/\1/g' -)
+        
+        # Create database.
+	echo "Creating database '$mysql_db' if it does not exist."
+	$mysql <<EOF
+create database if not exists $mysql_db;
+EOF
+        
+	res=$(sudo mysql --defaults-file=/etc/mysql/debian.cnf << EOF 
+select user from mysql.user where user = '$mysql_user' and host = '$mysql_host';
+EOF
+	) 
+	if echo $res |grep -q "user $mysql_user"; then
+	    # User already exists.
+	    echo "The user '$mysql_user'@'$mysql_host' already exists.  " \
+		"Not creating it.";
+	else
+            # Create user.
+	    echo "Creating the user '$mysql_user'@'$mysql_host'."
+	    $mysql <<EOF
+create user '$mysql_user'@'$mysql_host' identified by '$mysql_password';
+EOF
+            # Grant privileges to user.
+	    echo "Granting privileges to '$mysql_user'@'$mysql_host'."
+	    $mysql <<EOF
+grant select,insert,update,delete,create,drop
+on $mysql_db.* to '$mysql_user'@'$mysql_host';
+EOF
+	fi
+    else
+        # MySQL is not running.
+        echo "Since no running MySQL instance could be found, please " \
+    	    "manually create a database where the TTPD should store " \
+    	    "billing information.  Afterwards update the configuration " \
+    	    "in /etc/defaults/ttpd accordingly."
+    fi
 }
 
 # Make sure that the ttpd user exists.  Simplest portable way to check
@@ -67,8 +122,17 @@ else
     done
 fi
 
+# Setup MySQL database and account, if necessary.
+if [ ! -r $mysql_debian_cfg ]; then
+    echo "Cannot read the file '$mysql_debian_cfg'; " \
+	"skipping database setup."
+else
+    setup_mysql
+fi
+
 # Restart TTPD daemon.
 INIT_VERBOSE=yes $main_init_script restart
+
 
 # Install (new default) Web site.
 # ===============================

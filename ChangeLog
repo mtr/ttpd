@@ -1,47 +1,49 @@
-2009-12-13 11:29  mtr
+2009-12-14  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, INSTALL, README, doc/include_src.tex,
+	  etc/default/ttpd.in, lib/TTP/Billing.py, lib/TTP/Handler.py,
+	  lib/TTP/LogHandler.py, lib/TTP/Options.py,
+	  lib/TTP/PayExMessage.py, lib/TTP/Server.py, lib/TTP/tad.py,
+	  src/ttpd, src/ttpd_analyze:
+	  Merged with branch for refactoring the package to use a (MySQL)
+	  database for storing billing information.
+
+2009-12-13  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* ChangeLog, lib/TTP/Handler.py, lib/TTP/LogHandler.py:
 	  Miscellaneous code cleanup.
-
-2009-12-13 11:17  mtr
-
 	* ChangeLog, doc/include_src.tex, lib/TTP/Options.py,
-	  lib/TTP/TUCThread.py, src/ttpd, src/ttpd_analyze: Miscellaneous
-	  code cleanup.
+	  lib/TTP/TUCThread.py, src/ttpd, src/ttpd_analyze:
+	  Miscellaneous code cleanup.
 
-2009-12-11 14:38  mtr
+2009-12-11  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* lib/TTP/Handler.py: Cleaning up code. Fixed a bug where cost of a
-	  message longer than 160 characters got shortened was not set to
-	  'FREE'.
+	* lib/TTP/Handler.py:
+	  Cleaning up code. Fixed a bug where cost of a message longer than
+	  160 characters got shortened was not set to 'FREE'.
 
-2009-12-07 08:27  mtr
+2009-12-07  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* ChangeLog, setup.cfg.in: Tried to supply package requirements. No
-	  luck so far.
-
-2009-12-07 07:27  mtr
-
+	* ChangeLog, setup.cfg.in:
+	  Tried to supply package requirements. No luck so far.
 	* ChangeLog, etc/default/ttpd.in, etc/init.d/ttpd.in,
 	  etc/logrotate.d/ttpd.in, extradefs.mk,
 	  lib/TTP/CorePayExMessage.py, lib/TTP/EncapsulateTUC.py,
 	  lib/TTP/Handler.py, lib/TTP/Options.py, lib/TTP/Server.py,
 	  lib/TTP/TUCThread.py, lib/TTP/setup.py, lib/TTP/tad.py,
-	  setup.cfg.in, src/ttpd, src/ttpd_analyze: Fixed SICStus Prolog
-	  external font encoding problem. Handled problem with .pyo getting
-	  lost during packaging.
+	  setup.cfg.in, src/ttpd, src/ttpd_analyze:
+	  Fixed SICStus Prolog external font encoding problem. Handled
+	  problem with .pyo getting lost during packaging.
 
-2009-12-06 23:41  mtr
+2009-12-06  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* lib/TTP/payex_prod-old, lib/TTP/payex_test-old: Removed old,
-	  unneeded PayEx-interface modules.
+	* lib/TTP/payex_prod-old, lib/TTP/payex_test-old:
+	  Removed old, unneeded PayEx-interface modules.
 
-2009-12-04 11:37  mtr
+2009-12-04  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* release.sh: Updated the release procedure.
-
-2009-12-04 11:35  mtr
-
+	* release.sh:
+	  Updated the release procedure.
 	* AUTHORS, COPYING, ChangeLog, MANIFEST.in, Makefile.am, NEWS, TTP,
 	  aclocal.m4, bin, configure.ac, doc/Makefile, doc/Makefile.am,
 	  doc/bibliography.bib, doc/epyfix.sty, doc/include_src.tex,
@@ -53,476 +55,325 @@
 	  etc/logrotate.d, extradefs.mk, init_scripts/ttpdctl, install-sh,
 	  lib, log_filter, missing, questions.txt, release.sh,
 	  setup.cfg.in, setup.py, setup.py.in, src, statistics/Makefile.am,
-	  ttpc, ttpd, ttpd_analyze, ttpdctl, www: Merged changes from the
-	  Autotools branch.
+	  ttpc, ttpd, ttpd_analyze, ttpdctl, www:
+	  Merged changes from the Autotools branch.
 
-2009-12-01 21:30  mtr
+2009-12-01  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/ESolutionsMessage.py, TTP/PayExMessage.py: Bugfix. Missing
-	  import.
-
-2009-12-01 10:29  mtr
-
+	* TTP/ESolutionsMessage.py, TTP/PayExMessage.py:
+	  Bugfix. Missing import.
 	* TTP/CoreMessage.py, TTP/CorePayExMessage.py, TTP/Definitions.py,
 	  TTP/Definitions.py.in, TTP/ESolutionsMessage.py,
 	  TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/Message.py,
 	  TTP/Options.py, TTP/PayExMessage.py, TTP/TUCThread.py,
 	  TTP/payex_prod, TTP/payex_prod-old, TTP/payex_test,
-	  TTP/payex_test-old, etc, ttpd: Merged changes from the
-	  PayEx-cleanup branch.
+	  TTP/payex_test-old, etc, ttpd:
+	  Merged changes from the PayEx-cleanup branch.
+	* TTP/LogHandler.py:
+	  Cleaned up docstring formatting.
 
-2009-12-01 10:21  mtr
+2007-03-13  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/LogHandler.py: Cleaned up docstring formatting.
+	* TTP/daemon.py, ttpc, ttpd:
+	  Changed the output format of for the web interface and bumped the
+	  version.
 
-2007-03-13 12:54  mtr
+2007-02-06  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/daemon.py, ttpc, ttpd: Changed the output format of for the
-	  web interface and bumped the version.
-
-2007-02-06 13:59  mtr
-
-	* ttpd: Bumped version.
-
-2007-02-06 13:59  mtr
-
-	* TTP/Message.py: Fixed 'the' missing buffer-stack SAX handler
-	  problem.
-
-2007-02-06 13:58  mtr
-
-	* TTP/Message.py: Fixed 'the' missing buffer-stack SAX handler
-	  problem.
-
-2007-02-06 13:58  mtr
-
-	* TTP/Handler.py, TTP/Message.py, ttpc: Fixed 'the' missing
-	  buffer-stack SAX handler problem.
-
-2007-02-06 13:18  mtr
-
-	* ttpd: Trying to keep whitespace in the output.
-
-2007-02-06 13:17  mtr
-
-	* ttpc: Trying to keep whitespace in the output.
-
-2007-02-06 13:03  mtr
-
-	* ttpd: Bumped version.
-
-2007-02-06 13:03  mtr
-
-	* ttpc: Trying to keep whitespace in the output.
-
-2007-02-06 12:59  mtr
-
-	* TTP/tad.py: Re-styled the code.
-
-2007-02-06 12:59  mtr
-
-	* TTP/tad.py: Re-styled the code.
-
-2007-02-06 12:45  mtr
-
-	* ttpd: Bumbed version.
-
-2007-02-06 12:45  mtr
-
+	* ttpd:
+	  Bumped version.
+	* TTP/Message.py:
+	  Fixed 'the' missing buffer-stack SAX handler problem.
+	* TTP/Message.py:
+	  Fixed 'the' missing buffer-stack SAX handler problem.
+	* TTP/Handler.py, TTP/Message.py, ttpc:
+	  Fixed 'the' missing buffer-stack SAX handler problem.
+	* ttpd:
+	  Trying to keep whitespace in the output.
+	* ttpc:
+	  Trying to keep whitespace in the output.
+	* ttpd:
+	  Bumped version.
+	* ttpc:
+	  Trying to keep whitespace in the output.
+	* TTP/tad.py:
+	  Re-styled the code.
+	* TTP/tad.py:
+	  Re-styled the code.
+	* ttpd:
+	  Bumbed version.
 	* TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/Server.py,
-	  TTP/TUCThread.py: Tried to implement different predicate calls
-	  depending on whether the origin of the request was Web or SMS.
-
-2007-02-06 11:30  mtr
-
-	* doc/ttpd_documentation.ps: Addded missing documentation.
-
-2007-02-06 11:29  mtr
-
-	* TTP/Handler.py: Fixed Python version <= 2.3 syntax error.
-
-2007-02-06 11:22  mtr
-
-	* ttpd: Bumped version.
-
-2007-02-06 11:22  mtr
-
+	  TTP/TUCThread.py:
+	  Tried to implement different predicate calls depending on whether
+	  the origin of the request was Web or SMS.
+	* doc/ttpd_documentation.ps:
+	  Addded missing documentation.
+	* TTP/Handler.py:
+	  Fixed Python version <= 2.3 syntax error.
+	* ttpd:
+	  Bumped version.
 	* TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/Message.py,
-	  TTP/TUCThread.py, TTP/daemon.py, setup.py, ttpc, ttpd: Made sure
-	  that technical information is transferred in verbatim.
+	  TTP/TUCThread.py, TTP/daemon.py, setup.py, ttpc, ttpd:
+	  Made sure that technical information is transferred in verbatim.
+	* MANIFEST:
+	  Cleaning up.
+	* questions.txt, spørsmål.txt:
+	  Removed locale-dependent filename.
+	* doc/ttpdarchitecture.ps:
+	  Before the (probably suboptimal) rewrite aksed for by Amble.
+	* MANIFEST, sporsmal.txt, spørsmål.txt:
+	  Converted filename to UTF-8.
+	* sporsmal.txt, spørsmål.txt:
+	  Debugged the date handling.
 
-2007-02-06 08:08  mtr
+2007-01-12  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* MANIFEST: Cleaning up.
-
-2007-02-06 08:07  mtr
-
-	* questions.txt, spørsmål.txt: Removed locale-dependent filename.
-
-2007-02-06 08:02  mtr
-
-	* doc/ttpdarchitecture.ps: Before the (probably suboptimal) rewrite
-	  aksed for by Amble.
-
-2007-02-06 07:56  mtr
-
-	* MANIFEST, sporsmal.txt, spørsmål.txt: Converted filename to
-	  UTF-8.
-
-2007-02-06 07:51  mtr
-
-	* sporsmal.txt, spørsmål.txt: Debugged the date handling.
-
-2007-01-12 13:41  mtr
-
-	* ttpd_analyze: Fixed minor glitch (__revision__/__version__).
-
-2007-01-12 13:04  mtr
-
-	* setup.py: Small adjustments.
-
-2007-01-12 13:03  mtr
-
-	* setup.py, ttpd_analyze: Small adjustments.
-
-2007-01-12 12:55  mtr
-
-	* statistics/general_config.sh: Updated the statistics scripts.
-
-2007-01-12 12:55  mtr
-
+	* ttpd_analyze:
+	  Fixed minor glitch (__revision__/__version__).
+	* setup.py:
+	  Small adjustments.
+	* setup.py, ttpd_analyze:
+	  Small adjustments.
+	* statistics/general_config.sh:
+	  Updated the statistics scripts.
 	* statistics/general_config.sh, statistics/last_52_weeks.sh,
 	  statistics/last_week.sh, statistics/this_week.sh,
-	  statistics/today.sh: Updated the statistics scripts.
-
-2007-01-12 12:13  mtr
-
-	* ttpd_analyze: Did a copyright-update.
-
-2007-01-12 12:11  mtr
-
-	* statistics/last_52_weeks.sh: Tried to fix a problem determining
-	  the current week for some dates (for example 2007-01-11).
-
-2007-01-12 12:10  mtr
-
+	  statistics/today.sh:
+	  Updated the statistics scripts.
+	* ttpd_analyze:
+	  Did a copyright-update.
+	* statistics/last_52_weeks.sh:
+	  Tried to fix a problem determining the current week for some
+	  dates (for example 2007-01-11).
 	* statistics/last_52_weeks.sh, statistics/this_week.sh,
-	  ttpd_analyze: Tried to fix a problem determining the current week
-	  for some dates (for example 2007-01-11).
+	  ttpd_analyze:
+	  Tried to fix a problem determining the current week for some
+	  dates (for example 2007-01-11).
 
-2006-08-24 11:56  mtr
+2006-08-24  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* MANIFEST.in, setup.py, statistics/general_config.sh,
-	  ttpd_analyze: Added option to effectively ignore the remote
-	  client address.
+	  ttpd_analyze:
+	  Added option to effectively ignore the remote client address.
 
-2006-05-24 10:49  mtr
+2006-05-24  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* statistics/general_config.sh: Updated scripts.
+	* statistics/general_config.sh:
+	  Updated scripts.
+	* doc/ttpdarchitecture.ps, setup.py:
+	  Updated scripts.
+	* external, ttpd_analyze:
+	  Updated scripts.
+	* statistics/general_config.sh, statistics/last_52_weeks.sh,
+	  statistics/last_week.sh, statistics/this_week.sh,
+	  statistics/today.sh:
+	  Updated scripts.
 
-2006-05-24 10:48  mtr
+2005-01-17  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* doc/ttpdarchitecture.ps, setup.py: Updated scripts.
+	* INSTALL, TTP/Options.py, TTP/Server.py, ttpd_analyze:
+	  Hopefully fixed an off-by-one week-number bug.
 
-2006-05-24 10:35  mtr
+2004-09-13  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* external, ttpd_analyze: Updated scripts.
+	* INSTALL, USAGE:
+	  Fixed small typo.
+	* INSTALL, README, USAGE:
+	  Fixed small typo.
 
-2006-05-24 10:35  mtr
+2004-09-04  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* statistics/last_52_weeks.sh:
+	  Backup.
+
+2004-08-31  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* statistics/general_config.sh, statistics/last_52_weeks.sh,
 	  statistics/last_week.sh, statistics/this_week.sh,
-	  statistics/today.sh: Updated scripts.
+	  statistics/today.sh:
+	  Improved analytical tool.
+	* ttpd_analyze:
+	  Improved analytical tool. Fixed bad loooooooooop-forever bug.
+	* TTP/Handler.py, ttpd_analyze:
+	  Improved analytical tool.
 
-2005-01-17 09:25  mtr
+2004-08-30  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* INSTALL, TTP/Options.py, TTP/Server.py, ttpd_analyze: Hopefully
-	  fixed an off-by-one week-number bug.
-
-2004-09-13 13:44  mtr
-
-	* INSTALL, USAGE: Fixed small typo.
-
-2004-09-13 13:42  mtr
-
-	* INSTALL, README, USAGE: Fixed small typo.
-
-2004-09-04 09:56  mtr
-
-	* statistics/last_52_weeks.sh: Backup.
-
-2004-08-31 14:41  mtr
-
-	* statistics/general_config.sh, statistics/last_52_weeks.sh,
-	  statistics/last_week.sh, statistics/this_week.sh,
-	  statistics/today.sh: Improved analytical tool.
-
-2004-08-31 14:25  mtr
-
-	* ttpd_analyze: Improved analytical tool. Fixed bad
-	  loooooooooop-forever bug.
-
-2004-08-31 13:52  mtr
-
-	* TTP/Handler.py, ttpd_analyze: Improved analytical tool.
-
-2004-08-30 23:18  mtr
-
-	* statistics/today.sh: Improved analytical tool.
-
-2004-08-30 22:04  mtr
-
-	* statistics/today.sh, ttpd_analyze: Improved analytical tool.
-
-2004-08-30 21:47  mtr
-
-	* ttpd_analyze: Improved analytical tool.
-
-2004-08-30 21:00  mtr
-
+	* statistics/today.sh:
+	  Improved analytical tool.
+	* statistics/today.sh, ttpd_analyze:
+	  Improved analytical tool.
+	* ttpd_analyze:
+	  Improved analytical tool.
 	* statistics/general_config.sh, statistics/last_week.sh,
-	  statistics/this_week.sh, statistics/today.sh: Added some files
-	  for creating specific log analyzer statistics.
-
-2004-08-30 17:39  mtr
-
+	  statistics/this_week.sh, statistics/today.sh:
+	  Added some files for creating specific log analyzer statistics.
 	* MANIFEST.in, setup.py, statistics, statistics/general_config.sh,
 	  statistics/last_week.sh, statistics/this_week.sh,
-	  statistics/today.sh: Added some files for creating specific log
-	  analyzer statistics.
-
-2004-08-30 13:59  mtr
-
-	* log_filter: Added log-filter for Amble.
-
-2004-08-30 00:00  mtr
-
-	* doc/alist.txt, doc/ttpd_documentation.tex, ttpd_analyze: Made
-	  basic analytical tool better. Now supports graphical
+	  statistics/today.sh:
+	  Added some files for creating specific log analyzer statistics.
+	* log_filter:
+	  Added log-filter for Amble.
+	* doc/alist.txt, doc/ttpd_documentation.tex, ttpd_analyze:
+	  Made basic analytical tool better. Now supports graphical
 	  presentations.
 
-2004-08-29 01:26  mtr
+2004-08-29  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* ttpd_analyze: Improved basic analytical tool.
+	* ttpd_analyze:
+	  Improved basic analytical tool.
 
-2004-08-28 23:04  mtr
+2004-08-28  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* ttpd_analyze: Improved basic analytical tool.
+	* ttpd_analyze:
+	  Improved basic analytical tool.
 
-2004-08-27 07:53  mtr
+2004-08-27  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* ttpd_analyze: Made basic analytical tool.
-
-2004-08-27 01:15  mtr
-
+	* ttpd_analyze:
+	  Made basic analytical tool.
 	* doc/lst_src.txt, doc/mksrcdoc.sh, doc/ttpd_documentation.tex,
-	  setup.py, ttpd_analyze: Started on the analyzer.
+	  setup.py, ttpd_analyze:
+	  Started on the analyzer.
 
-2004-08-26 22:44  mtr
+2004-08-26  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* TTP/Handler.py, TTP/LogHandler.py, TTP/Message.py,
 	  TTP/Options.py, TTP/Server.py, TTP/tad.py, ttpc, ttpd,
-	  ttpd_analyze, ttpdctl: Changed log formats. Started on the
-	  analyzer.
-
-2004-08-26 17:01  mtr
-
-	* TTP/Handler.py, TTP/Options.py, ttpc: Update of ttpc. Added
-	  option --fake-outgoing. Use with great care.
-
-2004-08-26 16:03  mtr
-
-	* ttpdctl: Update of ttpdctl.
-
-2004-08-26 15:51  mtr
-
-	* ttpdctl: Update of ttpdctl.
-
-2004-08-26 15:47  mtr
-
-	* USAGE, ttpdctl: Added usage documentation.
-
-2004-08-26 13:52  mtr
-
-	* MANIFEST.in: Added usage documentation.
-
-2004-08-26 13:51  mtr
-
+	  ttpd_analyze, ttpdctl:
+	  Changed log formats. Started on the analyzer.
+	* TTP/Handler.py, TTP/Options.py, ttpc:
+	  Update of ttpc. Added option --fake-outgoing. Use with great
+	  care.
+	* ttpdctl:
+	  Update of ttpdctl.
+	* ttpdctl:
+	  Update of ttpdctl.
+	* USAGE, ttpdctl:
+	  Added usage documentation.
+	* MANIFEST.in:
+	  Added usage documentation.
 	* INSTALL, USAGE, doc/mkhelpdoc.sh, doc/ttpd_documentation.tex,
-	  setup.py, ttpdctl: Added usage documentation.
-
-2004-08-26 13:33  mtr
-
-	* ttpdctl: Wrote ttpd controller.
-
-2004-08-26 13:32  mtr
-
+	  setup.py, ttpdctl:
+	  Added usage documentation.
+	* ttpdctl:
+	  Wrote ttpd controller.
 	* TTP/LogHandler.py, TTP/Options.py, TTP/Server.py, TTP/tad.py,
-	  ttpdctl: Wrote ttpd controller.
+	  ttpdctl:
+	  Wrote ttpd controller.
+	* TTP/Options.py, doc/mksrcdoc.sh:
+	  Fixed docs.
+	* TTP/Handler.py, TTP/Options.py:
+	  Changed the log format slightly to discriminate between Web and
+	  SMS requests. Split up the handler method in SMS and Web parts.
+	  Implemented resend/retry handling for the SMS part.
 
-2004-08-26 01:45  mtr
+2004-08-25  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/Options.py, doc/mksrcdoc.sh: Fixed docs.
-
-2004-08-26 01:33  mtr
-
-	* TTP/Handler.py, TTP/Options.py: Changed the log format slightly
-	  to discriminate between Web and SMS requests. Split up the
-	  handler method in SMS and Web parts. Implemented resend/retry
-	  handling for the SMS part.
-
-2004-08-25 23:29  mtr
-
-	* TTP/Options.py, ttpc: Moved command-line option parsing into a
-	  module. The programs ttpd ttpc share several options, and this
-	  should make maintainance(?) easier.
-
-2004-08-25 23:22  mtr
-
-	* TTP/Options.py, ttpc, ttpd: Moved command-line option parsing
-	  into a module. The programs ttpd ttpc share several options, and
-	  this should make maintainance(?) easier.
-
-2004-08-25 14:59  mtr
-
-	* TTP/Server.py: Fixed another character encoding-related bug.
-	  Wrapped str() around a Message object attribute and it works.
-	  Only observed on lingit.no.
-
-2004-08-25 14:40  mtr
-
+	* TTP/Options.py, ttpc:
+	  Moved command-line option parsing into a module. The programs
+	  ttpd ttpc share several options, and this should make
+	  maintainance(?) easier.
+	* TTP/Options.py, ttpc, ttpd:
+	  Moved command-line option parsing into a module. The programs
+	  ttpd ttpc share several options, and this should make
+	  maintainance(?) easier.
+	* TTP/Server.py:
+	  Fixed another character encoding-related bug. Wrapped str()
+	  around a Message object attribute and it works. Only observed on
+	  lingit.no.
 	* TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/Server.py, TTP/tad.py,
-	  doc/ttpd_documentation.tex, spørsmål.txt, ttpc: Fixed another
-	  character encoding-related bug. Wrapped str() around a Message
-	  object attribute and it works. Only observed on lingit.no.
-
-2004-08-25 06:38  mtr
-
+	  doc/ttpd_documentation.tex, spørsmål.txt, ttpc:
+	  Fixed another character encoding-related bug. Wrapped str()
+	  around a Message object attribute and it works. Only observed on
+	  lingit.no.
 	* doc/Makefile, doc/alist.txt, doc/mkhelpdoc.sh,
-	  doc/ttpd_documentation.tex: Updated docs.
+	  doc/ttpd_documentation.tex:
+	  Updated docs.
+	* TTP/Handler.py, TTP/Message.py, TTP/Server.py:
+	  Robustified and verified a lot of details. Problems with incoming
+	  receives should be handeled quite well now. So should billing of
+	  too long messages (SMS).
 
-2004-08-25 00:37  mtr
+2004-08-24  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/Handler.py, TTP/Message.py, TTP/Server.py: Robustified and
-	  verified a lot of details. Problems with incoming receives should
-	  be handeled quite well now. So should billing of too long
-	  messages (SMS).
-
-2004-08-24 22:38  mtr
-
-	* TTP/Server.py, ttpc: Added 'high-load breaks' to the server. The
-	  limit is on the number of concurrently number of threads running.
-
-2004-08-24 22:35  mtr
-
-	* TTP/Server.py, ttpc, ttpd: Added 'high-load breaks' to the
-	  server. The limit is on the number of concurrently number of
-	  threads running.
-
-2004-08-24 20:16  mtr
-
-	* TTP/Handler.py, TTP/Message.py, ttpc: First Web installation made
-	  at lingit.no.
-
-2004-08-24 13:54  mtr
-
-	* TTP/Handler.py: TTPD now removes dangerous tokens.
-
-2004-08-24 13:18  mtr
-
+	* TTP/Server.py, ttpc:
+	  Added 'high-load breaks' to the server. The limit is on the
+	  number of concurrently number of threads running.
+	* TTP/Server.py, ttpc, ttpd:
+	  Added 'high-load breaks' to the server. The limit is on the
+	  number of concurrently number of threads running.
+	* TTP/Handler.py, TTP/Message.py, ttpc:
+	  First Web installation made at lingit.no.
+	* TTP/Handler.py:
+	  TTPD now removes dangerous tokens.
 	* INSTALL, TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/Server.py,
-	  init_scripts/ttpdctl, setup.py, ttpc, ttpd: Robustified the
-	  read-till-end-of-magic read() method for encapsulating TUC. Moved
-	  XML parser so it becomes a per-thread resource.
+	  init_scripts/ttpdctl, setup.py, ttpc, ttpd:
+	  Robustified the read-till-end-of-magic read() method for
+	  encapsulating TUC. Moved XML parser so it becomes a per-thread
+	  resource.
 
-2004-08-23 22:10  mtr
+2004-08-23  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* INSTALL, README, TTP/tad.py, setup.py, spørsmål.txt: Documenting.
-
-2004-08-23 18:21  mtr
-
-	* doc/include_src.tex: Think we've got it in place now. Wrote a
-	  small web-script and fixed communication with TTPD for both SMS
-	  and Web.
-
-2004-08-23 17:19  mtr
-
+	* INSTALL, README, TTP/tad.py, setup.py, spørsmål.txt:
+	  Documenting.
+	* doc/include_src.tex:
+	  Think we've got it in place now. Wrote a small web-script and
+	  fixed communication with TTPD for both SMS and Web.
 	* TTP/Handler.py, TTP/Server.py, TTP/tad.py, doc/include_src.tex,
-	  ttpc: Think we've got it in place now. Wrote a small web-script
-	  and fixed communication with TTPD for both SMS and Web.
+	  ttpc:
+	  Think we've got it in place now. Wrote a small web-script and
+	  fixed communication with TTPD for both SMS and Web.
+	* TTP/Handler.py, TTP/Message.py:
+	  Fixed annoying missing str()-bug in Message._generate(). Only
+	  made trouble on Solaris.
 
-2004-08-23 02:08  mtr
-
-	* TTP/Handler.py, TTP/Message.py: Fixed annoying missing str()-bug
-	  in Message._generate(). Only made trouble on Solaris.
-
-2004-08-22 00:50  mtr
+2004-08-22  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* TTP/EncapsulateTUC.py, TTP/Handler.py, TTP/LogHandler.py,
 	  TTP/Message.py, TTP/Server.py, TTP/TUCThread.py,
 	  TTP/ThreadPool.py, TTP/daemon.py, TTP/num_hash.py, TTP/tad.py,
-	  ttpc, ttpd: Finally seem to have the communication right.
+	  ttpc, ttpd:
+	  Finally seem to have the communication right.
 
-2004-08-21 14:42  mtr
+2004-08-21  Martin Thorsen Ranang <mtr@ranang.org>
 
-	* TTP/Handler.py, ttpc, ttpd: Cleaning up. Started remote testing.
-
-2004-08-21 14:32  mtr
-
+	* TTP/Handler.py, ttpc, ttpd:
+	  Cleaning up. Started remote testing.
 	* TTP/Handler.py, TTP/Message.py, TTP/Server.py, TTP/_TTP.py,
-	  TTP/__init__.py, setup.py, ttpc, ttpd: Cleaning up. Started
-	  remote testing.
-
-2004-08-21 14:15  mtr
-
+	  TTP/__init__.py, setup.py, ttpc, ttpd:
+	  Cleaning up. Started remote testing.
 	* doc/Makefile, doc/acronyms.tex, doc/include_src.tex,
-	  doc/mksrcdoc.sh, doc/src_doc, doc/ttpd_documentation.tex: Fixed
-	  API documentation.
-
-2004-08-21 11:51  mtr
-
-	* TTP/_TTP.py: Cleanup.
-
-2004-08-21 11:07  mtr
-
+	  doc/mksrcdoc.sh, doc/src_doc, doc/ttpd_documentation.tex:
+	  Fixed API documentation.
+	* TTP/_TTP.py:
+	  Cleanup.
 	* TTP/Handler.py, TTP/LogHandler.py, TTP/Server.py,
 	  TTP/TTPDLogHandler.py, TTP/TTPHandler.py, TTP/TTPServer.py,
 	  TTP/_TTP.py, TTP/__init__.py, TTP/tad.py, doc/Makefile,
 	  doc/acronyms.tex, doc/include_src.tex, doc/mkalist.sh,
 	  doc/mksrcdoc.sh, doc/taocparrows.mp, doc/ttpd_documentation.tex,
-	  doc/ttpdarchitecture.mp, setup.py, ttpc, ttpd: Cleanup.
-
-2004-08-21 10:38  mtr
-
+	  doc/ttpdarchitecture.mp, setup.py, ttpc, ttpd:
+	  Cleanup.
 	* TTP/EncapsulateTUC.py, TTP/TTPDLogHandler.py, TTP/TTPHandler.py,
 	  TTP/TTPServer.py, TTP/TUCThread.py, TTP/ThreadPool.py,
 	  TTP/_TTP.py, TTP/__init__.py, TTP/daemon.py, TTP/num_hash.py,
-	  TTP/tad.py, ttp, ttpc, ttpd: Set keywords.
-
-2004-08-21 10:33  mtr
-
+	  TTP/tad.py, ttp, ttpc, ttpd:
+	  Set keywords.
 	* TTP/EncapsulateTUC.py, TTP/TTP.py, TTP/TTPDLogHandler.py,
 	  TTP/TTPHandler.py, TTP/TTPServer.py, TTP/TUCThread.py,
 	  TTP/ThreadPool.py, TTP/_TTP.py, TTP/__init__.py, TTP/num_hash.py,
-	  TTP/tad.py: Committing after move.
-
-2004-08-21 10:32  mtr
-
+	  TTP/tad.py:
+	  Committing after move.
 	* TTP, TTP/EncapsulateTUC.py, TTP/TTP.py, TTP/TTPDLogHandler.py,
 	  TTP/TTPHandler.py, TTP/TTPServer.py, TTP/TUCThread.py,
 	  TTP/ThreadPool.py, TTP/__init__.py, TTP/daemon.py,
-	  TTP/num_hash.py, TTP/tad.py: Committing after move.
-
-2004-08-21 10:28  mtr
-
-	* setup.py, test, ttp/__init__.py: Moving around.
-
-2004-08-21 08:33  mtr
-
-	* setup.py: Set svn:keywords properties 'Id,Rev' on files.
-
-2004-08-21 08:32  mtr
-
+	  TTP/num_hash.py, TTP/tad.py:
+	  Committing after move.
+	* setup.py, test, ttp/__init__.py:
+	  Moving around.
+	* setup.py:
+	  Set svn:keywords properties 'Id,Rev' on files.
 	* doc/acronyms.tex, doc/alist.txt, doc/include_src.tex,
 	  doc/lst_src.txt, doc/mkalist.sh, doc/mksrcdoc.sh,
 	  doc/taocparrows.mp, doc/ttpd_documentation.tex,
@@ -530,14 +381,10 @@
 	  ttp/TTP.py, ttp/TTPDLogHandler.py, ttp/TTPHandler.py,
 	  ttp/TTPServer.py, ttp/TUCThread.py, ttp/ThreadPool.py,
 	  ttp/daemon.py, ttp/num_hash.py, ttp/setup.py, ttp/tad.py, ttpc,
-	  ttpd: Set svn:keywords properties 'Id,Rev' on files.
-
-2004-08-21 08:23  mtr
-
-	* doc/mksrcdoc.sh, doc/src_doc: Small documentation fix.
-
-2004-08-21 08:21  mtr
-
+	  ttpd:
+	  Set svn:keywords properties 'Id,Rev' on files.
+	* doc/mksrcdoc.sh, doc/src_doc:
+	  Small documentation fix.
 	* doc, doc/Makefile, doc/acronyms.tex, doc/alist.txt,
 	  doc/bibliography.bib, doc/include_src.tex, doc/lst_src.txt,
 	  doc/mkalist.sh, doc/mksrcdoc.sh, doc/taocparrows.mp,
@@ -546,9 +393,8 @@
 	  ttp/TTP.py, ttp/TTPDLogHandler.py, ttp/TTPHandler.py,
 	  ttp/TTPServer.py, ttp/TUCThread.py, ttp/ThreadPool.py,
 	  ttp/daemon.py, ttp/num_hash.py, ttp/setup.py, ttp/tad.py, ttpc,
-	  ttpd: First commit.
-
-2004-08-21 08:06  mtr
-
-	* .: Initial repository layout
+	  ttpd:
+	  First commit.
+	* .:
+	  Initial repository layout
 
