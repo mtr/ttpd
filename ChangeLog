@@ -1,3 +1,10 @@
+2009-12-15  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, Makefile.am, etc/init.d/ttpd.in, setup.cfg.in,
+	  setup.py.in, src/post-install.sh.in:
+	  Implemented post-install routines for configuring a ttpd database
+	  during install.
+
 2009-12-14  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* ChangeLog, INSTALL, README, doc/include_src.tex,

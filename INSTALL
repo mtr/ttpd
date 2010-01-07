@@ -7,21 +7,23 @@ Package requirements:
 This package requires the following packages to be installed (Ubuntu
 package names):
 
- | Stage   | Package          | Version                 | Description                |
- |---------+------------------+-------------------------+----------------------------|
- | Install |                  |                         |                            |
- |         | python           | >= 2.6                  | Python Interpreter         |
- |         | python-zsi       | >= 2.1~a1-3             | Zolera Soap Infrastructure |
- |         | python-elixir    | >= 0.6.1-2              | Object Relational Mapping  |
- |         | python-mysqldb   | >= 1.2.2-10             | MySQL Python Interface     |
- |         | mysql-server     | >= 5.1.37-1ubuntu5      | MySQL Database Server      |
- |         | python-pychart   | >= 1.39-7               | For statistic graphs       |
- |---------+------------------+-------------------------+----------------------------|
- | Build   |                  |                         |                            |
- |         | python-epydoc    | >= 3.0.1-3              | For documentation          |
- |         | texlive-metapost | >= 2007.dfsg.2-7ubuntu1 | For documentation          |
- |         | context          | >= 2008.05.21-1         | For documentation          |
- |---------+------------------+-------------------------+----------------------------|
+ | Stage   | Package             | Version                   | Description                |
+ |---------+---------------------+---------------------------+----------------------------|
+ | Install |                     |                           |                            |
+ |         | python              | >= 2.6                    | Python Interpreter         |
+ |         | python-zsi          | >= 2.1~a1-3               | Zolera Soap Infrastructure |
+ |         | python-elixir       | >= 0.6.1-2                | Object Relational Mapping  |
+ |         | python-mysqldb      | >= 1.2.2-10               | MySQL Python Interface     |
+ |         | mysql-server        | >= 5.1.37-1ubuntu5        | MySQL Database Server      |
+ |         | apache2             | >= 2.2.12-1ubuntu2        | Apache HTTP Server         |
+ |         | libapache2-mod-php5 | >= 5.2.10.dfsg.1-2ubuntu6 | PHP 5                      |
+ |         | python-pychart      | >= 1.39-7                 | For statistic graphs       |
+ |---------+---------------------+---------------------------+----------------------------|
+ | Build   |                     |                           |                            |
+ |         | python-epydoc       | >= 3.0.1-3                | For documentation          |
+ |         | texlive-metapost    | >= 2007.dfsg.2-7ubuntu1   | For documentation          |
+ |         | context             | >= 2008.05.21-1           | For documentation          |
+ |---------+---------------------+---------------------------+----------------------------|
 
 
 In the following <version> is a generic identifier of the version you

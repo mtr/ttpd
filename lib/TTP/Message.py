@@ -236,7 +236,7 @@ def _recv(connection, buf_size, timeout=False):
 def build(data, parser=None):
     """Build a Message object based on an input XML string.
     """
-    sinput = cStringIO.StringIO(data)
+    sinput = cStringIO.StringIO(data.encode('iso-8859-1'))
     inpsrc = xml.sax.InputSource()
     inpsrc.setByteStream(sinput)
     

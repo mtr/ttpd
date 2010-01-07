@@ -64,7 +64,7 @@ EOF
             # Grant privileges to user.
 	    echo "Granting privileges to '$mysql_user'@'$mysql_host'."
 	    $mysql <<EOF
-grant select,insert,update,delete,create,drop
+grant select,insert,update,delete,create,drop,index
 on $mysql_db.* to '$mysql_user'@'$mysql_host';
 EOF
 	fi
