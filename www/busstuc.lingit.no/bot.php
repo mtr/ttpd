@@ -6,7 +6,7 @@
 
 <body <?PHP include('body_style.inc'); ?> >
 
-<h1>Svar på spørsmålet:</h1>
+<h1>Svar pÃ¥ spÃ¸rsmÃ¥let:</h1>
 
 <?PHP include("tuc.inc"); ?>
 

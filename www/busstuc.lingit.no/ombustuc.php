@@ -7,28 +7,28 @@
 
 <h2>Om BussTUC</h2>
 
-BussTUC er en naturlig-språk problemløser med evne til å besvare
-spørsmål om bussavganger i Trondheim stilt på vanlig norsk.<p>
+BussTUC er en naturlig-sprÃ¥k problemlÃ¸ser med evne til Ã¥ besvare
+spÃ¸rsmÃ¥l om bussavganger i Trondheim stilt pÃ¥ vanlig norsk.<p>
 
 BussTUC er utviklet av Jon S Bratseth</a> som
-et studentprosjekt på <a href="http://www.ntnu.no"
-target=_top>NTNU</a>. Det er bygd på TUC (The Understanding Computer),
-et generelt naturlig-språk-system utviklet av <a
+et studentprosjekt pÃ¥ <a href="http://www.ntnu.no"
+target=_top>NTNU</a>. Det er bygd pÃ¥ TUC (The Understanding Computer),
+et generelt naturlig-sprÃ¥k-system utviklet av <a
 href="http://www.idi.ntnu.no:/~amble/" target=_top>Tore Amble</a>.
 Begge systemene er i sin helhet utviklet i Prolog.<p>
 
-BussTUC-prosjektet er en del av det større prosjektet
+BussTUC-prosjektet er en del av det stÃ¸rre prosjektet
 <a href="http://pan.avh.unit.no/tabor/" target=_top>
 TABOR (Talebaserte grensesnitt og resonnerende systemer)
 </A>
-som har som mål å utvikle et system som kan svare på
-bussavgangs-spørsmål stilt med vanlig tale over telefon.<p>
+som har som mÃ¥l Ã¥ utvikle et system som kan svare pÃ¥
+bussavgangs-spÃ¸rsmÃ¥l stilt med vanlig tale over telefon.<p>
 
 En 
 <a href="../rapporter/bustuc97short.ps">rapport om
 BussTUC-prosjektet</a>er tilgjengelig i postscript.<p>
 
-Dette systemet er fremdeles under utvikling. Spørsmål og kommentarer
+Dette systemet er fremdeles under utvikling. SpÃ¸rsmÃ¥l og kommentarer
 er velkomne til
 <a href=mailto:tagore@idi.ntnu.no>tagore@idi.ntnu.no</a>.<p>
 

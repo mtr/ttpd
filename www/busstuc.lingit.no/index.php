@@ -26,8 +26,8 @@ expert systems">
 
 <h2>BussTUC - Bussruteorakelet</h2>
 
-<a href="instruksjoner.php" target="ans">Nyttig å vite før du stiller
-spørsmål</a><p>
+<a href="instruksjoner.php" target="ans">Nyttig Ã¥ vite fÃ¸r du stiller
+spÃ¸rsmÃ¥l</a><p>
 <a href="ombustuc.php" target="ans">Om Busstuc</a><p>
 <a href="egenskaper.php" target="ans">Egenskaper ved Busstuc</a>
 <img hspace=10 src="../logo/ntnu-logo1.gif">

@@ -8,9 +8,9 @@ $quest = $_POST["quest"];
 
 if ($quest)
   {
-    # Tegn som skal fjærnes fra input.
+    # Tegn som skal fjÃ¦rnes fra input.
     
-    $removes = array("'", '"', '\\', '`', '´', '[', ']');
+    $removes = array("'", '"', '\\', '`', 'Â´', '[', ']');
 
     # "Snillifiserer" input:
     #
@@ -21,9 +21,9 @@ if ($quest)
     
     $e = trim(str_replace($removes, "", strip_tags(substr($quest, 0, 1024))));
 
-    # Dersom strengen nå inneholder "ekle" tegn, vil vi ikke behandle den.
+    # Dersom strengen nÃ¥ inneholder "ekle" tegn, vil vi ikke behandle den.
     
-    if (! ereg("^[*a-zA-ZæøåÆØÅéÉöÖäÄ0-9,. ?!@:+-/]*$", $e))
+    if (! ereg("^[*a-zA-ZÃ¦Ã¸Ã¥Ã†Ã˜Ã…Ã©Ã‰Ã¶Ã–Ã¤Ã„0-9,. ?!@:+-/]*$", $e))
       {
 	unset($e);
       }
@@ -56,6 +56,6 @@ if ($e)
   }
  else
    {
-     print "Du må taste inn et spørsmål før du trykker på \"Send spørsmål\".";
+     print "Du mÃ¥ taste inn et spÃ¸rsmÃ¥l fÃ¸r du trykker pÃ¥ \"Send spÃ¸rsmÃ¥l\".";
    }
 ?>

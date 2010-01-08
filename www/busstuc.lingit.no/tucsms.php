@@ -7,12 +7,12 @@
 
 <br>
 
-<h3> BussTUC er tilgjengelig på SMS </h3>
+<h3> BussTUC er tilgjengelig pÃ¥ SMS </h3>
 
 
 <br>
 
-La spørmålet være prefikset med <b> TEAM </b> og send det til <b>   1939 </b>
+La spÃ¸rmÃ¥let vÃ¦re prefikset med <b> TEAM </b> og send det til <b>   1939 </b>
 <br><br>
 
 Eksempel: <br>
