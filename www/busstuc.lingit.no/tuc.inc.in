@@ -40,12 +40,14 @@ if ($e)
     
     printf("<ul><li>%s</li>", $e);
     
-    $e = escapeshellcmd($e);
+    $e = escapeshellarg($e);
     
     print "<li>";
     if ($_POST["tekniskinfo"])
       {
-	system("$tech_prog '$e' 2>&1");
+	printf("<pre>");
+	system("$tech_prog $e 2>&1");
+	printf("</pre>");
       }
     else
       {
