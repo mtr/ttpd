@@ -49,7 +49,7 @@ class GeneralThreadingScheduler(threading.Thread):
     """
     
     def __init__(self, log=None, time_func=time.time, delay_func=time.sleep,
-                 delay=0.01):
+                 delay=0.1):
         """Initialize the thread and remember timing options.
         """
         self.__queue = []

@@ -7,7 +7,7 @@
 initdir = /etc/init.d
 statedir = /var
 
-tuc_command = /home/tore/export/buster/busestuc.sav
+tuc_command = /home/tore/export/buster/busestuc
 tuc_encoding = None
 tuc_user = ttpd
 tuc_group = ttpd

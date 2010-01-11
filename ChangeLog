@@ -1,3 +1,23 @@
+2010-01-08  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* www/busstuc.lingit.no/tuc.inc.in:
+	  Fixed handling of Web form input.
+	* www/busstuc.lingit.no/bot.php, www/busstuc.lingit.no/bust.php,
+	  www/busstuc.lingit.no/egenskaper.php,
+	  www/busstuc.lingit.no/index.php,
+	  www/busstuc.lingit.no/instruksjoner.php,
+	  www/busstuc.lingit.no/ombustuc.php,
+	  www/busstuc.lingit.no/tuc.inc.in, www/busstuc.lingit.no/tucq.inc,
+	  www/busstuc.lingit.no/tucq_top.inc,
+	  www/busstuc.lingit.no/tucsms.php:
+	  Converted Web contents to UTF-8.
+
+2010-01-07  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, INSTALL, lib/TTP/Handler.py, lib/TTP/Message.py,
+	  src/post-install.sh.in:
+	  Fixed encoding problems.
+
 2009-12-15  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* ChangeLog, Makefile.am, etc/init.d/ttpd.in, setup.cfg.in,

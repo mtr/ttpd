@@ -213,8 +213,9 @@ class Handler(BaseHandler):
         tuc_ans = self.Message.Message()
 
         # Avoid misinterpreting ascii-art '<' and '>' as XML elements.
-        pre_answer = pre_answer.decode('iso-8859-1') \
-                     .replace('<', '&lt;').replace('>', '&gt;')
+        if pre_answer is not None:
+            pre_answer = pre_answer.decode('iso-8859-1') \
+                         .replace('<', '&lt;').replace('>', '&gt;')
         
         tuc_ans.TUCAns.Technical = pre_answer, # Becomes a tuple.
         tuc_ans.TUCAns.NaturalLanguage = answer

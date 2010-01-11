@@ -98,8 +98,8 @@ def run_single_test(m, options, parser):
         return meta, body
 
     if options.web:
-        b = TTP.Message.build(body, parser)
-
+        b = TTP.Message.build(body.decode('latin-1'), parser)
+        
         if options.show_technical:
             # Note: b.TUCAns.Technical evaluates to a tuple; hence,
             # the indexing.

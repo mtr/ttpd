@@ -40,6 +40,7 @@ if ($e)
     
     printf("<ul><li>%s</li>", $e);
     
+    setlocale(LC_CTYPE, "UTF8", "nb_NO.UTF-8");
     $e = escapeshellarg($e);
     
     print "<li>";
@@ -51,7 +52,7 @@ if ($e)
       }
     else
       {
-	system("$prog '$e'");
+	system("$prog $e");
       }
     
     print "</li></ul>";

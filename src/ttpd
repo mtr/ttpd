@@ -152,8 +152,11 @@ def main():
     # Try to automatically infer the appropriate value to be used as
     # the SICStus Prolog environment variable SP_CTYPE.
     if options.tuc_encoding is None:
-        options.tuc_encoding = sys.stdin.encoding.lower()
-    
+        if sys.stdin.encoding is not None:
+            options.tuc_encoding = sys.stdin.encoding.lower()
+        else:
+            options.tuc_encoding = 'utf-8' # The default.
+            
     if options.daemon:
         # Daemonize the server.  This will put the server (to be
         # started) in the background and will give back the controll
