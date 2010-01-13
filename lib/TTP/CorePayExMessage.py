@@ -133,8 +133,6 @@ HASH_ENCODING = "iso-8859-1"
 
 # Tegnsett strengene vi får inn er kodet i.
 import sys
-INPUT_ENCODING = sys.stdin.encoding
-
 import hashlib
 from time import sleep
 from xml.dom.minidom import parseString
@@ -142,7 +140,12 @@ import logging
 
 import payex_prod.PxSms_client
 import payex_test.PxSms_client
-  
+
+if not sys.stdin.encoding is None:
+    INPUT_ENCODING = sys.stdin.encoding
+else:
+    INPUT_ENCODING = 'utf-8'            # Default.
+
 class ezXmlParser(object):
     """ Miniparser for å lese svar fra PayEx. 
     """

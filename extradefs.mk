@@ -8,7 +8,7 @@ initdir = /etc/init.d
 statedir = /var
 
 tuc_command = /home/tore/export/buster/busestuc
-tuc_encoding = None
+tuc_encoding = utf-8
 tuc_user = ttpd
 tuc_group = ttpd
 originating_phone_number = 1939

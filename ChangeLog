@@ -1,3 +1,11 @@
+2010-01-11  Martin Thorsen Ranang <mtr@ranang.org>
+
+	* ChangeLog, distribute_newest_deb.sh, extradefs.mk,
+	  lib/TTP/Handler.py, lib/TTP/tad.py, src/ttpc, src/ttpd,
+	  www/busstuc.lingit.no/tuc.inc.in:
+	  Fixed UTF-8 encoding issues. Also increased TUC Alert Daemon
+	  tight-loop sleep times from 0.01 second to 0.1 second.
+
 2010-01-08  Martin Thorsen Ranang <mtr@ranang.org>
 
 	* www/busstuc.lingit.no/tuc.inc.in:
