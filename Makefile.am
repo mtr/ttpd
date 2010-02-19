@@ -42,7 +42,8 @@ next_release:
 tag_release:
 	$(top_srcdir)/bin/tag_release
 
-rpm: all release tag_release changelog $(pysetyp)
+#rpm: all release tag_release changelog $(pysetyp)
+rpm: all release tag_release $(pysetyp)
 	@python $(pysetyp) clean
 	@python $(pysetyp) bdist_rpm --python=$(PYTHON) --release=$(RELEASE) --post-install=$(top_srcdir)/src/post-install.sh --pre-uninstall=$(top_srcdir)/src/pre-uninstall.sh
 
@@ -60,5 +61,5 @@ etags:
 		src/* \
 		$$(find lib -name \*\.py |tr '\n' ' ')
 
-changelog: 
-	svn2cl --break-before-msg --group-by-day --authors=AUTHORS 
+#changelog: 
+#	svn2cl --break-before-msg --group-by-day --authors=AUTHORS 

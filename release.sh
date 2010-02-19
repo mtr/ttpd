@@ -6,7 +6,7 @@
 svn update
 
 # Update ChangeLog
-svn2cl --break-before-msg --group-by-day --authors=AUTHORS
+#svn2cl --break-before-msg --group-by-day --authors=AUTHORS
 
 automake
 autoconf

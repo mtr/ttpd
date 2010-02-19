@@ -9,9 +9,6 @@ if [ -z "$RELEASE_FILE" ]; then
     RELEASE_FILE=RELEASE
 fi
 
-main=$(svnpath)
-tags=$(svnpath tags)
-
 workdir=$(dirname $0)
 
 . $workdir/config.sh
@@ -23,10 +20,10 @@ tag=release-${version}_${release}
 
 if [ -n "$COMMIT_BEFORE_RELEASE" ]; then
     echo "Committing changes..."
-    svn commit
+    hg commit
     echo "done"
 
     echo "Tagging release '$tag'..."
-    svn copy $main $tags/$tag --message "New release."
+    hg tag --message "New release." $tag
     echo "done"
 fi
