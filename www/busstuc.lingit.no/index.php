@@ -2,7 +2,6 @@
 
 <html> 
   <head>
-    <title>SMSTUC</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta name="description" 
 	  content="A natural language system capable of answering
@@ -16,7 +15,7 @@
 				   intelligence, parsing, automated
 				   reasoning, knowledge based systems,
 				   expert systems">
-
+    <title>SMSTUC</title>
 </head>
 
 <frameset rows="320,*">

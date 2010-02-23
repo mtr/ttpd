@@ -7,6 +7,6 @@ norsk setning):</h4>
 <input type=text name="quest" value="" size=79> 
 <input type=submit value=" Send spørsmål ">
 <input type=reset value=" Nullstill ">
-<nobr> <i>Vis teknisk informasjon i svaret</i>
-<input type=checkbox name="tekniskinfo"></nobr>
+<span> <i>Vis teknisk informasjon i svaret</i>
+<input type=checkbox name="tekniskinfo"></span>
 </form>
