@@ -50,15 +50,14 @@ def parse_command_line():
     # the command-line supplied options gets the highest precedence.
     TTP.Options.parse_configuration(options.config_file, parser)
 
-    # Switch the (default) values of the port and remote_port options.
-    options.remote_port, options.port = options.port, options.remote_port
-
     #TTP.Options.set_default(options, '--port', 8000),
     #TTP.Options.set_default(options, '--remote-port', 8081),
     
     # Reparse the command line to get the rest of the values.
     options, args = parser.parse_args()
 
+    # Switch the (default) values of the port and remote_port options.
+    options.remote_port, options.port = options.port, options.remote_port
     # print 'options.remote_port =', options.remote_port
     # print 'options.port =', options.port
 
