@@ -8,6 +8,9 @@
 	    order allow,deny
 	    deny from all
 	</Files>
+
+        RewriteEngine on
+        RewriteRule   ^/~tore/smstuc/(.*)$  /$1  [R]
 	
 	<Directory />
 		Options FollowSymLinks

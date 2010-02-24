@@ -157,5 +157,6 @@ a2dissite default		# Disable the default Web site.
 a2ensite @lingit_web_site@	# Enable TTPD's Web site.
 
 a2enmod php5	       # Make sure the php5 module is already enabled.
+a2enmod rewrite	       # Make sure the rewrite module is already enabled.
 
 /etc/init.d/apache2 reload	# Reload Apache2 configuration.

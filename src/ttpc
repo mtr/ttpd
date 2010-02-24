@@ -7,7 +7,7 @@ TUC Transfer Protocol Client (TTPC).
 The TTPC makes it easy to test the TTPD and to create interfaces that
 interacts with the TTPD.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007, 2009, 2010 by Martin Thorsen Ranang
 """
 
 __version__ = "$Rev$"
@@ -38,15 +38,29 @@ def parse_command_line():
 
     options = TTP.Options.common_options + TTP.Options.ttpc_options
     
-    TTP.Options.set_default(options, '--port', 2005),
-    TTP.Options.set_default(options, '--remote-port', 2004),
-    
     for option, description in options:
-        TTP.Options.update_help(description)
-        parser.add_option(*option, **description)
-        
-    # Parse the command line.
+       TTP.Options.update_help(description)
+       parser.add_option(*option, **description)
+       
+    # Parse the command line, to get the CONFIG_FILE value.
+    options, _args = parser.parse_args()
+    
+    # Update the default values of PARSER, so that the values in the
+    # CONFIG_FILE takes presendence over the programmed defaults, and
+    # the command-line supplied options gets the highest precedence.
+    TTP.Options.parse_configuration(options.config_file, parser)
+
+    # Switch the (default) values of the port and remote_port options.
+    options.remote_port, options.port = options.port, options.remote_port
+
+    #TTP.Options.set_default(options, '--port', 8000),
+    #TTP.Options.set_default(options, '--remote-port', 8081),
+    
+    # Reparse the command line to get the rest of the values.
     options, args = parser.parse_args()
+
+    # print 'options.remote_port =', options.remote_port
+    # print 'options.port =', options.port
 
     if options.web:
         options.trans_id = 'WEB'
