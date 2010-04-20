@@ -331,9 +331,9 @@ class PayExMessage(object):
                                        strftime("%Y-%b-%d %H:%M:%S", gmtime()))
 
             
-            msg = "TIMEOUT PxSms.Check. code: %s, description: %s, " + \
-                    "transaction_status: %s, transaction_number: %s" \
-                    % (code, desc, tstatus, tnumber)
+            msg = "TIMEOUT PxSms.Check. code: %s, description: %s, " \
+                  "transaction_status: %s, transaction_number: %s." \
+                  % (code, desc, tstatus, tnumber)
 
             if self.log.isEnabledFor(logging.DEBUG):
                 self.log.debug(msg)

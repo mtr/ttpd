@@ -270,6 +270,8 @@ class Handler(BaseHandler):
             ack.MxHead.TransId = meta.MxHead.TransId
             self.Message.send(self.connection, ack)
             
+            # Furthermore, encode the message body as UTF-8.
+            body = body.decode('iso-8859-1').encode('utf-8')
         else:
             is_sms_request = False
 

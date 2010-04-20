@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2009 by Martin Thorsen Ranang
 
-SUBDIRS = busstuc.lingit.no busstuc.lingit.no-team-trafikk
+#SUBDIRS = sites-available
 
 include ${top_srcdir}/extradefs.mk
 
