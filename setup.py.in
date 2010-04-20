@@ -104,6 +104,20 @@ def main():
                     'www/busstuc.lingit.no/tucq_top.inc',
                     'www/busstuc.lingit.no/tucsms.php',
                     ]),
+                ('@www_document_root@/team_trafikk/', [
+                    'www/busstuc.lingit.no-team-trafikk/README',
+                    'www/busstuc.lingit.no-team-trafikk/body_style.inc',
+                    'www/busstuc.lingit.no-team-trafikk/bot.php',
+                    'www/busstuc.lingit.no-team-trafikk/bust.php',
+                    'www/busstuc.lingit.no-team-trafikk/egenskaper.php',
+                    'www/busstuc.lingit.no-team-trafikk/index.php',
+                    'www/busstuc.lingit.no-team-trafikk/instruksjoner.php',
+                    'www/busstuc.lingit.no-team-trafikk/ombustuc.php',
+                    'www/busstuc.lingit.no-team-trafikk/tuc.inc',
+                    'www/busstuc.lingit.no-team-trafikk/tucq.inc',
+                    'www/busstuc.lingit.no-team-trafikk/tucq_top.inc',
+                    'www/busstuc.lingit.no-team-trafikk/tucsms.php',
+                    ]),
                 ],
             )
 

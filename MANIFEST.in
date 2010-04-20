@@ -30,3 +30,15 @@ include www/busstuc.lingit.no/tuc.inc
 include www/busstuc.lingit.no/tucq.inc
 include www/busstuc.lingit.no/tucq_top.inc
 include www/busstuc.lingit.no/tucsms.php
+include www/busstuc.lingit.no-team-trafikk/README
+include www/busstuc.lingit.no-team-trafikk/body_style.inc
+include www/busstuc.lingit.no-team-trafikk/bot.php
+include www/busstuc.lingit.no-team-trafikk/bust.php
+include www/busstuc.lingit.no-team-trafikk/egenskaper.php
+include www/busstuc.lingit.no-team-trafikk/index.php
+include www/busstuc.lingit.no-team-trafikk/instruksjoner.php
+include www/busstuc.lingit.no-team-trafikk/ombustuc.php
+include www/busstuc.lingit.no-team-trafikk/tuc.inc
+include www/busstuc.lingit.no-team-trafikk/tucq.inc
+include www/busstuc.lingit.no-team-trafikk/tucq_top.inc
+include www/busstuc.lingit.no-team-trafikk/tucsms.php

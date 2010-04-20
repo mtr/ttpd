@@ -1,0 +1,8 @@
+This directory contains a version of the Web-server files needed to
+communicate correctly with Team Trafikk's Web pages.
+
+Sometime in the future, Team Trafikk should update the way they
+interface our pages, and this directory should thereby be made
+superflous.
+
+-- Martin Thorsen Ranang <mtr@ranang.org>
