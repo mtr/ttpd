@@ -28,8 +28,8 @@ INTERFACE="SMS"
 HOST="remote_host"		# Used for unifying.
 TRANS_TYPE="LINGSMSIN"
 
-RESTRICTIONS="interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE"
+RESTRICTIONS="interface=$INTERFACE,host=$HOST,transaction_type=$TRANS_TYPE"
 UNIFIED_CLIENT_ADDRESS="$HOST"
-#RESTRICTIONS="interface=$INTERFACE,trans_type=$TRANS_TYPE"
+#RESTRICTIONS="interface=$INTERFACE,transaction_type=$TRANS_TYPE"
 
 log "starting"

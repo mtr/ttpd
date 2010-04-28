@@ -151,6 +151,7 @@ if [ -z "$APACHE_RUN_GROUP" ]; then
 fi
 
 makedir $statistics_export_dir	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+makedir $statistics_export_dir/graphics	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
 
 for dir in $(find @www_document_root@ -type d ); do
     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $dir

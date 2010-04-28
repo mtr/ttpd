@@ -35,7 +35,7 @@ ttpd_analyze $LOGS \
 #FNAME=last_52_weeks_$RESOLUTION
 
 #ttpd_analyze $LOGS \
-#    --restrict-to=interface=$INTERFACE,host=$HOST,trans_type=$TRANS_TYPE \
+#    --restrict-to=interface=$INTERFACE,host=$HOST,transaction_type=$TRANS_TYPE \
 #    --resolution=$RESOLUTION \
 #    --week=$WEEK \
 #    --chart=$EXPORT/graphics/$FNAME.png \
