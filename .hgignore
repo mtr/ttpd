@@ -35,5 +35,10 @@ setup\.cfg
 setup\.py
 src/post-install\.sh
 src/pre-uninstall\.sh
+statistics/general_config\.sh$
+statistics/last_52_weeks\.sh$
+statistics/last_week\.sh$
+statistics/this_week\.sh$
+statistics/today\.sh$
 www/busstuc\.lingit\.no-team-trafikk/tuc
 www/busstuc\.lingit\.no/tuc
