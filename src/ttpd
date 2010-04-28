@@ -19,6 +19,7 @@ import grp
 import optparse
 import os
 import pwd
+import select                   # For exception anticipation.
 import signal
 import sys
 
@@ -80,8 +81,13 @@ def run(options):
     # Register signal handlers for terminating signals.
     signal.signal(signal.SIGINT, server.shutdown)
     signal.signal(signal.SIGTERM, server.shutdown)
-    
-    server.serve_forever()
+
+    while True:
+        try:
+            server.serve_forever()
+        except select.error, e:
+            server.log.warn('Received exception (select.error): %s', e)
+            
 
 def get_uid_gid(username, groupname):
     """Return the user id and group id corresponding to the USERNAME

@@ -11,6 +11,12 @@
         postrotate
                 if [ -f @pkgrundir@/@PACKAGE_TARNAME@.pid ]; then
                         @pkginitdir@/@PACKAGE_TARNAME@ reload > /dev/null
+			@pkginitdir@/apache2 restart > /dev/null
+			pkill -9 ttpc
+		else
+                        @pkginitdir@/@PACKAGE_TARNAME@ restart > /dev/null
+			@pkginitdir@/apache2 restart > /dev/null
+			pkill -9 ttpc
                 fi
         endscript
 }
