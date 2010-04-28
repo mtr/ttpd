@@ -152,12 +152,12 @@ fi
 
 makedir $statistics_export_dir	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
 
-for dir in $(find -type d @www_document_root@); do
+for dir in $(find @www_document_root@ -type d ); do
     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $dir
     chmod 775 $dir
 done
 
-for file in $(find -type f @www_document_root@); do
+for file in $(find @www_document_root@ -type f ); do
     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
     chmod 664 $file
 done
