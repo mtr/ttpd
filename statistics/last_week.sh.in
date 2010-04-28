@@ -33,3 +33,5 @@ ttpd_analyze $LOGS \
     --week=$WEEK \
     --chart=$EXPORT/graphics/$FNAME.png \
     > $EXPORT/$FNAME.txt
+
+log "stopping"

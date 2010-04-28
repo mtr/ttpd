@@ -33,3 +33,5 @@ ttpd_analyze $LOGS \
     --from=$START --to=$END \
     --chart=$EXPORT/graphics/$FNAME.png \
     > $EXPORT/$FNAME.txt
+
+log "stopping"

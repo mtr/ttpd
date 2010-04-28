@@ -5,9 +5,9 @@ MAILTO=mtr@ranang.org
 # m h dom mon dow
 #
 # Run every twenty minutes.
-0-59/10 * * * *    @statistics_dir@/today.sh >> $HOME/tmp/cron_out 2>&1
-0-59/10 * * * *    @statistics_dir@/this_week.sh >> $HOME/tmp/cron_out 2>&1
-0-59/10 * * * *    @statistics_dir@/last_52_weeks.sh >> $HOME/tmp/cron_out 2>&1
+0-59/5 * * * *    root @statistics_dir@/today.sh >> @pkglogdir@/stats.log 2>&1
+0-59/10 * * * *    root @statistics_dir@/this_week.sh >> @pkglogdir@/stats.log 2>&1
+0-59/10 * * * *    root @statistics_dir@/last_52_weeks.sh >> @pkglogdir@/stats.log 2>&1
 # Run every monday "morning".
-30 0 * * mon       @statistics_dir@/last_week.sh >> $HOME/tmp/cron_out 2>&1
-##30 0 * * mon      @statistics_dir@/last_52_weeks.sh >> $HOME/tmp/cron_out 2>&1
+30 0 * * mon       root @statistics_dir@/last_week.sh >> @pkglogdir@/stats.log 2>&1
+##30 0 * * mon      root @statistics_dir@/last_52_weeks.sh >> @pkglogdir@/stats.log 2>&1
