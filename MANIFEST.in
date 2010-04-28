@@ -6,6 +6,7 @@ include NEWS
 include README
 include doc/ttpd_documentation.pdf
 include etc/apache2/sites-available/busstuc.lingit.no
+include etc/cron.d/ttpd
 include etc/default/ttpd
 include etc/init.d/ttpd
 include etc/logrotate.d/ttpd

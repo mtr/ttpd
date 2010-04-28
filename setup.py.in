@@ -75,6 +75,8 @@ def main():
                 ('@sbindir@', ['src/@PACKAGE_TARNAME@']),
                 # Init script:
                 ('@pkginitdir@', ['etc/init.d/@PACKAGE_TARNAME@']),
+                # Crontab:
+                ('/etc/cron.d', ['etc/cron.d/@PACKAGE_TARNAME@']),
                 # Configuration file:
                 ('/etc/default', ['etc/default/@PACKAGE_TARNAME@']),
                 # Log rotation scripts:

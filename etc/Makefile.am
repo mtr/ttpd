@@ -4,6 +4,7 @@
 
 SUBDIRS = \
 	apache2 \
+	cron.d \
 	default \
 	init.d \
 	logrotate.d

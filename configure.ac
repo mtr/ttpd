@@ -16,6 +16,7 @@ AC_OUTPUT([Makefile
 	   etc/Makefile
 	   etc/apache2/Makefile
 	   etc/apache2/sites-available/Makefile
+	   etc/cron.d/Makefile
 	   etc/default/Makefile
 	   etc/init.d/Makefile
 	   etc/logrotate.d/Makefile

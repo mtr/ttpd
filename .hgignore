@@ -27,6 +27,7 @@ doc/usage_ttpc\.txt$
 doc/usage_ttpd\.txt$
 doc/usage_ttpdctl\.txt$
 etc/apache2/sites-available/busstuc\.lingit\.no$
+etc/cron\.d/ttpd$
 etc/default/ttpd$
 etc/init\.d/ttpd$
 etc/init\.d/ttpd-orig$
