@@ -22,14 +22,14 @@ function select_topic()
 $topic = select_topic();
 $ftopic = $topics[$topic];
 ?>
-<!doctype html public "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
 
 <link rel="Shortcut Icon" href="http://www.ranang.org/graphics/r-icon.png">
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="author" content="Martin Thorsen Ranang">
-<meta name="copyright" content="&copy; 2004 Martin Thorsen Ranang">
+<meta name="copyright" content="&copy; 2004, 2010 Martin Thorsen Ranang">
 <meta name="keywords" content="ranang,statistics,developer">
 
 <title>Statistics --> <? echo $ftopic; ?></title>
@@ -51,7 +51,7 @@ while (list ($k, $v) = each ($topics))
     echo '&t=', urlencode ($k), "\">$v</a></li>\n";
   }
 ?>
-<li><a href="/~tore/smstuc/">SMSTUC</a></li>
+<li><a href="/">SMSTUC</a></li>
 </ul>
 </td>
 <td bgcolor="#ffffff" width=4>&nbsp;</td>
@@ -116,7 +116,7 @@ if ($topic != 'last_52_weeks')
 
 <hr>
 <address>
-Developed by Martin Thorsen Ranang, 2004--2006.
+Developed by Martin Thorsen Ranang, 2004--2006, 2010.
 </address>
 
 </body>

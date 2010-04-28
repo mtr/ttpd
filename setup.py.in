@@ -106,6 +106,9 @@ def main():
                     'www/busstuc.lingit.no/tucq_top.inc',
                     'www/busstuc.lingit.no/tucsms.php',
                     ]),
+                ('@www_document_root@/tuc_stats', [
+                    'www/busstuc.lingit.no/tuc_stats/index.php',
+                    ]),
                 ('@www_document_root@/team_trafikk/', [
                     'www/busstuc.lingit.no-team-trafikk/README',
                     'www/busstuc.lingit.no-team-trafikk/body_style.inc',
