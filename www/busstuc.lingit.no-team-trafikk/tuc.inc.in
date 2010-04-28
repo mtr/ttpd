@@ -61,7 +61,16 @@ if ($e)
     
     //setlocale(LC_CTYPE, "iso-8859-1", "nb_NO.iso-8859-1");
 
-    $p = popen("$tech_prog '$e'", "r");
+    if ($_POST["tekniskinfo"])
+      {
+        $cmd = $tech_prog;
+      }
+    else
+      {
+        $cmd = $prog;
+      }
+
+    $p = popen("$cmd '$e'", "r");
     while (!feof($p)) {
       $buf .= fread($p, 4096);
     }
