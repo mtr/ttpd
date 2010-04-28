@@ -153,6 +153,16 @@ for file in @www_document_root@/*; do
     chmod 664 $file
 done
 
+tt_extra=@www_document_root@/team_trafikk
+
+chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $tt_extra
+chmod 775 $tt_extra
+
+for file in $tt_extra/*; do
+    chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
+    chmod 664 $file
+done
+
 a2dissite default		# Disable the default Web site.
 a2ensite @lingit_web_site@	# Enable TTPD's Web site.
 

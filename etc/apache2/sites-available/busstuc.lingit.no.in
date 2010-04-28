@@ -23,6 +23,13 @@
 		allow from all
 	</Directory>
 
+	<Directory @www_document_root@/team_trafikk/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
 	# ScriptAlias /cgi-bin/ @www_document_root@/cgi-bin/
 	# <Directory "@www_document_root@/cgi-bin">
 	# 	AllowOverride None

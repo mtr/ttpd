@@ -1,16 +1,31 @@
-
 <?PHP;
 $prog = "@bindir@/ttpc --web";
 $tech_prog = $prog." --show-technical";
 $quest = $_POST["quest"];
 
+/* This is a special version of this file, tailored to match
+ * Team-Trafikk's interface.
+ */
 #print $prog;
 
 if ($quest)
   {
-    # Tegn som skal fjÃ¦rnes fra input.
+    /*
+    $f = fopen("/usr/lib/ttpd/www/busstuc.lingit.no/dump.txt", "a");
+    fwrite($f, $quest);
+    fwrite($f, "\n");
+    fwrite($f, utf8_encode($quest));
+    fwrite($f, "\n");
+    fclose($f);
+    */
+
+    $q = utf8_encode($quest);
+
+    $quest = $q;
+
+    # Tegn som skal fjærnes fra input.
     
-    $removes = array("'", '"', '\\', '`', 'Â´', '[', ']');
+    $removes = array("'", '"', '\\', '`', '´', '[', ']');
 
     # "Snillifiserer" input:
     #
@@ -21,12 +36,13 @@ if ($quest)
     
     $e = trim(str_replace($removes, "", strip_tags(substr($quest, 0, 1024))));
 
-    # Dersom strengen nÃ¥ inneholder "ekle" tegn, vil vi ikke behandle den.
-    
-    if (! ereg("^[*a-zA-ZÃ¦Ã¸Ã¥Ã†Ã˜Ã…Ã©Ã‰Ã¶Ã–Ã¤Ã„0-9,. ?!@:+-/]*$", $e))
+    # Dersom strengen nå inneholder "ekle" tegn, vil vi ikke behandle den.
+    /* 
+    if (! ereg("^[*a-zA-ZæøåÆØÅéÉöÖäÄ0-9,. ?!@:+-/]*$", $e))
       {
 	unset($e);
       }
+    */
   }
 
 if ($e)
@@ -41,24 +57,33 @@ if ($e)
     printf("<ul><li>%s</li>", $e);
     
     setlocale(LC_CTYPE, "UTF8", "nb_NO.UTF-8");
-    $e = escapeshellarg($e);
+    $e = escapeshellcmd($e);
+    
+    //setlocale(LC_CTYPE, "iso-8859-1", "nb_NO.iso-8859-1");
+
+    $p = popen("$tech_prog '$e'", "r");
+    while (!feof($p)) {
+      $buf .= fread($p, 4096);
+    }
+    pclose($p);
     
     print "<li>";
+
     if ($_POST["tekniskinfo"])
       {
 	printf("<pre>");
-	system("$tech_prog $e 2>&1");
+	echo iconv("UTF-8", "iso-8859-1", $buf);
 	printf("</pre>");
       }
     else
       {
-	system("$prog $e");
+	echo iconv("UTF-8", "iso-8859-1", $buf);
       }
-    
+ 
     print "</li></ul>";
   }
  else
    {
-     print "Du mÃ¥ taste inn et spÃ¸rsmÃ¥l fÃ¸r du trykker pÃ¥ \"Send spÃ¸rsmÃ¥l\".";
+     print "Du må taste inn et spørsmål før du trykker på \"Send spørsmål\".";
    }
 ?>
