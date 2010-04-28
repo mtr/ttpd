@@ -5,8 +5,9 @@ Makefile$
 Makefile\.in$
 .*\.py[co]$
 
-MANIFEST
-RELEASE
+MANIFEST$
+RELEASE$
+TAGS$
 autom4te\.cache/.*
 bin/config\.sh$
 build/.*
