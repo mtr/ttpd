@@ -18,7 +18,7 @@ function log() {
 #fi
 
 if [ -z "$EXPORT" ]; then
-    EXPORT="@www_document_root@/sms_stats"
+    EXPORT="@statistics_export_dir@"
     #EXPORT="$HOME/public_html/tucstats"
 fi
 

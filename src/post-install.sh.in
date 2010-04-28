@@ -19,6 +19,8 @@ mysql_debian_cfg=/etc/mysql/debian.cnf
 mysql_init_script=@initdir@/mysql
 mysql="@bindir@/mysql --defaults-file=$mysql_debian_cfg"
 
+statistics_export_dir=@statistics_export_dir@
+
 makedir() {
     if [ ! -d $1 ]; then
 	mkdir $1
@@ -148,20 +150,27 @@ if [ -z "$APACHE_RUN_GROUP" ]; then
     APACHE_RUN_GROUP=www-data	# Default assumption.
 fi
 
-for file in @www_document_root@/*; do
+makedir $statistics_export_dir	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+
+for dir in $(find -type d @www_document_root@); do
+    chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $dir
+    chmod 775 $dir
+done
+
+for file in $(find -type f @www_document_root@); do
     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
     chmod 664 $file
 done
 
-tt_extra=@www_document_root@/team_trafikk
+# tt_extra=@www_document_root@/team_trafikk
 
-chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $tt_extra
-chmod 775 $tt_extra
+# chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $tt_extra
+# chmod 775 $tt_extra
 
-for file in $tt_extra/*; do
-    chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
-    chmod 664 $file
-done
+# for file in $tt_extra/*; do
+#     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $file
+#     chmod 664 $file
+# done
 
 a2dissite default		# Disable the default Web site.
 a2ensite @lingit_web_site@	# Enable TTPD's Web site.
