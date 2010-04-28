@@ -436,9 +436,9 @@ def get_transactions(billing, options):
     #print options.start
     #print options.end
     
-    bills = billing.Bill.query\
-            .filter(billing.Bill.timestamp >= options.start)\
-            .filter(billing.Bill.timestamp <= options.end)\
+    bills = billing.Bill.query \
+            .filter(billing.Bill.timestamp >= options.start) \
+            .filter(billing.Bill.timestamp <= options.end) \
             .all()
 
     # Convert each entity to dictionaries.  Both for backwards
@@ -448,7 +448,7 @@ def get_transactions(billing, options):
     
     for bill in bills:
         if not options.unified_client_address is None:
-            trans['host'] = options.unified_client_address
+            bill['host'] = options.unified_client_address
             
         if options.filter_only:
             print format_trans(bill)
