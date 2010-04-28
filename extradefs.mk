@@ -16,6 +16,7 @@ trans_id = LINGSMSIN
 
 lingit_web_site = busstuc.lingit.no
 www_document_root = ${pkglibdir}/www/${lingit_web_site}
+statistics_dir = ${pkglibdir}/statistics
 
 lockdir = ${statedir}/lock
 logdir = ${statedir}/log
@@ -47,6 +48,7 @@ edit = sed \
         -e 's|@prefix[@]|$(prefix)|g' \
         -e 's|@pythondir[@]|$(pythondir)|g' \
         -e 's|@sbindir[@]|$(sbindir)|g' \
+        -e 's|@statistics_dir[@]|$(statistics_dir)|g' \
         -e 's|@trans_id[@]|$(trans_id)|g' \
         -e 's|@tuc_command[@]|$(tuc_command)|g' \
         -e 's|@tuc_encoding[@]|$(tuc_encoding)|g' \

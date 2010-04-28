@@ -18,7 +18,7 @@ function log() {
 #fi
 
 if [ -z "$EXPORT" ]; then
-    EXPORT="/usr/lib/ttpd/www/busstuc.lingit.no/sms_stats"
+    EXPORT="@www_document_root@/sms_stats"
     #EXPORT="$HOME/public_html/tucstats"
 fi
 

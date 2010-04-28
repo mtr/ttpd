@@ -80,7 +80,7 @@ def main():
                 # Log rotation scripts:
                 ('/etc/logrotate.d', ['etc/logrotate.d/@PACKAGE_TARNAME@']),
                 # Statistics generation scripts:
-                ('@pkglibdir@/statistics', [
+                ('@statistics_dir@', [
                     'statistics/general_config.sh',
                     'statistics/last_52_weeks.sh',
                     'statistics/last_week.sh',
