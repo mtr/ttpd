@@ -12,11 +12,11 @@
                 if [ -f @pkgrundir@/@PACKAGE_TARNAME@.pid ]; then
                         @pkginitdir@/@PACKAGE_TARNAME@ reload > /dev/null
 			@pkginitdir@/apache2 restart > /dev/null
-			pkill -9 ttpc
+			#/usr/bin/pgrep -x ttpc && /usr/bin/pkill -9 -x ttpc > /dev/null
 		else
                         @pkginitdir@/@PACKAGE_TARNAME@ restart > /dev/null
 			@pkginitdir@/apache2 restart > /dev/null
-			pkill -9 ttpc
+			#/usr/bin/pgrep -x ttpc && /usr/bin/pkill -9 -x ttpc > /dev/null
                 fi
         endscript
 }

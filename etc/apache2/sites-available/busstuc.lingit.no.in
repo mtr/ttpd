@@ -10,7 +10,7 @@
 	</Files>
 
         RewriteEngine on
-        RewriteRule   ^/~tore/smstuc/(.*)$  /team_trafikk/$1  [R]
+        RewriteRule   ^/~tore/smstuc/(.*)$  /team_trafikk/$1  [PT]
 	
 	<Directory />
 		Options FollowSymLinks
