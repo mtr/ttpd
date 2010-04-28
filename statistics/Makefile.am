@@ -2,8 +2,6 @@
 #
 # Copyright (C) 2009 by Martin Thorsen Ranang
 
-#SUBDIRS = sites-available
-
 include ${top_srcdir}/extradefs.mk
 
 ignore_in = Makefile.in
@@ -16,7 +14,7 @@ $(generated): $(in_src) Makefile $(top_srcdir)/extradefs.mk
 	srcdir=''; \
 	  test -f ./$@.in || srcdir=$(srcdir)/; \
 	  $(edit) $${srcdir}$@.in >$@.tmp
-	chmod a-w $@.tmp
+	chmod a-w+x $@.tmp
 	mv $@.tmp $@
 
 CLEANFILES = $(generated)
