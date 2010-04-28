@@ -57,7 +57,7 @@ tests:
 	PYTHONPATH=$(top_srcdir)/lib pytest test
 
 etags:
-	etags --language-force=Python \
+	etags \
 		src/* \
 		$$(find lib -name \*\.py |tr '\n' ' ')
 
