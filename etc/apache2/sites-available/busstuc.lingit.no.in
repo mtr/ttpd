@@ -1,5 +1,5 @@
 <VirtualHost *:80>
-	ServerAdmin webmaster@localhost
+	ServerAdmin webmaster@lingit.no
 	ServerName busstuc.lingit.no
 
 	DocumentRoot @www_document_root@/
@@ -10,7 +10,7 @@
 	</Files>
 
         RewriteEngine on
-        RewriteRule   ^/~tore/smstuc/(.*)$  /$1  [R]
+        RewriteRule   ^/~tore/smstuc/(.*)$  /team_trafikk/$1  [R]
 	
 	<Directory />
 		Options FollowSymLinks
@@ -22,14 +22,14 @@
 		Order allow,deny
 		allow from all
 	</Directory>
-	
-	ScriptAlias /cgi-bin/ @www_document_root@/cgi-bin/
-	<Directory "@www_document_root@/cgi-bin">
-		AllowOverride None
-		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-		Order allow,deny
-		Allow from all
-	</Directory>
+
+	# ScriptAlias /cgi-bin/ @www_document_root@/cgi-bin/
+	# <Directory "@www_document_root@/cgi-bin">
+	# 	AllowOverride None
+	# 	Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+	# 	Order allow,deny
+	# 	Allow from all
+	# </Directory>
 	
 	ErrorLog /var/log/apache2/error.log
 
@@ -39,13 +39,13 @@
 
 	CustomLog /var/log/apache2/access.log combined
 
-    Alias /doc/ "/usr/share/doc/"
-    <Directory "/usr/share/doc/">
-        Options Indexes MultiViews FollowSymLinks
-        AllowOverride None
-        Order deny,allow
-        Deny from all
-        Allow from 127.0.0.0/255.0.0.0 ::1/128
-    </Directory>
+    # Alias /doc/ "/usr/share/doc/"
+    # <Directory "/usr/share/doc/">
+    #     Options Indexes MultiViews FollowSymLinks
+    #     AllowOverride None
+    #     Order deny,allow
+    #     Deny from all
+    #     Allow from 127.0.0.0/255.0.0.0 ::1/128
+    # </Directory>
 
 </VirtualHost>

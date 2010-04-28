@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl 
 dnl $Id: configure.ac 335 2008-09-29 07:51:50Z mtr $
 dnl
-AC_INIT(ttpd, 2.1.0)
+AC_INIT(ttpd, 2.2.0)
 AC_CONFIG_SRCDIR(src/ttpd)
 AM_INIT_AUTOMAKE
 
@@ -23,5 +23,6 @@ AC_OUTPUT([Makefile
 	   statistics/Makefile
 	   www/Makefile
 	   www/busstuc.lingit.no/Makefile
+	   www/busstuc.lingit.no-team-trafikk/Makefile
 	   ],
           [chmod +x src/ttpd])
