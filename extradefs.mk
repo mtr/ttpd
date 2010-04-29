@@ -52,8 +52,10 @@ edit = sed \
         -e 's|@prefix[@]|$(prefix)|g' \
         -e 's|@pythondir[@]|$(pythondir)|g' \
         -e 's|@sbindir[@]|$(sbindir)|g' \
-        -e 's|@statistics_dir[@]|$(statistics_dir)|g' \
-        -e 's|@statistics_export_dir[@]|$(statistics_export_dir)|g' \
+        -e 's|@sms_statistics_dir[@]|$(sms_statistics_dir)|g' \
+        -e 's|@sms_statistics_export_dir[@]|$(sms_statistics_export_dir)|g' \
+        -e 's|@web_statistics_dir[@]|$(web_statistics_dir)|g' \
+        -e 's|@web_statistics_export_dir[@]|$(web_statistics_export_dir)|g' \
         -e 's|@trans_id[@]|$(trans_id)|g' \
         -e 's|@tuc_command[@]|$(tuc_command)|g' \
         -e 's|@tuc_encoding[@]|$(tuc_encoding)|g' \
