@@ -76,7 +76,10 @@ def main():
                 # Init script:
                 ('@pkginitdir@', ['etc/init.d/@PACKAGE_TARNAME@']),
                 # Crontab:
-                ('/etc/cron.d', ['etc/cron.d/@PACKAGE_TARNAME@']),
+                ('/etc/cron.d', [
+                        'etc/cron.d/@PACKAGE_TARNAME@-sms',
+                        'etc/cron.d/@PACKAGE_TARNAME@-web',
+                        ]),
                 # Configuration file:
                 ('/etc/default', ['etc/default/@PACKAGE_TARNAME@']),
                 # Log rotation scripts:
@@ -113,8 +116,11 @@ def main():
                     'www/busstuc.lingit.no/tucq_top.inc',
                     'www/busstuc.lingit.no/tucsms.php',
                     ]),
-                ('@www_document_root@/tuc_stats', [
-                    'www/busstuc.lingit.no/tuc_stats/index.php',
+                ('@www_document_root@/sms_stats', [
+                    'www/busstuc.lingit.no/sms_stats/index.php',
+                    ]),
+                ('@www_document_root@/web_stats', [
+                    'www/busstuc.lingit.no/web_stats/index.php',
                     ]),
                 ('@www_document_root@/team_trafikk/', [
                     'www/busstuc.lingit.no-team-trafikk/README',
