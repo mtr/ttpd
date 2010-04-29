@@ -2,13 +2,13 @@ dnl Process this file with autoconf to produce a configure script.
 dnl 
 dnl $Id: configure.ac 335 2008-09-29 07:51:50Z mtr $
 dnl
-AC_INIT(ttpd, 2.2.0)
+AC_INIT(ttpd, 3.0.0)
 AC_CONFIG_SRCDIR(src/ttpd)
 AM_INIT_AUTOMAKE
 
-dnl AC_PREFIX_DEFAULT(/usr)
+AC_PREFIX_DEFAULT(/usr)
 
-AM_PATH_PYTHON(2.5,, :)
+AM_PATH_PYTHON(2.6,, :)
 
 AC_OUTPUT([Makefile
 	   bin/Makefile
@@ -22,6 +22,8 @@ AC_OUTPUT([Makefile
 	   etc/logrotate.d/Makefile
 	   src/Makefile
 	   statistics/Makefile
+	   statistics/sms/Makefile
+	   statistics/web/Makefile
 	   www/Makefile
 	   www/busstuc.lingit.no/Makefile
 	   www/busstuc.lingit.no-team-trafikk/Makefile

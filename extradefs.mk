@@ -17,7 +17,10 @@ trans_id = LINGSMSIN
 lingit_web_site = busstuc.lingit.no
 www_document_root = ${pkglibdir}/www/${lingit_web_site}
 statistics_dir = ${pkglibdir}/statistics
-statistics_export_dir = ${www_document_root}/tuc_stats
+sms_statistics_dir = ${statistics_dir}/sms
+sms_statistics_export_dir = ${www_document_root}/sms_stats
+web_statistics_dir = ${statistics_dir}/web
+web_statistics_export_dir = ${www_document_root}/web_stats
 
 lockdir = ${statedir}/lock
 logdir = ${statedir}/log

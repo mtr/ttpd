@@ -82,12 +82,19 @@ def main():
                 # Log rotation scripts:
                 ('/etc/logrotate.d', ['etc/logrotate.d/@PACKAGE_TARNAME@']),
                 # Statistics generation scripts:
-                ('@statistics_dir@', [
-                    'statistics/general_config.sh',
-                    'statistics/last_52_weeks.sh',
-                    'statistics/last_week.sh',
-                    'statistics/this_week.sh',
-                    'statistics/today.sh',
+                ('@sms_statistics_dir@', [
+                    'statistics/sms/general_config.sh',
+                    'statistics/sms/last_52_weeks.sh',
+                    'statistics/sms/last_week.sh',
+                    'statistics/sms/this_week.sh',
+                    'statistics/sms/today.sh',
+                    ]),
+                ('@web_statistics_dir@', [
+                    'statistics/web/general_config.sh',
+                    'statistics/web/last_52_weeks.sh',
+                    'statistics/web/last_week.sh',
+                    'statistics/web/this_week.sh',
+                    'statistics/web/today.sh',
                     ]),
                 # Web site:
                 ('/etc/apache2/sites-available', [

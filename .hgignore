@@ -4,6 +4,7 @@ syntax: regexp
 Makefile$
 Makefile\.in$
 .*\.py[co]$
+.*~$
 
 MANIFEST$
 RELEASE$
@@ -27,7 +28,8 @@ doc/usage_ttpc\.txt$
 doc/usage_ttpd\.txt$
 doc/usage_ttpdctl\.txt$
 etc/apache2/sites-available/busstuc\.lingit\.no$
-etc/cron\.d/ttpd$
+etc/cron\.d/ttpd-sms$
+etc/cron\.d/ttpd-web$
 etc/default/ttpd$
 etc/init\.d/ttpd$
 etc/init\.d/ttpd-orig$
@@ -37,10 +39,15 @@ setup\.cfg$
 setup\.py$
 src/post-install\.sh$
 src/pre-uninstall\.sh$
-statistics/general_config\.sh$
-statistics/last_52_weeks\.sh$
-statistics/last_week\.sh$
-statistics/this_week\.sh$
-statistics/today\.sh$
+statistics/sms/general_config\.sh$
+statistics/sms/last_52_weeks\.sh$
+statistics/sms/last_week\.sh$
+statistics/sms/this_week\.sh$
+statistics/sms/today\.sh$
+statistics/web/general_config\.sh$
+statistics/web/last_52_weeks\.sh$
+statistics/web/last_week\.sh$
+statistics/web/this_week\.sh$
+statistics/web/today\.sh$
 www/busstuc\.lingit\.no-team-trafikk/tuc\.inc$
 www/busstuc\.lingit\.no/tuc\.inc$

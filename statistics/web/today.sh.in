@@ -6,7 +6,7 @@
 #
 
 if [ -z "$CONFPATH" ]; then
-    CONFPATH=@statistics_dir@
+    CONFPATH=@web_statistics_dir@
 fi
 
 . $CONFPATH/general_config.sh

@@ -19,7 +19,8 @@ mysql_debian_cfg=/etc/mysql/debian.cnf
 mysql_init_script=@initdir@/mysql
 mysql="@bindir@/mysql --defaults-file=$mysql_debian_cfg"
 
-statistics_export_dir=@statistics_export_dir@
+sms_statistics_export_dir=@sms_statistics_export_dir@
+web_statistics_export_dir=@web_statistics_export_dir@
 
 makedir() {
     if [ ! -d $1 ]; then
@@ -150,8 +151,10 @@ if [ -z "$APACHE_RUN_GROUP" ]; then
     APACHE_RUN_GROUP=www-data	# Default assumption.
 fi
 
-makedir $statistics_export_dir	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
-makedir $statistics_export_dir/graphics	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+makedir $sms_statistics_export_dir 	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+makedir $sms_statistics_export_dir/graphics	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+makedir $web_statistics_export_dir	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
+makedir $web_statistics_export_dir/graphics	$APACHE_RUN_USER:$APACHE_RUN_GROUP 775
 
 for dir in $(find @www_document_root@ -type d ); do
     chown $APACHE_RUN_USER:$APACHE_RUN_GROUP $dir
