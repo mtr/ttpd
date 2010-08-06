@@ -110,6 +110,8 @@ def main():
                     'www/busstuc.lingit.no/egenskaper.php',
                     'www/busstuc.lingit.no/index.php',
                     'www/busstuc.lingit.no/instruksjoner.php',
+                    'www/busstuc.lingit.no/json.php',
+                    'www/busstuc.lingit.no/json_form.php',
                     'www/busstuc.lingit.no/ombustuc.php',
                     'www/busstuc.lingit.no/tuc.inc',
                     'www/busstuc.lingit.no/tucq.inc',

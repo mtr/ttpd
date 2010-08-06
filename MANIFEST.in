@@ -32,6 +32,8 @@ include www/busstuc.lingit.no/bust.php
 include www/busstuc.lingit.no/egenskaper.php
 include www/busstuc.lingit.no/index.php
 include www/busstuc.lingit.no/instruksjoner.php
+include www/busstuc.lingit.no/json.php
+include www/busstuc.lingit.no/json_form.php
 include www/busstuc.lingit.no/ombustuc.php
 include www/busstuc.lingit.no/tuc.inc
 include www/busstuc.lingit.no/tucq.inc
