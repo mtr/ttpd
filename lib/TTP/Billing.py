@@ -31,6 +31,15 @@ class Bill(elixir.Entity):
     transaction_type = elixir.Field(elixir.Unicode(16))
     description = elixir.Field(elixir.Unicode(16))
     
+    def __repr__(self):
+        attrs = ['timestamp', 'amount', 'interface', 'host', 
+                 'transaction_type', 'description']
+        
+        return '%s(%s)' % (self.__class__.__name__, 
+                           ', '.join(['%s=%s' \
+                                          % (attr, repr(getattr(self, attr)), )
+                                      for attr in attrs]))
+    
    
 def initialize(db_address='sqlite:///:memory:', logger=None, db_echo=True):
     """Bind the ORM module to a DB and setup and (if necessary) create
