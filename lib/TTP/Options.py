@@ -79,6 +79,13 @@ common_options = [
       'default': 2005,
       'metavar': 'PORT',
       'help': 'the remote PORT; the default is %(default)d'}),
+
+    (['--service-name'],
+     {'dest': 'service_name',
+      'default': 'RUTE',
+      'metavar': 'SMS_SERVICE_NAME',
+      'help': "the SERVICE_NAME for the SMS service.  " \
+      "The default is '%(default)s'."}),
     
     (['-q', '--socket-queue-size'],
      {'dest': 'socket_queue_size',
@@ -168,7 +175,7 @@ ttpd_options = [
       'default': 'payex',
       'metavar': 'PROVIDER',
       'help': "the PROVIDER to use when sending SMS; possible values are " \
-      "'esolutions' and 'payex'.  " \
+      "'esolutions', 'payex' and 'pswincom'.  " \
       "The default is '%(default)s'."}),
 
     (['-U', '--user'],
@@ -303,6 +310,13 @@ ttpc_options = [
       'action': 'store_true', 
       'help': 'generate output suitable for the Web; this implicates ' \
       '--transaction-id=WEB'}),
+
+    (['-j', '--json'],
+     {'dest': 'json',
+      'default': False,
+      'action': 'store_true', 
+      'help': 'generate JSON output suitable for Web Services; this implicates ' \
+      '--transaction-id=JSON'}),
     
     (['-W', '--show-technical'],
      {'dest': 'show_technical',

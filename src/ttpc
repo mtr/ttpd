@@ -63,7 +63,9 @@ def parse_command_line():
 
     if options.web:
         options.trans_id = 'WEB'
-        
+    if options.json:
+        options.trans_id = 'JSON'
+    
     # Expand the any paths and make them absolute.
     options.log_file = os.path.abspath(os.path.expanduser(options.log_file))
 
@@ -110,7 +112,7 @@ def run_single_test(m, options, parser):
         meta, body = None, 'An error occured. Service currently not available.'
         return meta, body
 
-    if options.web:
+    if options.web or options.json:
         b = TTP.Message.build(body.decode('latin-1'), parser)
         
         if options.show_technical:
@@ -161,7 +163,8 @@ def main():
         m.MxHead.ORName = options.phone_number
         
     if options.trans_id == 'LINGSMSIN':
-        pre_msg = 'TEAM '
+        pre_msg = options.service_name
+        #pre_msg = 'TEAM '
     else:
         pre_msg = ''
     
@@ -188,6 +191,7 @@ def main():
             m.MxHead.Aux.InitIf = 'IP'
         else:
             m.MxHead.MsgId = -1
+            m.MxHead.TransId = options.trans_id
             
         m._setMessage('%s%s' % (pre_msg, args[0]))
         

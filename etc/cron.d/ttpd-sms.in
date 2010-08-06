@@ -7,7 +7,7 @@ MAILTO=mtr@ranang.org
 # Run every twenty minutes.
 0-59/10 * * * *    root @sms_statistics_dir@/today.sh >> @pkglogdir@/stats-sms.log 2>&1
 0-59/10 * * * *    root @sms_statistics_dir@/this_week.sh >> @pkglogdir@/stats-sms.log 2>&1
-0-59/10 * * * *    root @sms_statistics_dir@/last_52_weeks.sh >> @pkglogdir@/stats-sms.log 2>&1
+#0-59/10 * * * *    root @sms_statistics_dir@/last_52_weeks.sh >> @pkglogdir@/stats-sms.log 2>&1
 # Run every monday "morning".
-30 0 * * mon       root @sms_statistics_dir@/last_week.sh >> @pkglogdir@/stats-sms.log 2>&1
+#30 0 * * mon       root @sms_statistics_dir@/last_week.sh >> @pkglogdir@/stats-sms.log 2>&1
 ##30 0 * * mon      root @sms_statistics_dir@/last_52_weeks.sh >> @pkglogdir@/stats-sms.log 2>&1

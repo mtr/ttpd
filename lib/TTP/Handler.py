@@ -14,11 +14,13 @@ import re
 import socket
 import time
 import xml.sax
+import simplejson
 
 import TTP.ESolutionsMessage
 import TTP.EncapsulateTUC
 import TTP.LogHandler
 import TTP.PayExMessage
+import TTP.PSWinComMessage
 import TTP.num_hash
 
 
@@ -29,7 +31,7 @@ __author__ = "Martin Thorsen Ranang"
 class BaseHandler(SocketServer.StreamRequestHandler):
     MessageModule = None
     Message = None     # Overridden by e.g. {ESolutions,PayEx}Handler.
-    
+
     def setup(self):
         """Create an XML parser for this handler instance.
         
@@ -54,9 +56,8 @@ class BaseHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         meta, body = self.Message.receive(self.connection, self.xml_parser)
 
-        if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
-            self.server.log.log(TTP.LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
-                                self.transaction, meta, body)
+        self.server.log.log(TTP.LogHandler.PROTOCOL, '[%0x], \n%s\n%s',
+                            self.transaction, meta, body)
         
         ack = self.Message.MessageAck()
         ack.MxHead.TransId = 'LINGSMSOUT'
@@ -101,7 +102,7 @@ class Handler(BaseHandler):
     
     sms_trans_id = 'LINGSMS'            # Followed by 'IN' and 'OUT'.
     
-    service_name = 'TEAM'
+    service_name = 'TEAM'       # Overridden by .initialize(options).
     
     cancel_command_info = 'Avbestill ved å sende ' \
                           '%s AVBEST %%s til 1939.' % (service_name)
@@ -117,7 +118,13 @@ class Handler(BaseHandler):
     # remote server.  Time values are given in seconds.
     resend_timeout = 15 * 60
     resend_delay_range = [60 * m for m in [1, 3]]
-    
+
+    @classmethod
+    def initialize(cls, options):
+        """(Called e.g. from (main) ttpd program.
+        """
+        cls.service_name = options.service_name
+        
     def setup(self):
         """Setup some thread-specific resources before handling the
         request.
@@ -176,7 +183,6 @@ class Handler(BaseHandler):
 
                 retries += 1
 
-                #if self.server.log.isEnabledFor(TTP.LogHandler.WARN):
                 self.server.log.warn('[%0x] Could not connect to ' \
                                      'remote server %s: reason: %s. ' \
                                      'Will retry in %d seconds',
@@ -188,11 +194,10 @@ class Handler(BaseHandler):
                 sent = True
                 
         if sent:
-            if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
-                self.server.log.log(TTP.LogHandler.PROTOCOL,
-                                    '[%0x] Recieved ACK:\n%s\n%s',
-                                    self.transaction,
-                                    meta, body)
+            self.server.log.log(TTP.LogHandler.PROTOCOL,
+                                '[%0x] Recieved ACK:\n%s\n%s',
+                                self.transaction,
+                                meta, body)
         else:
             self.server.log.error('[%0x] Could not connect to ' \
                                   'remote server %s: reason: %s. ' \
@@ -244,6 +249,9 @@ class Handler(BaseHandler):
         # Retrieve incoming request.
         meta, body = self.Message.receive(self.connection, self.xml_parser)
         
+        self.server.log.debug('[%0x] Input: "%s" (MxHead.TransId), "%s".',
+                              self.transaction, meta.MxHead.TransId, body)
+        
         # If nothing was received, or there was an error, we skip
         # further processing.
         if not meta:
@@ -254,10 +262,9 @@ class Handler(BaseHandler):
             self.request.close()
             return
 
-        if self.server.log.isEnabledFor(TTP.LogHandler.PROTOCOL):
-            self.server.log.log(TTP.LogHandler.PROTOCOL,
-                                '[%0x] Received package:\n%s\n%s',
-                                self.transaction, meta, body)
+        self.server.log.log(TTP.LogHandler.PROTOCOL,
+                            '[%0x] Received package:\n%s\n%s',
+                            self.transaction, meta, body)
         
         # Remove "dangerous" tokens from the request.
         body = self.dangerous_removes_re.sub('', body)
@@ -275,9 +282,8 @@ class Handler(BaseHandler):
         else:
             is_sms_request = False
 
-        if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
-            self.server.log.debug('[%0x] Input body: "%s".',
-                                  self.transaction, body)
+        self.server.log.debug('[%0x] Input body: "%s".',
+                              self.transaction, body)
         
         # The preprocessing returns a method and some arguments.  The
         # method should be applied on the arguments.
@@ -344,6 +350,9 @@ class Handler(BaseHandler):
             log_id = 'SMS'
             
         else:
+            if meta.MxHead.TransId == 'JSON':
+                answer = simplejson.dumps({'answer': answer})
+                
             self.reply_web(ans, pre_answer, answer)
             log_id = 'WEB'
             
@@ -402,8 +411,7 @@ class Handler(BaseHandler):
             # If no block separators where found, consider the answer
             # from TUC as a "simple answer", or an error message (like
             # "% Execution aborted").
-            if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):
-                self.server.log.debug("[%0x] Found no block separator in " \
+            self.server.log.debug("[%0x] Found no block separator in " \
                                       "TUC's output.", self.transaction)
             
             pre, cost, alert_date, answer = (None, self.prices['-'],
@@ -452,9 +460,8 @@ class Handler(BaseHandler):
         # TUC process (in a thread-safe manner).
         result_queue = Queue.Queue(1)
         
-        if self.server.log.isEnabledFor(TTP.LogHandler.DEBUG):        
-            self.server.log.debug('[%0x] TUC query input: "%s"',
-                                  self.transaction, data)
+        self.server.log.debug('[%0x] TUC query input: "%s"',
+                              self.transaction, data)
 
         # Because only the thread that picks up _this_task_ will know
         # about this particular result_queue, we don't need to supply
@@ -521,8 +528,8 @@ class ESolutionsHandler(Handler):
         Handler.__init__(self, request, client_address, server)
 
     @classmethod
-    def initialize(C, options):
-        pass
+    def initialize(cls, options):
+        Handler.initialize(cls, options)
         
 class PayExHandler(Handler):
     Message = TTP.PayExMessage
@@ -533,12 +540,27 @@ class PayExHandler(Handler):
         Handler.__init__(self, request, client_address, server)
         
     @classmethod
-    def initialize(C, options):
-        C.Message.setup_module(options)
+    def initialize(cls, options):
+        Handler.initialize(options)
+
+        cls.Message.setup_module(options)
+
+class PSWinComHandler(Handler):
+    Message = TTP.PSWinComMessage
+    
+    def __init__(self, request, client_address, server):
+        server.log.debug('Will use the PSWinCom SMS gateway.')
         
+        Handler.__init__(self, request, client_address, server)
+        
+    @classmethod
+    def initialize(cls, options):
+        Handler.initialize(cls, options)
+
 sms_gateway_handlers = {
     'esolutions' : ESolutionsHandler,
     'payex': PayExHandler,
+    'pswincom': PSWinComHandler,
     }
 
 
