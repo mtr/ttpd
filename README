@@ -17,6 +17,11 @@ support threads.
 See the file INSTALL for information on how to build and install the
 programs and the Python modules they use.
 
+For developers:  To build a new release and distribute it, issue the following
+command:
+  
+  ./release.sh && ./distribute_newest_deb.sh busstuc.lingit.no:download/
+
 
 
 	 Martin Thorsen Ranang <mtr@ranang.org>, 2004-08-24.

@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl 
 dnl $Id: configure.ac 335 2008-09-29 07:51:50Z mtr $
 dnl
-AC_INIT(ttpd, 3.0.0)
+AC_INIT(ttpd, 3.5.0)
 AC_CONFIG_SRCDIR(src/ttpd)
 AM_INIT_AUTOMAKE
 

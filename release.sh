@@ -3,7 +3,7 @@
 
 #export COMMIT_BEFORE_RELEASE=0
 
-svn update
+hg update
 
 # Update ChangeLog
 #svn2cl --break-before-msg --group-by-day --authors=AUTHORS
