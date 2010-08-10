@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>BussTUC JSON/jQuery Example</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="busstuc_json_demo.js"></script>
+  </head>
+  <body>
+    <h1>BussTUC JSON/jQuery Example</h1>
+    
+    <form id="tuc_form" 
+	  action="http://busstuc-atb.lingit.no/json.php?callback=?"
+	  method="get">
+      Question: <input type="text" name="question" /> 
+      <input type="hidden" name="jsoncallback" value="?" />
+      <input id="form_submit" type="submit" value="Ask" /> 
+    </form>
+    
+    <p>Answer:
+      <span id="tuc_output">
+      </span>
+    </p>
+    <p>Error:
+      <span id="error">
+      </span>
+    </p>
+    
+  </body>
+
+</html> 

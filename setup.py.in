@@ -107,6 +107,8 @@ def main():
                     'www/busstuc.lingit.no/body_style.inc',
                     'www/busstuc.lingit.no/bot.php',
                     'www/busstuc.lingit.no/bust.php',
+                    'www/busstuc.lingit.no/busstuc_json_demo.html',
+                    'www/busstuc.lingit.no/busstuc_json_demo.js',
                     'www/busstuc.lingit.no/egenskaper.php',
                     'www/busstuc.lingit.no/index.php',
                     'www/busstuc.lingit.no/instruksjoner.php',

@@ -29,6 +29,8 @@ include statistics/web/today.sh
 include www/busstuc.lingit.no/body_style.inc
 include www/busstuc.lingit.no/bot.php
 include www/busstuc.lingit.no/bust.php
+include www/busstuc.lingit.no/busstuc_json_demo.html
+include www/busstuc.lingit.no/busstuc_json_demo.js
 include www/busstuc.lingit.no/egenskaper.php
 include www/busstuc.lingit.no/index.php
 include www/busstuc.lingit.no/instruksjoner.php
