@@ -1,6 +1,7 @@
 <?PHP;
 $prog = "/usr/bin/ttpc --json";
-$quest = $_POST["question"];
+#$quest = $_POST["question"];
+$quest = $_GET["question"];
 
 if ($quest)
   {
@@ -22,8 +23,13 @@ if ($quest)
       }
   }
 
+header('Content-type: text/javascript;charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
-header('Content-type: text/x-json;charset=utf-8');
+header('Access-Control-Allow-Origin: null');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+#header('Content-type: text/x-json;charset=utf-8');
+#header('Content-type: text/xml;');
+
 
 if ($e)
   {
@@ -35,11 +41,17 @@ if ($e)
     
     setlocale(LC_CTYPE, "UTF8", "nb_NO.UTF-8");
     $e = escapeshellarg($e);
-    
+
+    print_r($_GET['callback'].'(');
     system("$prog $e");
+    print(');');
   }
  else
    {
-     print '{"error": "No question supplied."}';
+    print_r($_GET['callback'].'(');
+    print '{"error": "No question supplied."}';
+    print(');');
    }
+  
+
 ?>
