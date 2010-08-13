@@ -54,6 +54,10 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
      'MxHead.Ref': 0, 
      'MxHead.Pri': 0,
     }
+
+    According to "Online Interface EAS Message Switch 2.4", a
+    billing value of 1 == 0.5 NOK.
+
     """
     #connection = connect()
     log.debug('message._get_leaves(): %s', message._get_leaves())
@@ -66,6 +70,7 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
         'PW': 'metiony5',
         'RCV': message.MxHead.ORName,
         'SND': '2027',
+        'TARIFF': int(message.MxHead.Aux.Billing * 50),
         'TXT': message._message,
         }
     
