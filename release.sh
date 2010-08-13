@@ -14,4 +14,4 @@ autoconf
 ./configure --prefix=/usr && \
 make deb_sign && \
 sudo dpkg --purge ttpd && \
-sudo dpkg --install $(ls -1 dist/*.deb |tail -1)
+sudo dpkg --install $(ls -1 --sort=version dist/*.deb |tail -1)
