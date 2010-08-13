@@ -120,6 +120,7 @@ def main():
                     'www/busstuc.lingit.no/tucq_top.inc',
                     'www/busstuc.lingit.no/tucsms.php',
                     'www/busstuc.lingit.no/sms_post.php',
+                    'www/busstuc.lingit.no/sms_post_tester.php',
                     ]),
                 ('@www_document_root@/sms_stats', [
                     'www/busstuc.lingit.no/sms_stats/index.php',

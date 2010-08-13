@@ -20,6 +20,8 @@ import re
 import socket
 import sys
 import time
+import urllib
+import urllib2
 import xml.sax
 import logging
 
@@ -30,17 +32,65 @@ MessageAck = CoreMessage.MessageAck
 MessageRequest = CoreMessage.MessageRequest
 MessageResult = CoreMessage.MessageResult
 XML2Message = CoreMessage.XML2Message
+
+build = CoreMessage.build
+connect = CoreMessage.connect
 send = CoreMessage.send
+receive = CoreMessage.receive 
+
+def pswincom_communicate(message, remote_address, parser=None, timeout=False):
+    """Communicate message and return with the reply.
+
+    Example message:
+
+    {'MxHead.Aux.InitProto': 'REMOTE', 
+     'MxHead.Enc': 0, 
+     'MxHead.Ack': 0, 
+     'MxHead.Stat': 0, 
+     'MxHead.Aux.Billing': 2, 
+     'MxHead.TransId': 'LINGSMSOUT', 
+     'MxHead.ORName': '95853086', 
+     'MxHead.Aux.InitIf': 'IP', 
+     'MxHead.Ref': 0, 
+     'MxHead.Pri': 0,
+    }
+    """
+    #connection = connect()
+    log.debug('message._get_leaves(): %s', message._get_leaves())
+    log.debug('message._message: "%s".', message._message)
+
+    remote_address = 'http://sms.pswin.com/http4sms/send.asp'
+    
+    data = {
+        'USER': 'atb2027',
+        'PW': 'metiony5',
+        'RCV': message.MxHead.ORName,
+        'SND': '2027',
+        'TXT': message._message,
+        }
+    
+    stream = urllib2.urlopen(remote_address, urllib.urlencode(data))
+
+    reply = stream.read()
+    
+    log.debug('Received "%s" from %s.', reply, remote_address)
+    
+    stream.close()
+    
+    return (None, None)         # (meta, body)
 
 def communicate(message, remote_address, parser=None, timeout=False):
     """Communicate message and return with the reply.
     """
     if message.MxHead.TransId == 'LINGSMSOUT':
         log.debug('Will send message to the PSWin.com gateway.')
-
-    connection = connect(remote_address)
-    send(connection, message)
-    reply = receive(connection, parser, timeout, build)
-    connection.close()
+        reply = pswincom_communicate(message, remote_address, parser, timeout)
+    else:
+        connection = connect(remote_address)
+        send(connection, message)
+        reply = receive(connection, parser, timeout, build)
+        connection.close()
     
+        log.debug('reply._get_leaves(): %s', reply._get_leaves())
+
     return reply
