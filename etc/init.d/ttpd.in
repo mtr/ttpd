@@ -19,7 +19,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 DESC="TUC Transfer Protocol Daemon (TTPD) and TUC Alert Daemon (TAD)"
 NAME=@PACKAGE_TARNAME@
 DAEMON=@sbindir@/$NAME
-DAEMON_ARGS=""
+DAEMON_ARGS="--log-level=debug"
 PIDFILE=@pkgrundir@/@PACKAGE_TARNAME@.pid
 SCRIPTNAME=@initdir@/$NAME
 

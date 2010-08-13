@@ -41,6 +41,8 @@ include www/busstuc.lingit.no/tuc.inc
 include www/busstuc.lingit.no/tucq.inc
 include www/busstuc.lingit.no/tucq_top.inc
 include www/busstuc.lingit.no/tucsms.php
+include www/busstuc.lingit.no/sms_post.php
+include www/busstuc.lingit.no/sms_post_tester.php
 include www/busstuc.lingit.no/sms_stats/index.php
 include www/busstuc.lingit.no/web_stats/index.php
 include www/busstuc.lingit.no-team-trafikk/README

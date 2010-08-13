@@ -163,7 +163,7 @@ def main():
         m.MxHead.ORName = options.phone_number
         
     if options.trans_id == 'LINGSMSIN':
-        pre_msg = options.service_name
+        pre_msg = '{0} '.format(options.service_name)
         #pre_msg = 'TEAM '
     else:
         pre_msg = ''

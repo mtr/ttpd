@@ -555,7 +555,7 @@ class PSWinComHandler(Handler):
         
     @classmethod
     def initialize(cls, options):
-        Handler.initialize(cls, options)
+        Handler.initialize(options)
 
 sms_gateway_handlers = {
     'esolutions' : ESolutionsHandler,
