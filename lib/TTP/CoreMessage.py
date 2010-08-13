@@ -14,6 +14,7 @@ __version__ = "$Rev: 662 $"
 __author__ = "Martin Thorsen Ranang"
 
 import cStringIO
+import logging
 import Queue
 import re
 import socket
@@ -27,8 +28,11 @@ __all__ = ['Message',
            'MessageResult',
            'XML2Message']
 
+log = logging.getLogger('ttpd.core_message')
+
 msg_re = re.compile('^(?P<head><\?xml .*</MxHead>)(?P<body>.*)$',
                     re.MULTILINE | re.DOTALL | re.IGNORECASE)
+
 
 class Hierarchy(object):
     """Organizes hierarchical data as a tree.
@@ -195,7 +199,7 @@ class XML2Message(xml.sax.ContentHandler):
         self.element_stack = []
         self.buffer_stack = []
         self.data = Message()
-        
+    
     def set_current(self, value):
         obj = self.data
         for node in self.element_stack[:-1]:
@@ -251,7 +255,7 @@ def build(data, parser=None):
     
     return parser.getContentHandler().data
 
-def receive(connection, parser=None, timeout=False):
+def receive(connection, parser=None, timeout=False, builder=build):
     """Receive a message from a socket connection.
     """
     w = MessageAck()
@@ -264,6 +268,8 @@ def receive(connection, parser=None, timeout=False):
         data_len = int(len_data)
     except ValueError, info:
         what = '%s: %s' % (sys.exc_info()[0], info)
+        
+        log.error('Message did not start with a length specifier: %s.', what)
         
         # Try to receive some more data, but not more than 4096 bytes.
         data = len_data + _recv(connection, 4096, 3)
@@ -282,10 +288,12 @@ def receive(connection, parser=None, timeout=False):
         head, body = data, None
         
     try:
-        meta = build(head, parser)
+        meta = builder(head, parser)
     except xml.sax.SAXParseException, info:
         what = '%s: %s' % (sys.exc_info()[0], info)
         
+        log.error(what)
+
         w._setMessage("Server: TTPD.  Error: %s." % what)
         send(connection, w)
         
