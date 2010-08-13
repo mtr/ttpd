@@ -6,9 +6,9 @@ $rcv = $_REQUEST["RCV"];
 $snd = $_REQUEST["SND"];
 $txt = $_REQUEST["TXT"];
 
-header('Content-type: text/plain; charset=utf-8');
+header('Content-type: text/plain; charset=iso-8859-1');
 
-setlocale(LC_CTYPE, "UTF8", "nb_NO.UTF-8");
+setlocale(LC_CTYPE, "iso-8859-1", "nb_NO.iso-8859-1");
 
 $etxt = escapeshellarg($txt);
 
