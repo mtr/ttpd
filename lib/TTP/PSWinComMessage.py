@@ -70,7 +70,7 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
         'PW': 'metiony5',
         'RCV': message.MxHead.ORName,
         'SND': '2027',
-        #'TARIFF': int(message.MxHead.Aux.Billing * 50),
+        'TARIFF': int(message.MxHead.Aux.Billing * 50),
         'TXT': message._message.decode('utf-8').encode('iso-8859-1'),
         }
     
