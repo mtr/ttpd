@@ -1,10 +1,10 @@
 <?PHP;
-$service = 'ATB';
-$prog = "/usr/bin/ttpc --service-name=$service";
+$service = 'RUTE';
+$prog = "/usr/bin/ttpc" ;
 
 $rcv = $_REQUEST["RCV"];
 $snd = $_REQUEST["SND"];
-$txt = $_REQUEST["TXT"];
+$txt = preg_replace("/$service /i", "", $_REQUEST["TXT"], 1);
 
 header('Content-type: text/plain; charset=iso-8859-1');
 
