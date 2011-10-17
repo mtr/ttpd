@@ -6,7 +6,7 @@ A function that daemonifies its caller process.
 
 This script creates a daemon in a standard Unix way.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Lingit AS
 """
 
 __author__ = "Martin Thorsen Ranang"

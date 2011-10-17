@@ -1,4 +1,4 @@
-# Copyright (C) 2007 by Martin Thorsen Ranang
+# Copyright (C) 2007 by Lingit AS
 #
 # $Id: Makefile.am 299 2007-06-20 19:35:26Z mtr $
 #

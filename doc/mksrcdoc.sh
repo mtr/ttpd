@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2002, 2009 by Martin Thorsen Ranang
+# Copyright (C) 2002, 2009 by Lingit AS
 #
 
 . ../bin/config.sh

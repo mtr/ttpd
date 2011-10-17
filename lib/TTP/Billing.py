@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # $Id$
 """
-Copyright (C) 2009 by Martin Thorsen Ranang
+Copyright (C) 2009 by Lingit AS
 """
 __author__ = ""
 __revision__ = "$Rev$"

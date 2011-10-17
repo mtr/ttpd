@@ -5,7 +5,7 @@
 % name=main
 % default_inflection=singular
 %
-% Copyright (C) 2005--2007 by Martin Thorsen Ranang
+% Copyright (C) 2005--2007 by Lingit AS
 %
 
 % In general, to refer to the full-form of a concept, use the \cof

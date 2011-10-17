@@ -4,7 +4,7 @@
 """
 A log file handler to be used by daemon processes.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004 by Lingit AS
 """
 
 __version__ = "$Rev$"

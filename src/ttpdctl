@@ -7,7 +7,7 @@ Program to easily control starting and stopping of TTPD.
 The actions include 'start', 'stop', 'restart', and 'store_alerts'
 (the two latter ones are used in conjunction with log rotation).
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004 by Lingit AS
 """
 
 __version__ = "$Rev$"

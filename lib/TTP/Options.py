@@ -5,7 +5,7 @@
 Module to ease the maintainance of option parsing for the two
 programs ttpd and ttpc.
 
-Copyright (C) 2004, 2009 by Martin Thorsen Ranang
+Copyright (C) 2004, 2009 by Lingit AS
 """
 
 __version__ = "$Rev$"

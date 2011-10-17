@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 # $Id: setup.py.in 297 2007-06-13 09:51:25Z mtr $
 """
-Copyright (C) 2009 by Martin Thorsen Ranang
+Copyright (C) 2009 by Lingit AS
 """
 __author__ = "Martin Thorsen Ranang <mtr@ranang.org>"
 __revision__ = "$Rev: 297 $"

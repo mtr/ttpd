@@ -2,7 +2,7 @@
 ##
 ## File to be included by other Automake files.
 ##
-## Copyright (C) 2009 by Martin Thorsen Ranang
+## Copyright (C) 2009 by Lingit AS
 
 initdir = /etc/init.d
 statedir = /var

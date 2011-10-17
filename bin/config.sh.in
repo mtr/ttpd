@@ -5,7 +5,7 @@
 # These configuration values may be used by the other build scripts in
 # this directory.
 #
-# Copyright (C) 2007 by Martin Thorsen Ranang
+# Copyright (C) 2007 by Lingit AS
 #
 
 PACKAGE_NAME=@PACKAGE_NAME@

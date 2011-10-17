@@ -4,7 +4,7 @@
 """
 Converts numbers from base 10 (decimal) to base 36.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004 by Lingit AS
 """
 
 __version__ = "$Rev$"

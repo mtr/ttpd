@@ -1,6 +1,6 @@
 # $Id$
 #
-# Copyright (C) 2009 by Martin Thorsen Ranang
+# Copyright (C) 2009 by Lingit AS
 
 SUBDIRS = busstuc.lingit.no busstuc.lingit.no-team-trafikk
 

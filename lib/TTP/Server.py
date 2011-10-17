@@ -7,7 +7,7 @@ TUC Transfer Protocol socket server implementations.
 These servers are designed to be used with connection handlers (see
 the Handler module) supplied as an argument to the constructor.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Lingit AS
 """
 import Queue
 import SocketServer

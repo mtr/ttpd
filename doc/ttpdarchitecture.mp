@@ -1,4 +1,4 @@
-% Copyright (C) 2003, 2004 by Martin Thorsen Ranang
+% Copyright (C) 2003, 2004 by Lingit AS
 
 verbatimtex
 \documentclass{article}

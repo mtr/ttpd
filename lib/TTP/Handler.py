@@ -5,7 +5,7 @@
 Socket server handler implementation for the TUC Transfer Protocol
 (TTP).
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Lingit AS
 """
 import Queue
 import SocketServer

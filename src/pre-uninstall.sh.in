@@ -2,7 +2,7 @@
 #
 # $Id: pre-uninstall.sh.in 271 2007-06-06 12:34:42Z mtr $
 #
-# Copyright (C) 2007, 2009 by Martin Thorsen Ranang
+# Copyright (C) 2007, 2009 by Lingit AS
 #
 
 init_dir=@initdir@

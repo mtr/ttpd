@@ -7,7 +7,7 @@ An implementation of the TUC Transfer Protocol.
 This module contains a TTP message class and an XML parser that
 transforms XML into a TTP message.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Lingit AS
 
 Modified 25-may-2007, Kristian Skarbø, kristian@lingit.no.
 """

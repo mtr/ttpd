@@ -4,7 +4,7 @@
 """
 Classes to encapsulate a sub-process and communicate with it.
 
-Copyright (C) 2004, 2007 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007 by Lingit AS
 """
 
 __version__ = "$Rev$"

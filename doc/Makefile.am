@@ -1,6 +1,6 @@
 ## $Id$
 ##
-## Copyright (C) 2009 by Martin Thorsen Ranang
+## Copyright (C) 2009 by Lingit AS
 ##
 
 doc_root = ttpd_documentation

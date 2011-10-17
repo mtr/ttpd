@@ -4,7 +4,7 @@
 """ 
 $Id$
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004 by Lingit AS
 """
 
 __version__ = "$Rev$"

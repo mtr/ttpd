@@ -7,7 +7,7 @@ TUC Transfer Protocol Client (TTPC).
 The TTPC makes it easy to test the TTPD and to create interfaces that
 interacts with the TTPD.
 
-Copyright (C) 2004, 2007, 2009, 2010 by Martin Thorsen Ranang
+Copyright (C) 2004, 2007, 2009, 2010 by Lingit AS
 """
 
 __version__ = "$Rev$"

@@ -7,7 +7,7 @@ A thread pool implementation.
 Based on a generic-programming thread pool implementation written by
 Tim Lesher 2003-09-24.
 
-Copyright (C) 2004 by Martin Thorsen Ranang
+Copyright (C) 2004 by Lingit AS
 """
 
 __version__ = "$Rev$"
