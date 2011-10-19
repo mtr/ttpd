@@ -1,6 +1,8 @@
 # $Id$
 #
-# Copyright (C) 2009 by Lingit AS
+# Copyright (C) 2009, 2011 by Lingit AS
+
+include ${top_srcdir}/secretdefs.mk # _Never_ commit that file with real values.
 
 include ${top_srcdir}/extradefs.mk
 

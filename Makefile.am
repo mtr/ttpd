@@ -6,6 +6,8 @@ SUBDIRS = src doc etc statistics www #lib/
 
 #EXTRA_DIST = src/*.py #lib/
 
+include ${top_srcdir}/secretdefs.mk # _Never_ commit that file with real values.
+
 include ${top_srcdir}/extradefs.mk
 
 ignore_in = Makefile.in MANIFEST.in
