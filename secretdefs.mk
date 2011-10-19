@@ -4,7 +4,7 @@
 ##
 ## Copyright (C) 2011 by Lingit AS
 
-db_user = example_db_user
+db_user = example_db_userx
 db_password = example_db_password
 db_host = example_db_host
 db_name = example_db_name
