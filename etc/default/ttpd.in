@@ -1,0 +1,60 @@
+# -*- conf -*-
+# Default settings for the ttpd package.  This file
+# is parsed by ttpd and ttpc.
+#
+# $Id$
+#
+
+[db]
+db_address = "mysql://@user@:@password@@localhost/@db_name@"
+db_debug = False
+
+[common]
+service_name = "RUTE"
+ip_address = "0"
+port = 8082
+#remote_ip_address = "eas.payex.com"
+#remote_ip_address = "http://sms.pswin.com/http4sms/send.asp"
+remote_ip_address = "localhost"
+remote_port = 8000
+socket_queue_size = 5
+high_load_limit = 50
+log_level = "info"
+#log_level = "debug"
+log_file = "@pkglogdir@/@PACKAGE_TARNAME@.log"
+
+[ttpd]
+run_tad = True
+run_tuc = True
+tuc_pool_size = 3
+tuc_command = "@tuc_command@"
+tuc_encoding = "@tuc_encoding@"
+ttpd_pid_file = "@pkgrundir@/@PACKAGE_TARNAME@.pid"
+daemon = True
+run_as_user = "@tuc_user@"
+run_as_group = "@tuc_group@"
+
+sms_gateway = "pswincom"
+# The originating address value must be a string.
+originating_address = '@originating_phone_number@'
+
+payex_use_test_server     = False
+payex_trace_file 	  = None
+payex_encryption_key 	  = u'@encryption_key@'
+payex_account_number 	  = u'@account_number@'
+payex_test_encryption_key = u'@test_encryption_key@'
+payex_test_account_number = u'@test_account_number@'
+
+[ttpdctl]
+old_log_file = None
+executable = "@PACKAGE_TARNAME@"
+
+[ttpc]
+trans_id = '@trans_id@'
+listen_mode = False
+test_mode = False
+phone_number = None
+fake_outgoing = False
+input_file = None
+web = False
+show_technical = False
