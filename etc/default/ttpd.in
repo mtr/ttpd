@@ -37,6 +37,12 @@ run_as_group = "@tuc_group@"
 sms_gateway = "pswincom"
 # The originating address value must be a string.
 originating_address = '@originating_phone_number@'
+psw_user = '@psw_user@'
+psw_pw = '@psw_pw@'
+psw_snd = '@pws_snd@'
+psw_tariff = '@psw_billing@'
+psw_from_encoding = '@psw_from_encoding@'
+psw_to_encoding = '@psw_to_encoding@'
 
 payex_use_test_server     = False
 payex_trace_file 	  = None
