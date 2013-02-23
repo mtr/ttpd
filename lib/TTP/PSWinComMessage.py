@@ -38,7 +38,7 @@ connect = CoreMessage.connect
 send = CoreMessage.send
 receive = CoreMessage.receive 
 
-def pswincom_communicate(message, remote_address, parser=None, timeout=False):
+def pswincom_communicate(message, remote_address, options, parser=None, timeout=False):
     """Communicate message and return with the reply.
 
     Example message:
