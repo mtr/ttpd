@@ -71,7 +71,7 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
         'RCV': message.MxHead.ORName,
         'SND': options.psw_snd,
         'TARIFF': int(message.MxHead.Aux.Billing * options.psw_tariff),
-        'TXT': message._message.decode('utf-8').encode('iso-8859-1'),
+        'TXT': message._message.decode(options.psw_from_encoding).encode(options.psw_to_encoding),
         }
     
     stream = urllib2.urlopen(remote_address, urllib.urlencode(data))
