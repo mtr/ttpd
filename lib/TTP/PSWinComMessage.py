@@ -67,7 +67,7 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
     
     data = {
         'USER': options.psw_user,
-        'PW': 'metiony5',
+        'PW': options.psw_pw,
         'RCV': message.MxHead.ORName,
         'SND': '2027',
         'TARIFF': int(message.MxHead.Aux.Billing * 50),
