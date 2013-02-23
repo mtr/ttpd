@@ -66,7 +66,7 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
     remote_address = 'http://sms.pswin.com/http4sms/send.asp'
     
     data = {
-        'USER': 'atb2027',
+        'USER': options.psw_user,
         'PW': 'metiony5',
         'RCV': message.MxHead.ORName,
         'SND': '2027',
