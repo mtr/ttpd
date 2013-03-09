@@ -386,7 +386,8 @@ def main():
         update_help(description)
         parser.add_option(*option, **description)
         
-    options, args = parser.parse_args()
+    #options, args = parser.parse_args()
+    options = parser.parse_args()
     
     return
 
