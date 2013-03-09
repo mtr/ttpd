@@ -38,7 +38,7 @@ connect = CoreMessage.connect
 send = CoreMessage.send
 receive = CoreMessage.receive 
 
-def pswincom_communicate(message, remote_address, parser=None, timeout=False):
+def pswincom_communicate(message, remote_address, options, parser=None, timeout=False):
     """Communicate message and return with the reply.
 
     Example message:
@@ -66,12 +66,12 @@ def pswincom_communicate(message, remote_address, parser=None, timeout=False):
     remote_address = 'http://sms.pswin.com/http4sms/send.asp'
     
     data = {
-        'USER': 'atb2027',
-        'PW': 'metiony5',
+        'USER': options.psw_user,
+        'PW': options.psw_pw,
         'RCV': message.MxHead.ORName,
-        'SND': '2027',
-        'TARIFF': int(message.MxHead.Aux.Billing * 50),
-        'TXT': message._message.decode('utf-8').encode('iso-8859-1'),
+        'SND': options.psw_snd,
+        'TARIFF': int(message.MxHead.Aux.Billing * options.psw_tariff),
+        'TXT': message._message.decode(options.psw_from_encoding).encode(options.psw_to_encoding),
         }
     
     stream = urllib2.urlopen(remote_address, urllib.urlencode(data))
